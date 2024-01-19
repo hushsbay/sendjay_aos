@@ -65,6 +65,9 @@ class MainActivity : ComponentActivity() {
             //Util.alert(curContext, "이 앱은 플레이스토어에서 다운로드받지 않는 인하우스앱입니다. 따라서, 출처를 알 수 없는 앱(${Const.TITLE}) 사용을 허용해 주시기 바랍니다.", Const.TITLE, {
                 startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
             //})
+            val intent = Intent()
+            intent.action = Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS
+            startActivity(intent)
         } else {
             CoroutineScope(Dispatchers.Main).launch {
                 //if (!chkUpdate(true)) return@launch

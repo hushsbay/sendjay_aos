@@ -1,5 +1,6 @@
 package com.hushsbay.sendjay_aos
 
+import android.app.AlarmManager
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -17,6 +18,7 @@ import com.hushsbay.sendjay_aos.common.SocketIO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.util.Calendar
 
 class ChatService : Service() {
 
@@ -30,7 +32,7 @@ class ChatService : Service() {
         var state = Const.ServiceState.STOPPED //See FcmReceiver.kt
         var serviceIntent: Intent? = null //See MainActivity.kt
         var status_sock = Const.SockState.BEFORE_CONNECT
-        var curState_sock = false
+        //var curState_sock = false
         var isBeingSockChecked = false
         var gapScreenOffOnDualMode = "10000"
         var gapScreenOnOnDualMode = "3000"
@@ -92,7 +94,14 @@ class ChatService : Service() {
                 Log.i("###############", "restartChatService2")
                 return
             }
-            curState_sock = false
+            //curState_sock = false
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = System.currentTimeMillis()
+            calendar.add(Calendar.SECOND, SEC_DURING_RESTART)
+            val intent = Intent(this, AlarmReceiver::class.java)
+            val sender = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            alarmManager[AlarmManager.RTC_WAKEUP, calendar.timeInMillis] = sender
             Log.i("###############", "restartChatService3")
         } catch (e: Exception) {
             Log.i("###############", e.toString())

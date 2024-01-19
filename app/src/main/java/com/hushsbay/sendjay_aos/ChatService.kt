@@ -1,5 +1,8 @@
 package com.hushsbay.sendjay_aos
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
@@ -7,7 +10,9 @@ import android.net.ConnectivityManager
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import com.hushsbay.sendjay_aos.common.Const
+import com.hushsbay.sendjay_aos.common.NotiCenter
 import com.hushsbay.sendjay_aos.common.SocketIO
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -99,7 +104,28 @@ class ChatService : Service() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
             shouldThreadStop = false
-            startForeground(Const.NOTI_ID_FOREGROUND_SERVICE, null) //id should not be zero
+
+            var manager: NotificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            var channel: NotificationChannel = NotificationChannel(Const.NOTICHANID_FOREGROUND, Const.NOTICHANID_FOREGROUND, NotificationManager.IMPORTANCE_LOW)
+            manager.createNotificationChannel(channel) //여기 Noti는 진짜 알림을 위한 것이 아니고 foreground service 구동을 위한 것임
+            val builder = NotificationCompat.Builder(this, Const.NOTICHANID_FOREGROUND)
+            builder.setSmallIcon(R.mipmap.ic_launcher) //If not, 2 lines of verbose explanation shows.
+            val style = NotificationCompat.BigTextStyle()
+            style.bigText(null)
+            style.setBigContentTitle(null)
+            style.setSummaryText(null)
+            builder.setStyle(style)
+            builder.setContentTitle("아이콘 숨김을 위해 터치해 주세요.")
+            builder.setContentText(null)
+            builder.setOngoing(true)
+            builder.setWhen(0)
+            builder.setShowWhen(false)
+            val notificationIntent = Intent(this, MainActivity::class.java)
+            val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
+            builder.setContentIntent(pendingIntent)
+            val notification = builder.build()
+
+            startForeground(Const.NOTI_ID_FOREGROUND_SERVICE, notification) //id should not be zero
             //Timer().schedule(mainTask(), 1000) //or postDelayed
         } catch (e: Exception) {
             Log.i("###############", e.toString())

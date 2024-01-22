@@ -1,12 +1,15 @@
 package com.hushsbay.sendjay_aos.common
+
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
-import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.hushsbay.sendjay_aos.ChatService
+import com.hushsbay.sendjay_aos.common.Const
+import com.hushsbay.sendjay_aos.common.UserInfo
+import com.hushsbay.sendjay_aos.common.Util
 import io.socket.client.IO
 import io.socket.client.Socket
 import kotlinx.coroutines.*
@@ -15,19 +18,20 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
 
     var sock: Socket? = null
 
+    //SupervisorJob is used to prevent Error (Parent Job is cancelled)
     //Parent Job is cancelled 라는 오류 방지를 위해 SupervisorJob으로 처리
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private const val DELAY = 500L
     private const val SEC = 3000L
 
-    operator fun invoke(context: Context) {
+    operator fun invoke(context: Context, uInfo: UserInfo, winid: String, userip: String) {
         val option: IO.Options = IO.Options().apply {
             forceNew = false //default=false //See 'disconnect_prev_sock' in pmessage.js (on server)
             reconnection = false
-            query = "userid=S910998"
+            query = "${Const.KC_TOKEN}=${uInfo.token}&${Const.KC_USERID}=${uInfo.userid}&${Const.KC_USERKEY}=${uInfo.userkey}&winid=${winid}&userip=${userip}"
         }
         //sock = IO.socket(KeyChain.get(context, Const.KC_MODE_SOCK).toString(), option)
-        sock = IO.socket("https://hushsbay.com:3050/jay", option)
+        sock = IO.socket(Const.URL_SOCK, option)
     }
 
     //예) procSocketEmit() in ChatService.kt : 서버로 전송시 소켓연결에 문제가 없으면 OK, 그게 아니면 문제해결하고 처리하는데 그래도 안되면 문제있다고 Return하는 것임
@@ -54,7 +58,7 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                             code = Const.RESULT_ERR
                             msg = "Socket not ready yet." //원래 사용자 입장에서는 이 msg가 표시되면 안됨
                         } else if (!sock!!.connected()) {
-                            Log.i("SocketIO", "reconnecting..")
+                            Util.log("SocketIO", "reconnecting..")
                             SocketIO.sock!!.connect() //cannot connect on doze mode
                             val result = chkConnected().await()
                             if (result == null) {

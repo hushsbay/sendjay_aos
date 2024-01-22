@@ -22,8 +22,10 @@ class Const {
         const val DIR_PUBLIC = "/jquery/msngr"
         const val DIR_ROUTE = "/route"
         ////////////////////////////////////////////////
-        const val URL_SERVER = "$URL_HOST:444" //444(https) -> 81(http) on AWS
-        const val URL_SOCK = "$URL_HOST:3051/jay" //3051(https) -> 3051(http) on AWS
+        //const val URL_SERVER = "$URL_HOST:444" //444(https) -> 81(http) on AWS
+        //const val URL_SOCK = "$URL_HOST:3051/jay" //3051(https) -> 3051(http) on AWS
+        const val URL_SERVER = "$URL_HOST:443" //444(https) -> 81(http) on AWS
+        const val URL_SOCK = "$URL_HOST:3050/jay" //3051(https) -> 3051(http) on AWS
         const val URL_PUBLIC = URL_SERVER + DIR_PUBLIC
 //        //3050(web ops),3051(mobile ops) and 3060(web dev),3061(mobile dev)
 //        //These ports are for one server dev/ops. Consult with your team for load balancing of the real enterprise environment.
@@ -39,7 +41,7 @@ class Const {
         const val PAGE_ROOM = "/chat.html"
         const val PAGE_DUMMY = "/dummy.html"
         ////////////////////////////////////////////////
-        const val PROVIDER_AUTHORITY = "com.hushsbay.sendjay.common.KeyChainProvider" //same as ContentProvider class name and <provider ~ android:authorities in AndroidManifest.xml
+        const val PROVIDER_AUTHORITY = "com.hushsbay.sendjay_aos.common.KeyChainProvider" //same as ContentProvider class name and <provider ~ android:authorities in AndroidManifest.xml
         const val DELI = "##"
         const val SUBDELI = "$$"
         const val DELI_KEY = "__"

@@ -147,7 +147,7 @@ object NotiCenter {
         builder.setContentText(body ?: "New message arrived.")
         builder.setContentTitle(title)
         builder.setAutoCancel(true) //builder.setOngoing(true)
-        val pendingIntent = PendingIntent.getActivity(context, requestCode, intentNoti, PendingIntent.FLAG_UPDATE_CURRENT)
+        val pendingIntent = PendingIntent.getActivity(context, requestCode, intentNoti, PendingIntent.FLAG_IMMUTABLE)
         builder.setContentIntent(pendingIntent)
         return builder.build()
     }

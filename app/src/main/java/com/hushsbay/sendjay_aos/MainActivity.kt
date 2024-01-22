@@ -436,14 +436,14 @@ class MainActivity : Activity() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
             var loginNeeded = false
-            val pushtoken = KeyChain.get(curContext, Const.KC_PUSHTOKEN) ?: "" //from onNewToken() FcmService.kt
-            if (pushtoken == "") {
-                Util.alert(curContext, "(구글) FCM Token값이 없습니다. 앱을 제거하고 다시 설치해 주시기 바랍니다.", logTitle)
-                return
-            }
+            //val pushtoken = KeyChain.get(curContext, Const.KC_PUSHTOKEN) ?: "" //from onNewToken() FcmService.kt
+            //if (pushtoken == "") {
+            //    Util.alert(curContext, "(구글) FCM Token값이 없습니다. 앱을 제거하고 다시 설치해 주시기 바랍니다.", logTitle)
+            //    return
+            //}
             val autoLogin = KeyChain.get(curContext, Const.KC_AUTOLOGIN) ?: ""
             if (autoLogin == "Y") {
-                val param = listOf("os" to "and", "push_and" to pushtoken)
+                val param = listOf("os" to "and") //val param = listOf("os" to "and", "push_and" to pushtoken)
                 authJson = HttpFuel.get(curContext, "${Const.DIR_ROUTE}/login/verify", param).await()
                 if (authJson.get("code").asString == Const.RESULT_OK) {
                     uInfo = UserInfo(curContext, authJson)
@@ -481,7 +481,8 @@ class MainActivity : Activity() {
 //                                KeyChain.set(curContext, Const.KC_MODE_SOCK, Const.URL_SOCK)
 //                                KeyChain.set(curContext, Const.KC_MODE_PUBLIC, Const.URL_PUBLIC)
 //                            }
-                            val param = listOf(Const.KC_USERID to uidStr, "pwd" to btnPwd.text.toString().trim(), "os" to "and", "push_and" to pushtoken)
+                            //val param = listOf(Const.KC_USERID to uidStr, "pwd" to btnPwd.text.toString().trim(), "os" to "and", "push_and" to pushtoken)
+                            val param = listOf(Const.KC_USERID to uidStr, "pwd" to btnPwd.text.toString().trim(), "os" to "and")
                             authJson = HttpFuel.get(curContext, "${Const.DIR_ROUTE}/login", param).await()
                             if (authJson.get("code").asString != Const.RESULT_OK) {
                                 Util.alert(curContext, authJson.get("msg").asString, logTitle)

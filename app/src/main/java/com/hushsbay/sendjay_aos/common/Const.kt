@@ -55,29 +55,25 @@ class Const {
         const val NOTI_CNT_END = 1010
         const val NOTI_ID_SUMMARY = NOTI_CNT_END + 1
         const val NOTI_ID_CHK_UNREAD = NOTI_ID_SUMMARY + 1
-        /////////////////////////////////////////////////////////////////////////
-//        const val KC_MODE_SERVER = "mode_server" //see procLogin() in MainActivity
-//        const val KC_MODE_SOCK = "mode_sock" //see procLogin() in MainActivity
-//        const val KC_MODE_PUBLIC = "mode_public" //see procLogin() in MainActivity
-        /////////////////////////////////////////////////////////////////////////
+        ///////// 아래에서 대문자는 DB(mysql)에서 내려오는 경우에만 json.get(~)에서 바로 편리하게 쓰려고 사용하는 것이며 그 외는 소문자임
+        const val KC_USERID = "USER_ID" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
+        const val KC_USERNM = "USER_NM" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
+        const val KC_PASSKEY = "PASSKEY"
+        const val KC_ORGCD = "ORG_CD" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
+        const val KC_ROLE = "USERROLE"
+        const val KC_NOTI_OFF = "NOTI_OFF"
+        const val KC_SOUND_OFF = "SOUND_OFF"
+        const val KC_TM_FR = "TM_FR"
+        const val KC_TM_TO = "TM_TO"
+        const val KC_BODY_OFF = "BODY_OFF"
+        const val KC_SENDER_OFF = "SENDER_OFF"
         const val KC_TOKEN = "token" //소문자. used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
-        const val KC_USERID = "USERID" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
         const val KC_USERKEY = "userkey"
-        const val KC_USERNM = "USERNM" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
-        const val KC_PASSKEY = "passkey"
-        const val KC_ORGCD = "ORGCD" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
-        const val KC_ROLE = "role"
         const val KC_AUTOLOGIN = "autologin" //used for KeyChain and UserInfo
         const val KC_SCREEN_STATE = "screen_state"
-        const val KC_NOTI_OFF = "notioff"
-        const val KC_SOUND_OFF = "soundoff"
-        const val KC_TM_FR = "fr"
-        const val KC_TM_TO = "to"
-        const val KC_BODY_OFF = "bodyoff"
-        const val KC_SENDER_OFF = "senderoff"
         const val KC_WINID = "winid"
         const val KC_USERIP = "userip"
-        const val KC_PUSHTOKEN = "pushtoken"
+        //const val KC_PUSHTOKEN = "pushtoken"
         const val KC_ROOMID_FOR_CHATSERVICE = "roomid_for_chatservice"
         const val KC_WEBVIEW_MAIN_VERSION = "webview_main_version"
         const val KC_WEBVIEW_CHAT_VERSION = "webview_chat_version"

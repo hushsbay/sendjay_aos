@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageInfo
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
@@ -15,8 +14,8 @@ import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
 import android.widget.Button
+import android.widget.EditText
 import androidx.core.content.FileProvider
-import androidx.core.content.pm.PackageInfoCompat
 import com.google.gson.JsonObject
 import com.hushsbay.sendjay_aos.common.Const
 import com.hushsbay.sendjay_aos.common.HttpFuel
@@ -30,7 +29,6 @@ import com.hushsbay.sendjay_aos.common.SocketIO
 import com.hushsbay.sendjay_aos.common.UserInfo
 import com.hushsbay.sendjay_aos.common.Util
 import com.hushsbay.sendjay_aos.data.RxEvent
-import com.hushsbay.sendjay_aos.databinding.ActivityLocalhtmlBinding
 import com.hushsbay.sendjay_aos.databinding.ActivityMainBinding
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.*
@@ -278,7 +276,7 @@ class MainActivity : Activity() {
                     CoroutineScope(Dispatchers.Main).launch {
                         try {
                             val winid1 = Util.getCurDateTimeStr() //Mobile
-                            val param = listOf("type" to "set_new", "userkey" to uInfo.userkey, "winid" to winid1)
+                            val param = listOf("type" to "set_new", "winid" to winid1) //val param = listOf("type" to "set_new", "userkey" to uInfo.userkey, "winid" to winid1)
                             val json = HttpFuel.get(curContext, "${Const.DIR_ROUTE}/chk_redis", param).await()
                             if (json.get("code").asString != Const.RESULT_OK) {
                                 Util.alert(curContext, json.get("msg").asString, logTitle)
@@ -325,10 +323,9 @@ class MainActivity : Activity() {
                 return false
             }
             val jsonApp = json.getAsJsonObject(Const.VERSIONCHK_APP) //Util.log(json1.get("version").asString,"=====", BuildConfig.VERSION_NAME)
-            val pInfo: PackageInfo = packageManager.getPackageInfo(packageName, 0)
-            val longVersionCode = PackageInfoCompat.getLongVersionCode(pInfo).toString()
-            Log.i("#######", jsonApp.get("version").asString + "==" + longVersionCode)
-            if (jsonApp.get("version").asString == longVersionCode) {
+            val pInfo = packageManager.getPackageInfo(packageName, 0)
+            Log.i("#######", jsonApp.get("version").asString + "==" + pInfo.versionName)
+            if (jsonApp.get("version").asString == pInfo.versionName) {
                 val jsonEtc = json.getAsJsonObject(Const.VERSIONCHK_ETC)
                 ChatService.gapScreenOffOnDualMode =
                     jsonEtc.get("screenoff").asString //Dual means socket on both PC Web and Mobile
@@ -443,8 +440,8 @@ class MainActivity : Activity() {
             //}
             val autoLogin = KeyChain.get(curContext, Const.KC_AUTOLOGIN) ?: ""
             if (autoLogin == "Y") {
-                val param = listOf("os" to "and") //val param = listOf("os" to "and", "push_and" to pushtoken)
-                authJson = HttpFuel.get(curContext, "${Const.DIR_ROUTE}/login/verify", param).await()
+                //val param = listOf("os" to Const.AOS, "push_and" to pushtoken)
+                authJson = HttpFuel.post(curContext, "/auth/login", null).await()
                 if (authJson.get("code").asString == Const.RESULT_OK) {
                     uInfo = UserInfo(curContext, authJson)
                 } else if (authJson.get("code").asString == Const.RESULT_ERR_HTTPFUEL) {
@@ -468,22 +465,14 @@ class MainActivity : Activity() {
                 btnLogin.setOnClickListener { //mDialogView.login.setOnClickListener {
                     CoroutineScope(Dispatchers.Main).launch {
                         try {
-                            val btnUserid = mDialogView.findViewById<Button>(R.id.userid)
-                            val btnPwd = mDialogView.findViewById<Button>(R.id.pwd)
-                            var uidStr = btnUserid.text.toString().trim()
-//                            if (uidStr.endsWith(Const.SUFFIX_DEV)) {
-//                                KeyChain.set(curContext, Const.KC_MODE_SERVER, Const.URL_SERVER_DEV)
-//                                KeyChain.set(curContext, Const.KC_MODE_SOCK, Const.URL_SOCK_DEV)
-//                                KeyChain.set(curContext, Const.KC_MODE_PUBLIC, Const.URL_PUBLIC_DEV)
-//                                uidStr = uidStr.replace(Const.SUFFIX_DEV, "")
-//                            } else {
-//                                KeyChain.set(curContext, Const.KC_MODE_SERVER, Const.URL_SERVER)
-//                                KeyChain.set(curContext, Const.KC_MODE_SOCK, Const.URL_SOCK)
-//                                KeyChain.set(curContext, Const.KC_MODE_PUBLIC, Const.URL_PUBLIC)
-//                            }
-                            //val param = listOf(Const.KC_USERID to uidStr, "pwd" to btnPwd.text.toString().trim(), "os" to "and", "push_and" to pushtoken)
-                            val param = listOf(Const.KC_USERID to uidStr, "pwd" to btnPwd.text.toString().trim(), "os" to "and")
-                            authJson = HttpFuel.get(curContext, "${Const.DIR_ROUTE}/login", param).await()
+                            val inUserid = mDialogView.findViewById<EditText>(R.id.userid)
+                            val inPwd = mDialogView.findViewById<EditText>(R.id.pwd)
+                            //val param = listOf(Const.KC_USERID to uidStr, "pwd" to btnPwd.text.toString().trim(), "os" to Const.AOS, "push_and" to pushtoken)
+                            //val param = listOf(Const.KC_USERID to inUserid.text.toString().trim(), "pwd" to inPwd.text.toString().trim()) // -> [(userid, S921060), (pwd, 1111)]
+                            val param = org.json.JSONObject()
+                            param.put("uid", inUserid.text.toString().trim())
+                            param.put("pwd", inPwd.text.toString().trim())
+                            authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
                             if (authJson.get("code").asString != Const.RESULT_OK) {
                                 Util.alert(curContext, authJson.get("msg").asString, logTitle)
                             } else {

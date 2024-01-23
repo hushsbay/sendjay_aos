@@ -13,7 +13,8 @@ class Const {
     companion object {
         const val APP_NAME = "sendjay" //Do not change. see KeyChainProvider also
         const val TITLE = "sendjay" //for AlertDialog Title and so on
-        const val VERSIONCHK_APP = "${APP_NAME}_and"
+        const val AOS = "aos"
+        const val VERSIONCHK_APP = "${APP_NAME}_${AOS}"
         const val VERSIONCHK_WEB = "webview"
         const val VERSIONCHK_ETC = "etc"
         ////////////////////////////////////////////////for distinguishing dev and ops (through KeyChain when app starts)
@@ -59,21 +60,21 @@ class Const {
 //        const val KC_MODE_SOCK = "mode_sock" //see procLogin() in MainActivity
 //        const val KC_MODE_PUBLIC = "mode_public" //see procLogin() in MainActivity
         /////////////////////////////////////////////////////////////////////////
-        const val KC_TOKEN = "token" //used for KeyChain, UserInfo and login.js
-        const val KC_USERID = "userid" //used for KeyChain, UserInfo and login.js
-        const val KC_USERKEY = "userkey" //used for KeyChain, UserInfo and login.js
-        const val KC_USERNM = "usernm" //used for KeyChain, UserInfo and login.js
-        const val KC_PASSKEY = "passkey" //used for KeyChain, UserInfo and login.js
-        const val KC_ORGCD = "orgcd" //used for KeyChain, UserInfo and login.js
-        const val KC_ROLE = "role" //used for KeyChain, UserInfo and login.js
+        const val KC_TOKEN = "token" //소문자. used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
+        const val KC_USERID = "USERID" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
+        const val KC_USERKEY = "userkey"
+        const val KC_USERNM = "USERNM" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
+        const val KC_PASSKEY = "passkey"
+        const val KC_ORGCD = "ORGCD" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
+        const val KC_ROLE = "role"
         const val KC_AUTOLOGIN = "autologin" //used for KeyChain and UserInfo
         const val KC_SCREEN_STATE = "screen_state"
-        const val KC_NOTI_OFF = "notioff" //used for KeyChain, UserInfo and login.js
-        const val KC_SOUND_OFF = "soundoff" //used for KeyChain, UserInfo and login.js
-        const val KC_TM_FR = "fr" //used for KeyChain, UserInfo and login.js
-        const val KC_TM_TO = "to" //used for KeyChain, UserInfo and login.js
-        const val KC_BODY_OFF = "bodyoff" //used for KeyChain, UserInfo and login.js
-        const val KC_SENDER_OFF = "senderoff" //used for KeyChain, UserInfo and login.js
+        const val KC_NOTI_OFF = "notioff"
+        const val KC_SOUND_OFF = "soundoff"
+        const val KC_TM_FR = "fr"
+        const val KC_TM_TO = "to"
+        const val KC_BODY_OFF = "bodyoff"
+        const val KC_SENDER_OFF = "senderoff"
         const val KC_WINID = "winid"
         const val KC_USERIP = "userip"
         const val KC_PUSHTOKEN = "pushtoken"

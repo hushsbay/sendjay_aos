@@ -21,19 +21,68 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
     var senderoff: String
 
     constructor(context: Context, json: JsonObject) { //gson (not org.json)
-        this.token = json.get(Const.KC_TOKEN).asString
-        this.userid = json.get(Const.KC_USERID).asString
-        this.userkey = Const.M_KEY + this.userid
-        this.usernm = json.get(Const.KC_USERNM).asString
-        this.passkey = json.get(Const.KC_PASSKEY).asString
-        this.orgcd = json.get(Const.KC_ORGCD).asString
-        this.role = json.get(Const.KC_ROLE).asString
-        this.notioff = json.get(Const.KC_NOTI_OFF).asString
-        this.soundoff = json.get(Const.KC_SOUND_OFF).asString
-        this.fr = json.get(Const.KC_TM_FR).asString
-        this.to = json.get(Const.KC_TM_TO).asString
-        this.bodyoff = json.get(Const.KC_BODY_OFF).asString
-        this.senderoff = json.get(Const.KC_SENDER_OFF).asString
+        if (json.get(Const.KC_TOKEN) == null) {
+            this.token = ""
+        } else {
+            this.token = json.get(Const.KC_TOKEN).asString
+        }
+        if (json.get(Const.KC_USERID) == null) {
+            this.userid = ""
+            this.userkey = ""
+        } else {
+            this.userid = json.get(Const.KC_USERID).asString
+            this.userkey = Const.M_KEY + this.userid
+        }
+        if (json.get(Const.KC_USERNM) == null) {
+            this.usernm = ""
+        } else {
+            this.usernm = json.get(Const.KC_USERNM).asString
+        }
+        if (json.get(Const.KC_PASSKEY) == null) {
+            this.passkey = ""
+        } else {
+            this.passkey = json.get(Const.KC_PASSKEY).asString
+        }
+        if (json.get(Const.KC_ORGCD) == null) {
+            this.orgcd = ""
+        } else {
+            this.orgcd = json.get(Const.KC_ORGCD).asString
+        }
+        if (json.get(Const.KC_ROLE) == null) {
+            this.role = ""
+        } else {
+            this.role = json.get(Const.KC_ROLE).asString
+        }
+        if (json.get(Const.KC_NOTI_OFF) == null) {
+            this.notioff = ""
+        } else {
+            this.notioff = json.get(Const.KC_NOTI_OFF).asString
+        }
+        if (json.get(Const.KC_SOUND_OFF) == null) {
+            this.soundoff = ""
+        } else {
+            this.soundoff = json.get(Const.KC_SOUND_OFF).asString
+        }
+        if (json.get(Const.KC_TM_FR) == null) {
+            this.fr = ""
+        } else {
+            this.fr = json.get(Const.KC_TM_FR).asString
+        }
+        if (json.get(Const.KC_TM_TO) == null) {
+            this.to = ""
+        } else {
+            this.to = json.get(Const.KC_TM_TO).asString
+        }
+        if (json.get(Const.KC_BODY_OFF) == null) {
+            this.bodyoff = ""
+        } else {
+            this.bodyoff = json.get(Const.KC_BODY_OFF).asString
+        }
+        if (json.get(Const.KC_SENDER_OFF) == null) {
+            this.senderoff = ""
+        } else {
+            this.senderoff = json.get(Const.KC_SENDER_OFF).asString
+        }
         KeyChain.set(context, Const.KC_TOKEN, this.token)
         KeyChain.set(context, Const.KC_USERID, this.userid)
         KeyChain.set(context, Const.KC_USERKEY, this.userkey)

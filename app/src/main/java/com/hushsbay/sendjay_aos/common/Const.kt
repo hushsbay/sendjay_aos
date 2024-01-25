@@ -60,7 +60,7 @@ class Const {
         const val KC_USERNM = "USER_NM" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
         const val KC_PASSKEY = "PASSKEY"
         const val KC_ORGCD = "ORG_CD" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
-        const val KC_ROLE = "USERROLE"
+        //const val KC_ROLE = "USERROLE"
         const val KC_NOTI_OFF = "NOTI_OFF"
         const val KC_SOUND_OFF = "SOUND_OFF"
         const val KC_TM_FR = "TM_FR"

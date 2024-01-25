@@ -271,33 +271,38 @@ class MainActivity : Activity() {
 //                startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
 //            })
 //        } else {
-            CoroutineScope(Dispatchers.Main).launch {
-                if (!chkUpdate(true)) return@launch
-                procLogin(false) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        try {
-                            val winid1 = Util.getCurDateTimeStr() //Mobile
-                            val param = listOf("type" to "set_new", "winid" to winid1) //val param = listOf("type" to "set_new", "userkey" to uInfo.userkey, "winid" to winid1)
-                            val json = HttpFuel.get(curContext, "${Const.DIR_ROUTE}/chk_redis", param).await()
-                            if (json.get("code").asString != Const.RESULT_OK) {
-                                Util.alert(curContext, json.get("msg").asString, logTitle)
-                            } else {
-                                KeyChain.set(curContext, Const.KC_WINID, winid1)
-                                KeyChain.set(curContext, Const.KC_USERIP, json.get("userip").asString)
-                                if (ChatService.serviceIntent == null) {
-                                    val intentNew = Intent(curContext, ChatService::class.java)
-                                    startForegroundService(intentNew)
-                                }
-                                setupWebViewMain()
-                                //setupWebViewLocal()
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!chkUpdate(true)) return@launch
+            procLogin(false) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    try {
+                        val winid1 = Util.getCurDateTimeStr() //Mobile
+                        //val param = listOf("type" to "set_new", "userkey" to uInfo.userkey, "winid" to winid1)
+                        //val json = HttpFuel.get(curContext, "${Const.DIR_ROUTE}/chk_redis", param).await()
+                        val param = org.json.JSONObject()
+                        param.put("type", "set_new")
+                        param.put("userkey", uInfo.userkey)
+                        param.put("winid", winid1)
+                        val json = HttpFuel.post(curContext, "/msngr/chk_redis", param.toString()).await()
+                        if (json.get("code").asString != Const.RESULT_OK) {
+                            Util.alert(curContext, json.get("msg").asString, logTitle)
+                        } else {
+                            KeyChain.set(curContext, Const.KC_WINID, winid1)
+                            KeyChain.set(curContext, Const.KC_USERIP, json.get("userip").asString)
+                            if (ChatService.serviceIntent == null) {
+                                val intentNew = Intent(curContext, ChatService::class.java)
+                                startForegroundService(intentNew)
                             }
-                        } catch (e: Exception) {
-                            logger.error("$logTitle: ${e.toString()}")
-                            Util.procException(curContext, e, logTitle)
+                            setupWebViewMain()
+                            //setupWebViewLocal()
                         }
+                    } catch (e: Exception) {
+                        logger.error("$logTitle: ${e.toString()}")
+                        Util.procException(curContext, e, logTitle)
                     }
                 }
             }
+        }
 //        }
     }
 
@@ -318,7 +323,7 @@ class MainActivity : Activity() {
                 if (onStatusCreate) toggleDispRetry(true, "Main", logTitle, "", true)
                 return false
             }
-            val json = HttpFuel.get(curContext, "${Const.URL_SERVER}/applist.json", null).await()
+            val json = HttpFuel.get(curContext, "${Const.URL_SERVER}/applist.json", null).await() //여기만 get 방식
             if (json.get("code").asString != Const.RESULT_OK) {
                 Util.alert(curContext, json.get("code").asString + "\n" + json.get("msg").asString, logTitle)
                 return false

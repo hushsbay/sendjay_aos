@@ -16,6 +16,7 @@ import android.webkit.*
 import android.widget.Button
 import android.widget.EditText
 import androidx.core.content.FileProvider
+import com.github.kittinunf.fuel.Fuel
 import com.google.gson.JsonObject
 import com.hushsbay.sendjay_aos.common.Const
 import com.hushsbay.sendjay_aos.common.HttpFuel

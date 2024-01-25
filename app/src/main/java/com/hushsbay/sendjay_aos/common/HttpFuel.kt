@@ -1,12 +1,17 @@
 package com.hushsbay.sendjay_aos.common
 
 import android.content.Context
+import android.util.Log
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.Headers
+import com.github.kittinunf.fuel.core.await
+import com.github.kittinunf.fuel.coroutines.awaitObjectResponse
 import com.github.kittinunf.fuel.coroutines.awaitString
+import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import kotlinx.coroutines.*
+import java.net.HttpCookie
 
 object HttpFuel { //Fuel is single instance and uses gson(com.google.gson.JsonObject)
 
@@ -16,7 +21,7 @@ object HttpFuel { //Fuel is single instance and uses gson(com.google.gson.JsonOb
         return scope.async {
             try {
                 //var url = if (url.startsWith("http")) url else KeyChain.get(context, Const.KC_MODE_SERVER).toString() + url
-                var url = if (url.startsWith("http")) url else Const.URL_SERVER.toString() + url
+                var url = if (url.startsWith("http")) url else Const.URL_SERVER + url
                 val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
                 val uid = KeyChain.get(context, Const.KC_USERID) ?: ""
                 val userkey = KeyChain.get(context, Const.KC_USERKEY) ?: ""
@@ -44,7 +49,7 @@ object HttpFuel { //Fuel is single instance and uses gson(com.google.gson.JsonOb
         return scope.async {
             try {
                 //var url = if (url.startsWith("http")) url else KeyChain.get(context, Const.KC_MODE_SERVER).toString() + url
-                var url = if (url.startsWith("http")) url else Const.URL_SERVER.toString() + url
+                var url = if (url.startsWith("http")) url else Const.URL_SERVER + url
                 val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
                 val uid = KeyChain.get(context, Const.KC_USERID) ?: ""
                 val userkey = KeyChain.get(context, Const.KC_USERKEY) ?: ""
@@ -59,8 +64,19 @@ object HttpFuel { //Fuel is single instance and uses gson(com.google.gson.JsonOb
                 } else {
                     param
                 }
-                val jsonStr = Fuel.post(url).body(paramReal).appendHeader(*paramAuth).timeout(Const.RESTFUL_TIMEOUT).awaitString()
-                val json = Gson().fromJson(jsonStr, JsonObject::class.java)
+                //val jsonStr = Fuel.post(url).body(paramReal).appendHeader(*paramAuth).timeout(Const.RESTFUL_TIMEOUT).awaitString()
+                //val json = Gson().fromJson(jsonStr, JsonObject::class.java)
+                //json
+                val (request, response, result) = Fuel.post(url).body(paramReal).appendHeader(*paramAuth).timeout(Const.RESTFUL_TIMEOUT).awaitStringResponseResult()
+                val (retStr, error) = result
+                if (error != null) throw Exception(error.toString())
+                val cookie = response.headers["Set-Cookie"] //ArrayList<>
+                if (cookie.isNotEmpty()) { //unAuth일 경우 쿠키가 안내려올 경우도 고려해야 함. val cookieVal = cookie.first { it.startsWith("token=") }
+                    cookie?.flatMap { HttpCookie.parse(it) }?.find { it.name == "token" }?.let {
+                        KeyChain.set(context, Const.KC_TOKEN, it.value) //token만 keyChain에 값을 갱신해서 저장
+                    }
+                }
+                val json = Gson().fromJson(retStr, JsonObject::class.java)
                 json
             } catch (e: Exception) {
                 val jsonStr = """{ code : '${Const.RESULT_ERR_HTTPFUEL}', msg : 'HttpFuel:post: ${e.message}' }"""

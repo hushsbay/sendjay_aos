@@ -28,12 +28,8 @@ class Const {
         const val URL_SERVER = "$URL_HOST:443" //444(https) -> 81(http) on AWS
         const val URL_SOCK = "$URL_HOST:3050/jay" //3051(https) -> 3051(http) on AWS
         const val URL_PUBLIC = URL_SERVER + DIR_PUBLIC
-//        //3050(web ops),3051(mobile ops) and 3060(web dev),3061(mobile dev)
-//        //These ports are for one server dev/ops. Consult with your team for load balancing of the real enterprise environment.
-//        //서버 1대로 개발과 운영을 나누어 관리하기 위한 포트이며 정상적인 로드밸런싱이 필요한 실제 기업 환경에서는 사내 담당자와의 협의가 필요할 것임.
-//        const val URL_SERVER_DEV = "$URL_HOST:454" //dev
-//        const val URL_SOCK_DEV = "$URL_HOST:3061/jaydev" //dev
-//        const val URL_PUBLIC_DEV = URL_SERVER_DEV + DIR_PUBLIC //dev
+        //3050(web ops),3051(mobile ops) and 3060(web dev),3061(mobile dev)
+        //서버 1대로 개발과 운영을 나누어 관리하기 위한 포트이며 정상적인 로드밸런싱이 필요한 실제 기업 환경에서는 사내 담당자와의 협의가 필요할 것임.
         ////////////////////////////////////////////////
         const val URL_JAY = "${DIR_PUBLIC}/" //means public page load
         const val URL_ROUTE = "${DIR_ROUTE}/" //means restful(=ajax)

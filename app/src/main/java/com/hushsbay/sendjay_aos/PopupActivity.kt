@@ -62,7 +62,7 @@ class PopupActivity : Activity() {
         WebView.setWebContentsDebuggingEnabled(true)
         curContext = this@PopupActivity
         connManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        uInfo = UserInfo(curContext)
+        uInfo = UserInfo(curContext) //KeyChain Get
         //1) origin = "/popup?type=image&msgid=" + msgid + "&body=" + body, objStr = "" : from jay_chat.js
         gOrigin = intent.getStringExtra("origin")!!
         gObjStr = intent.getStringExtra("objStr")!!
@@ -96,7 +96,7 @@ class PopupActivity : Activity() {
                 if (autoLogin == "Y") {
                     authJson = HttpFuel.get(curContext, "${Const.DIR_ROUTE}/login/verify").await()
                     if (authJson.get("code").asString == Const.RESULT_OK) {
-                        uInfo = UserInfo(curContext, authJson)
+                        uInfo = UserInfo(curContext, authJson) //KeyChain Get
                         callback()
                     } else {
                         Util.alert(curContext, "Login Error : ${authJson.get("msg").asString}", logTitle)

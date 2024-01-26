@@ -277,8 +277,6 @@ class MainActivity : Activity() {
                 CoroutineScope(Dispatchers.Main).launch {
                     try {
                         val winid1 = Util.getCurDateTimeStr() //Mobile
-                        //val param = listOf("type" to "set_new", "userkey" to uInfo.userkey, "winid" to winid1)
-                        //val json = HttpFuel.get(curContext, "${Const.DIR_ROUTE}/chk_redis", param).await()
                         val param = org.json.JSONObject()
                         param.put("type", "set_new")
                         param.put("userkey", uInfo.userkey)
@@ -445,8 +443,11 @@ class MainActivity : Activity() {
             //    return
             //}
             val autoLogin = KeyChain.get(curContext, Const.KC_AUTOLOGIN) ?: ""
-            if (autoLogin == "Y") {
-                //val param = listOf("os" to Const.AOS, "push_and" to pushtoken)
+            if (autoLogin == "Y") { //val param = listOf("os" to Const.AOS, "push_and" to pushtoken)
+                val param = org.json.JSONObject()
+                param.put("uid", KeyChain.get(applicationContext, Const.KC_USERID))
+                param.put("pwd", KeyChain.get(applicationContext, Const.KC_PWD))
+                param.put("autologin", "Y") //자동로그인 여부는 이 파라미터 + 서버에서의 deviceFrom과의 조합으로 판단함
                 authJson = HttpFuel.post(curContext, "/auth/login", null).await()
                 if (authJson.get("code").asString == Const.RESULT_OK) {
                     uInfo = UserInfo(curContext, authJson)
@@ -473,8 +474,6 @@ class MainActivity : Activity() {
                         try {
                             val inUserid = mDialogView.findViewById<EditText>(R.id.userid)
                             val inPwd = mDialogView.findViewById<EditText>(R.id.pwd)
-                            //val param = listOf(Const.KC_USERID to uidStr, "pwd" to btnPwd.text.toString().trim(), "os" to Const.AOS, "push_and" to pushtoken)
-                            //val param = listOf(Const.KC_USERID to inUserid.text.toString().trim(), "pwd" to inPwd.text.toString().trim()) // -> [(userid, S921060), (pwd, 1111)]
                             val param = org.json.JSONObject()
                             param.put("uid", inUserid.text.toString().trim())
                             param.put("pwd", inPwd.text.toString().trim())

@@ -5,13 +5,15 @@ import com.google.gson.JsonObject
 
 class UserInfo { //See Util.getStrObjFromUserInfo() also.
 
+    //키체인 연동 (set/get)
+
     var token: String
     var userid: String
+    var pwd: String
     var userkey: String
     var usernm: String
     var passkey: String
     var orgcd: String
-    //var role: String
 
     var notioff: String
     var soundoff: String
@@ -20,7 +22,7 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
     var bodyoff: String
     var senderoff: String
 
-    constructor(context: Context, json: JsonObject) { //gson (not org.json)
+    constructor(context: Context, json: JsonObject) { //gson (not org.json) => 키체인 설정(set) : 인증(login.js)시만 처리
         if (json.get(Const.KC_TOKEN) == null) {
             this.token = ""
         } else {
@@ -32,6 +34,11 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         } else {
             this.userid = json.get(Const.KC_USERID).asString
             this.userkey = Const.M_KEY + this.userid
+        }
+        if (json.get(Const.KC_PWD) == null) {
+            this.pwd = ""
+        } else {
+            this.pwd = json.get(Const.KC_PWD).asString
         }
         if (json.get(Const.KC_USERNM) == null) {
             this.usernm = ""
@@ -48,11 +55,6 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         } else {
             this.orgcd = json.get(Const.KC_ORGCD).asString
         }
-//        if (json.get(Const.KC_ROLE) == null) {
-//            this.role = ""
-//        } else {
-//            this.role = json.get(Const.KC_ROLE).asString
-//        }
         if (json.get(Const.KC_NOTI_OFF) == null) {
             this.notioff = ""
         } else {
@@ -83,13 +85,13 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         } else {
             this.senderoff = json.get(Const.KC_SENDER_OFF).asString
         }
-        KeyChain.set(context, Const.KC_TOKEN, this.token)
+        if (this.token != "") KeyChain.set(context, Const.KC_TOKEN, this.token) //token이 빈값으로 내려오는 경우 KeyChain 건들지 말기
         KeyChain.set(context, Const.KC_USERID, this.userid)
+        KeyChain.set(context, Const.KC_PWD, this.pwd)
         KeyChain.set(context, Const.KC_USERKEY, this.userkey)
         KeyChain.set(context, Const.KC_USERNM, this.usernm)
         KeyChain.set(context, Const.KC_PASSKEY, this.passkey)
         KeyChain.set(context, Const.KC_ORGCD, this.orgcd)
-        //KeyChain.set(context, Const.KC_ROLE, this.role)
         KeyChain.set(context, Const.KC_NOTI_OFF, this.notioff)
         KeyChain.set(context, Const.KC_SOUND_OFF, this.soundoff)
         KeyChain.set(context, Const.KC_TM_FR, this.fr)
@@ -98,14 +100,14 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         KeyChain.set(context, Const.KC_SENDER_OFF, this.senderoff)
     }
 
-    constructor(context: Context) {
+    constructor(context: Context) { //키체인 읽어오기(get)
         this.token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
         this.userid = KeyChain.get(context, Const.KC_USERID) ?: ""
+        this.pwd = KeyChain.get(context, Const.KC_PWD) ?: ""
         this.userkey = KeyChain.get(context, Const.KC_USERKEY) ?: ""
         this.usernm = KeyChain.get(context, Const.KC_USERNM) ?: ""
         this.passkey = KeyChain.get(context, Const.KC_PASSKEY) ?: ""
         this.orgcd = KeyChain.get(context, Const.KC_ORGCD) ?: ""
-        //this.role = KeyChain.get(context, Const.KC_ROLE) ?: ""
         this.notioff = KeyChain.get(context, Const.KC_NOTI_OFF) ?: ""
         this.soundoff = KeyChain.get(context, Const.KC_SOUND_OFF) ?: ""
         this.fr = KeyChain.get(context, Const.KC_TM_FR) ?: ""

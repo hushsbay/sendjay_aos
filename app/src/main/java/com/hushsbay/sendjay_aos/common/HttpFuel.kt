@@ -20,7 +20,6 @@ object HttpFuel { //Fuel is single instance and uses gson(com.google.gson.JsonOb
     fun get(context: Context, url: String, param: List<Pair<String, Any?>>?=null): Deferred<JsonObject> {
         return scope.async {
             try {
-                //var url = if (url.startsWith("http")) url else KeyChain.get(context, Const.KC_MODE_SERVER).toString() + url
                 var url = if (url.startsWith("http")) url else Const.URL_SERVER + url
                 val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
                 val uid = KeyChain.get(context, Const.KC_USERID) ?: ""
@@ -28,7 +27,6 @@ object HttpFuel { //Fuel is single instance and uses gson(com.google.gson.JsonOb
                 val passkey = KeyChain.get(context, Const.KC_PASSKEY) ?: ""
                 //val cookieStr = "${Const.KC_USERID}=$uid; ${Const.KC_USERKEY}=$userkey; ${Const.KC_TOKEN}=$token; ${Const.KC_PASSKEY}=$passkey"
                 val cookieStr = "userid=$uid; token=$token"
-                //val paramAuth = arrayOf(com.github.kittinunf.fuel.core.Headers.COOKIE to cookieStr)
                 val paramAuth = arrayOf(Headers.CONTENT_TYPE to "application/json", Headers.COOKIE to cookieStr) //application/x-www-form-urlencoded (when CORS needed)
                 val noCache = listOf("noCache" to Util.getRnd().toString())
                 val paramNoCache = param?.plus(noCache) ?: noCache //if (param == null) noCache else param.plus(noCache)
@@ -44,11 +42,9 @@ object HttpFuel { //Fuel is single instance and uses gson(com.google.gson.JsonOb
 
     //val param = """{ svc_id : 'chk_version', id : '${Proj.APP_CHKID}', ver : '${BuildConfig.VERSION_NAME}' }""" => not worked
     //val param = "{ \"type\" : \"M\" }" //val param = """{ type : 'M' }""" => worked but never ok with jsonBody(param)
-    //fun post(context: Context, url: String, param: List<Pair<String, Any?>>?=null): Deferred<JsonObject> {
     fun post(context: Context, url: String, param: String?=null): Deferred<JsonObject> {
         return scope.async {
             try {
-                //var url = if (url.startsWith("http")) url else KeyChain.get(context, Const.KC_MODE_SERVER).toString() + url
                 var url = if (url.startsWith("http")) url else Const.URL_SERVER + url
                 val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
                 val uid = KeyChain.get(context, Const.KC_USERID) ?: ""
@@ -64,18 +60,16 @@ object HttpFuel { //Fuel is single instance and uses gson(com.google.gson.JsonOb
                 } else {
                     param
                 }
-                //val jsonStr = Fuel.post(url).body(paramReal).appendHeader(*paramAuth).timeout(Const.RESTFUL_TIMEOUT).awaitString()
-                //val json = Gson().fromJson(jsonStr, JsonObject::class.java)
-                //json
                 val (request, response, result) = Fuel.post(url).body(paramReal).appendHeader(*paramAuth).timeout(Const.RESTFUL_TIMEOUT).awaitStringResponseResult()
                 val (retStr, error) = result
                 if (error != null) throw Exception(error.toString())
+                /* 토큰이 서버에서 생성(갱신)되어 쿠키뿐만 아니라 응답본문에도 같이 내려오도록 했으므로 val json에 포함되니 이 부분은 막아도 됨 (참조용 - 지우지 말 것)
                 val cookie = response.headers["Set-Cookie"] //ArrayList<>
                 if (cookie.isNotEmpty()) { //unAuth일 경우 쿠키가 안내려올 경우도 고려해야 함. val cookieVal = cookie.first { it.startsWith("token=") }
                     cookie?.flatMap { HttpCookie.parse(it) }?.find { it.name == "token" }?.let {
                         KeyChain.set(context, Const.KC_TOKEN, it.value) //token만 keyChain에 값을 갱신해서 저장
                     }
-                }
+                }*/
                 val json = Gson().fromJson(retStr, JsonObject::class.java)
                 json
             } catch (e: Exception) {

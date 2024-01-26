@@ -104,7 +104,7 @@ class ChatService : Service() {
                 addAction(Intent.ACTION_SCREEN_OFF)
             }
             registerReceiver(screenReceiver, filter1)
-            uInfo = UserInfo(applicationContext)
+            uInfo = UserInfo(applicationContext) //KeyChain Get
             val winid = KeyChain.get(applicationContext, Const.KC_WINID)
             val userip = KeyChain.get(applicationContext, Const.KC_USERIP)
             SocketIO(applicationContext, uInfo, winid!!, userip!!) //kotlin invoke method : SocketIO.invoke()
@@ -429,7 +429,7 @@ class ChatService : Service() {
                             KeyChain.set(applicationContext, Const.KC_TM_TO, data.getString("to"))
                             KeyChain.set(applicationContext, Const.KC_BODY_OFF, data.getString("bodyoff"))
                             KeyChain.set(applicationContext, Const.KC_SENDER_OFF, data.getString("senderoff"))
-                            uInfo = UserInfo(applicationContext) //org.json not gson
+                            uInfo = UserInfo(applicationContext) //org.json not gson //KeyChain Get
                         }
                     } else if (kind == "noti") {
                         setRoomInfo(json, ev)

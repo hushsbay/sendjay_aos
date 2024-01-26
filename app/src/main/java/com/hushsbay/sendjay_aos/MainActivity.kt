@@ -448,7 +448,7 @@ class MainActivity : Activity() {
                 param.put("uid", KeyChain.get(applicationContext, Const.KC_USERID))
                 param.put("pwd", KeyChain.get(applicationContext, Const.KC_PWD))
                 param.put("autologin", "Y") //자동로그인 여부는 이 파라미터 + 서버에서의 deviceFrom과의 조합으로 판단함
-                authJson = HttpFuel.post(curContext, "/auth/login", null).await()
+                authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
                 if (authJson.get("code").asString == Const.RESULT_OK) {
                     uInfo = UserInfo(curContext, authJson)
                 } else if (authJson.get("code").asString == Const.RESULT_ERR_HTTPFUEL) {

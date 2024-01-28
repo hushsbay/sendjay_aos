@@ -276,16 +276,16 @@ class MainActivity : Activity() {
             procLogin(false) {
                 CoroutineScope(Dispatchers.Main).launch {
                     try {
-                        val winid1 = Util.getCurDateTimeStr() //Mobile
+                        val winid = Util.getRnd().toString() + Util.getCurDateTimeStr() //Mobile
                         val param = org.json.JSONObject()
                         param.put("type", "set_new")
                         param.put("userkey", uInfo.userkey)
-                        param.put("winid", winid1)
+                        param.put("winid", winid)
                         val json = HttpFuel.post(curContext, "/msngr/chk_redis", param.toString()).await()
                         if (json.get("code").asString != Const.RESULT_OK) {
                             Util.alert(curContext, json.get("msg").asString, logTitle)
                         } else {
-                            KeyChain.set(curContext, Const.KC_WINID, winid1)
+                            KeyChain.set(curContext, Const.KC_WINID, winid)
                             KeyChain.set(curContext, Const.KC_USERIP, json.get("userip").asString)
                             if (ChatService.serviceIntent == null) {
                                 val intentNew = Intent(curContext, ChatService::class.java)

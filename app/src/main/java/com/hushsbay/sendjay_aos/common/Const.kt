@@ -51,7 +51,7 @@ class Const {
         const val NOTI_CNT_END = 1010
         const val NOTI_ID_SUMMARY = NOTI_CNT_END + 1
         const val NOTI_ID_CHK_UNREAD = NOTI_ID_SUMMARY + 1
-        ///////// 아래에서 대문자는 DB(mysql)에서 내려오는 경우에만 json.get(~)에서 바로 편리하게 쓰려고 사용하는 것이며 그 외는 소문자임
+        ///////// 아래에서 대문자는 DB(mysql)에서 내려오는 경우에만 json.get(~)과 KeyChain에서 바로 편리하게 쓰려고 사용하는 것이며 그 외는 소문자임
         const val KC_USERID = "USER_ID" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
         const val KC_PWD = "PWD" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
         const val KC_USERNM = "USER_NM" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함

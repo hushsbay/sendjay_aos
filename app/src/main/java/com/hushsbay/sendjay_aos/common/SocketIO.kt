@@ -28,7 +28,7 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
         val option: IO.Options = IO.Options().apply {
             forceNew = false //default=false //See 'disconnect_prev_sock' in pmessage.js (on server)
             reconnection = false
-            query = "${Const.KC_TOKEN}=${uInfo.token}&${Const.KC_USERID}=${uInfo.userid}&${Const.KC_USERKEY}=${uInfo.userkey}&winid=${winid}&userip=${userip}"
+            query = "token=${uInfo.token}&userid=${uInfo.userid}&userkey=${uInfo.userkey}&winid=${winid}&userip=${userip}"
         }
         //sock = IO.socket(KeyChain.get(context, Const.KC_MODE_SOCK).toString(), option)
         sock = IO.socket(Const.URL_SOCK, option)

@@ -276,7 +276,7 @@ class MainActivity : Activity() {
             procLogin(false) {
                 CoroutineScope(Dispatchers.Main).launch {
                     try {
-                        val winid = Util.getRnd().toString() + Util.getCurDateTimeStr() //Mobile
+                        val winid = Util.getRnd().toString() + "_" + Util.getCurDateTimeStr()
                         val param = org.json.JSONObject()
                         param.put("type", "set_new")
                         param.put("userkey", uInfo.userkey)

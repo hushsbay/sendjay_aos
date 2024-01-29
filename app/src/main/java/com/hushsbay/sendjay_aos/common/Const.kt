@@ -23,10 +23,10 @@ class Const {
         const val DIR_PUBLIC = "/jquery/msngr"
         const val DIR_ROUTE = "/route"
         ////////////////////////////////////////////////
-        //const val URL_SERVER = "$URL_HOST:444" //444(https) -> 81(http) on AWS
-        //const val URL_SOCK = "$URL_HOST:3051/jay" //3051(https) -> 3051(http) on AWS
-        const val URL_SERVER = "$URL_HOST:443" //444(https) -> 81(http) on AWS
-        const val URL_SOCK = "$URL_HOST:3050/jay" //3051(https) -> 3051(http) on AWS
+        const val URL_SERVER = "$URL_HOST:444" //444(https) -> 81(http) on AWS
+        const val URL_SOCK = "$URL_HOST:3051/jay" //3051(https) -> 3051(http) on AWS
+        //const val URL_SERVER = "$URL_HOST:443" //444(https) -> 81(http) on AWS
+        //const val URL_SOCK = "$URL_HOST:3050/jay" //3051(https) -> 3051(http) on AWS
         const val URL_PUBLIC = URL_SERVER + DIR_PUBLIC
         //3050(web ops),3051(mobile ops) and 3060(web dev),3061(mobile dev)
         //서버 1대로 개발과 운영을 나누어 관리하기 위한 포트이며 정상적인 로드밸런싱이 필요한 실제 기업 환경에서는 사내 담당자와의 협의가 필요할 것임.

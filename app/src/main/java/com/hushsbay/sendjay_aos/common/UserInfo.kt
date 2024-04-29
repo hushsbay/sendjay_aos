@@ -14,6 +14,9 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
     var usernm: String
     var passkey: String
     var orgcd: String
+    var orgnm: String
+    var toporgcd: String
+    var toporgnm: String
 
     var notioff: String
     var soundoff: String
@@ -55,6 +58,21 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         } else {
             this.orgcd = json.get(Const.KC_ORGCD).asString
         }
+        if (json.get(Const.KC_ORGNM) == null) {
+            this.orgnm = ""
+        } else {
+            this.orgnm = json.get(Const.KC_ORGNM).asString
+        }
+        if (json.get(Const.KC_TOPORGCD) == null) {
+            this.toporgcd = ""
+        } else {
+            this.toporgcd = json.get(Const.KC_TOPORGCD).asString
+        }
+        if (json.get(Const.KC_TOPORGNM) == null) {
+            this.toporgnm = ""
+        } else {
+            this.toporgnm = json.get(Const.KC_TOPORGNM).asString
+        }
         if (json.get(Const.KC_NOTI_OFF) == null) {
             this.notioff = ""
         } else {
@@ -92,6 +110,9 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         KeyChain.set(context, Const.KC_USERNM, this.usernm)
         KeyChain.set(context, Const.KC_PASSKEY, this.passkey)
         KeyChain.set(context, Const.KC_ORGCD, this.orgcd)
+        KeyChain.set(context, Const.KC_ORGNM, this.orgnm)
+        KeyChain.set(context, Const.KC_TOPORGCD, this.toporgcd)
+        KeyChain.set(context, Const.KC_TOPORGNM, this.toporgnm)
         KeyChain.set(context, Const.KC_NOTI_OFF, this.notioff)
         KeyChain.set(context, Const.KC_SOUND_OFF, this.soundoff)
         KeyChain.set(context, Const.KC_TM_FR, this.fr)
@@ -108,6 +129,9 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         this.usernm = KeyChain.get(context, Const.KC_USERNM) ?: ""
         this.passkey = KeyChain.get(context, Const.KC_PASSKEY) ?: ""
         this.orgcd = KeyChain.get(context, Const.KC_ORGCD) ?: ""
+        this.orgnm = KeyChain.get(context, Const.KC_ORGNM) ?: ""
+        this.toporgcd = KeyChain.get(context, Const.KC_TOPORGCD) ?: ""
+        this.toporgnm = KeyChain.get(context, Const.KC_TOPORGNM) ?: ""
         this.notioff = KeyChain.get(context, Const.KC_NOTI_OFF) ?: ""
         this.soundoff = KeyChain.get(context, Const.KC_SOUND_OFF) ?: ""
         this.fr = KeyChain.get(context, Const.KC_TM_FR) ?: ""

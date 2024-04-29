@@ -20,8 +20,8 @@ class Const {
         ////////////////////////////////////////////////for distinguishing dev and ops (through KeyChain when app starts)
 //        const val SUFFIX_DEV = "devx" //for developer to check by userid if he want to connect to dev mode not ops(production) mode
         const val URL_HOST = "https://hushsbay.com"
-        const val DIR_PUBLIC = "/jquery/msngr"
-        const val DIR_ROUTE = "/route"
+        const val DIR_PUBLIC = "/app/msngr"
+        const val DIR_ROUTE = "/msngr"
         ////////////////////////////////////////////////
         const val URL_SERVER = "$URL_HOST:444" //444(https) -> 81(http) on AWS
         const val URL_SOCK = "$URL_HOST:3051/jay" //3051(https) -> 3051(http) on AWS

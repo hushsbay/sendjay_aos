@@ -281,7 +281,7 @@ class MainActivity : Activity() {
                         param.put("type", "set_new")
                         param.put("userkey", uInfo.userkey)
                         param.put("winid", winid)
-                        val json = HttpFuel.post(curContext, "/msngr/chk_redis", param.toString()).await()
+                        val json = HttpFuel.post(curContext, "${Const.DIR_ROUTE}/chk_redis", param.toString()).await()
                         if (json.get("code").asString != Const.RESULT_OK) {
                             Util.alert(curContext, json.get("msg").asString, logTitle)
                         } else {

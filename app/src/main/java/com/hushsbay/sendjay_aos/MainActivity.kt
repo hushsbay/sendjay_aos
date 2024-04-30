@@ -40,7 +40,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
 
-
+//20240430
 //socket.io는 json(org.json.JSONObect) 사용. Fuel은 gson(com.google.gson.JsonObject) 사용
 //onCreate -> onStart -> onResume -> onPause -> onStop -> onDestroy
 class MainActivity : Activity() {

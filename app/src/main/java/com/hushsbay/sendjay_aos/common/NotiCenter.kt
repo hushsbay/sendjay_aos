@@ -61,7 +61,10 @@ object NotiCenter {
             var title = if (mapRoomInfo[roomid] != null) {
                 mapRoomInfo[roomid]?.get("roomtitle").toString()
             } else {
-                val json = HttpFuel.get(context, "${Const.DIR_ROUTE}/get_roominfo", listOf("roomid" to roomid)).await()
+                //val json = HttpFuel.get(context, "${Const.DIR_ROUTE}/get_roominfo", listOf("roomid" to roomid)).await()
+                val param = org.json.JSONObject()
+                param.put("roomid", roomid)
+                val json = HttpFuel.post(context, "/msngr/get_roominfo", param.toString()).await()
                 if (json.get("code").asString == Const.RESULT_OK) {
                     getRoomInfo(json, roomid)["roomtitle"].toString()
                 } else {
@@ -81,8 +84,12 @@ object NotiCenter {
                 val screenState = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
                 val delaySec: Long = if (screenState != "on") gapScreenOffOnDualMode.toLong() else gapScreenOnOnDualMode.toLong()
                 delay(delaySec) //Handler().postDelayed({ ... }, delaySec)
-                val param = listOf("msgid" to msgid, "roomid" to roomid)
-                val json = HttpFuel.get(context, "${Const.DIR_ROUTE}/qry_unread", param).await()
+                //val param = listOf("msgid" to msgid, "roomid" to roomid)
+                //val json = HttpFuel.get(context, "${Const.DIR_ROUTE}/qry_unread", param).await()
+                val param = org.json.JSONObject()
+                param.put("msgid", msgid)
+                param.put("roomid", roomid)
+                val json = HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
                 if (json.get("code").asString == Const.RESULT_OK) {
                     val list = json.getAsJsonArray("list")
                     if (list.size() > 0) {

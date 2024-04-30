@@ -233,7 +233,10 @@ class ChatService : Service() {
             try {
                 val data = json.getJSONObject("data")
                 val roomid = data.getString("roomid")
-                val jsonRI = HttpFuel.get(applicationContext, "${Const.DIR_ROUTE}/get_roominfo", listOf("roomid" to roomid)).await()
+                //val jsonRI = HttpFuel.get(applicationContext, "${Const.DIR_ROUTE}/get_roominfo", listOf("roomid" to roomid)).await()
+                val param = org.json.JSONObject()
+                param.put("roomid", roomid)
+                val jsonRI = HttpFuel.post(applicationContext, "/msngr/get_roominfo", param.toString()).await()
                 if (jsonRI.get("code").asString == Const.RESULT_OK) {
                     NotiCenter.getRoomInfo(jsonRI, roomid)
                 } else {
@@ -288,7 +291,8 @@ class ChatService : Service() {
                 }
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        val json = HttpFuel.get(applicationContext, "${Const.DIR_ROUTE}/qry_unread", null).await()
+                        //val json = HttpFuel.get(applicationContext, "${Const.DIR_ROUTE}/qry_unread", null).await()
+                        val json = HttpFuel.post(applicationContext, "/msngr/qry_unread", null).await()
                         if (json.get("code").asString == Const.RESULT_OK) {
                             val list = json.getAsJsonArray("list")
                             if (list.size() == 0) return@launch
@@ -398,8 +402,11 @@ class ChatService : Service() {
                     }
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
-                            val param = listOf("type" to "U")
-                            HttpFuel.get(applicationContext, "${Const.DIR_ROUTE}/qry_unread", param).await()
+                            //val param = listOf("type" to "U")
+                            //HttpFuel.get(applicationContext, "${Const.DIR_ROUTE}/qry_unread", param).await()
+                            val param = org.json.JSONObject()
+                            param.put("type", "U")
+                            HttpFuel.post(applicationContext, "/msngr/qry_unread", param.toString()).await()
                         } catch (e: Exception) {
                             //do nothing
                         }

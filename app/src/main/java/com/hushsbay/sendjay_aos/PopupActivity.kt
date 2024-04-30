@@ -74,12 +74,14 @@ class PopupActivity : Activity() {
             KeyChain.set(curContext, Const.KC_WEBVIEW_POPUP_VERSION, popup_version)
         }
         binding.btnRetry.setOnClickListener {
-            procAutoLogin() { setupWebViewPopup(gOrigin) }
+            //procAutoLogin() { setupWebViewPopup(gOrigin) }
+            setupWebViewPopup(gOrigin) //임시 - 로그인 체크 필요
         }
         binding.btnSave.setOnClickListener {
             Util.loadUrl(binding.wvPopup, "save")
         }
-        procAutoLogin() { setupWebViewPopup(gOrigin) }
+        //procAutoLogin() { setupWebViewPopup(gOrigin) }
+        setupWebViewPopup(gOrigin) //임시 - 로그인 체크 필요
     }
 
     override fun onDestroy() {
@@ -94,7 +96,8 @@ class PopupActivity : Activity() {
             try {
                 val autoLogin = KeyChain.get(curContext, Const.KC_AUTOLOGIN) ?: ""
                 if (autoLogin == "Y") {
-                    authJson = HttpFuel.get(curContext, "${Const.DIR_ROUTE}/login/verify").await()
+                    //authJson = HttpFuel.get(curContext, "${Const.DIR_ROUTE}/login/verify").await()
+                    authJson = HttpFuel.post(curContext, "/auth/login", null).await()
                     if (authJson.get("code").asString == Const.RESULT_OK) {
                         uInfo = UserInfo(curContext, authJson) //KeyChain Get
                         callback()

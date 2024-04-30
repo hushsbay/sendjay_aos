@@ -21,7 +21,7 @@ class Const {
 //        const val SUFFIX_DEV = "devx" //for developer to check by userid if he want to connect to dev mode not ops(production) mode
         const val URL_HOST = "https://hushsbay.com"
         const val DIR_PUBLIC = "/app/msngr"
-        const val DIR_ROUTE = "/msngr"
+        //const val DIR_ROUTE = "/msngr"
         ////////////////////////////////////////////////
         const val URL_SERVER = "$URL_HOST:444" //444(https) -> 81(http) on AWS
         const val URL_SOCK = "$URL_HOST:3051/jay" //3051(https) -> 3051(http) on AWS
@@ -32,7 +32,7 @@ class Const {
         //서버 1대로 개발과 운영을 나누어 관리하기 위한 포트이며 정상적인 로드밸런싱이 필요한 실제 기업 환경에서는 사내 담당자와의 협의가 필요할 것임.
         ////////////////////////////////////////////////
         const val URL_JAY = "${DIR_PUBLIC}/" //means public page load
-        const val URL_ROUTE = "${DIR_ROUTE}/" //means restful(=ajax)
+        //const val URL_ROUTE = "${DIR_ROUTE}/" //means restful(=ajax)
         ////////////////////////////////////////////////
         const val PAGE_MAIN = "/main.html"
         const val PAGE_ROOM = "/chat.html"

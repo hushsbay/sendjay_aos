@@ -96,7 +96,7 @@ class MainActivity : Activity() {
         binding.wvMain.setBackgroundColor(0) //make it transparent (if not, white background will be shown)
         WebView.setWebContentsDebuggingEnabled(true) //for debug
         curContext = this@MainActivity
-        NotiCenter(curContext, packageName) //kotlin invoke method : NotiCenter.invoke() //see ChatService.kt also
+        NotiCenter(curContext, packageName) //kotlin invoke method : NotiCenter.invoke() //see ChatService.kt also //ChatService.kt onCreate()에서도 실행하므로 막아도 될 듯 하나 일단 두기
         isOnCreate = true
         stopServiceByLogout = false
         roomidForChatService = ""

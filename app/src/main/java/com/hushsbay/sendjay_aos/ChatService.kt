@@ -92,7 +92,7 @@ class ChatService : Service() {
                     intent?.let {
                         if (it.action == Intent.ACTION_SCREEN_ON) {
                             KeyChain.set(applicationContext, Const.KC_SCREEN_STATE, "on")
-                            Util.connectSockWithCallback(applicationContext, connManager!!)
+                            Util.connectSockWithCallback(applicationContext, connManager!!) //SocketIO.connect()
                         } else if (it.action == Intent.ACTION_SCREEN_OFF) {
                             KeyChain.set(applicationContext, Const.KC_SCREEN_STATE, "off")
                         }
@@ -260,7 +260,7 @@ class ChatService : Service() {
                 json.put("returnTo", it.returnTo ?: "parent")
                 json.put("returnToAnother", it.returnToAnother)
                 val procMsg = it.procMsg
-                Util.connectSockWithCallback(applicationContext, connManager!!) {
+                Util.connectSockWithCallback(applicationContext, connManager!!) { //SocketIO.connect()
                     if (procMsg == true && it.get("code").asString != Const.RESULT_OK) {
                         Toast.makeText(applicationContext, Const.TITLE + ": " + it.get("msg").asString, Toast.LENGTH_LONG).show()
                         return@connectSockWithCallback
@@ -466,7 +466,7 @@ class ChatService : Service() {
                             if (screenState == "on") {
                                 val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
                                 if (autoLogin == "Y") {
-                                    if (!isBeingSockChecked) Util.connectSockWithCallback(applicationContext, connManager!!)
+                                    if (!isBeingSockChecked) Util.connectSockWithCallback(applicationContext, connManager!!) //SocketIO.connect()
                                 }
                             }
                         } catch (e: InterruptedException) {

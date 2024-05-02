@@ -15,6 +15,7 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.*
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.core.content.FileProvider
 import com.github.kittinunf.fuel.Fuel
 import com.google.gson.JsonObject
@@ -252,7 +253,7 @@ class MainActivity : Activity() {
                     if (requestCode == MEMBER_RESULT) {
                         Util.loadUrl(binding.wvMain, "newchat", obj)
                     } else {
-                        Util.loadUrl(binding.wvRoom, "invite", obj)
+                        Util.loadUrl(binding.wvRoom, "invite", obj) //chat.html의 invite 함수 호출
                     }
                 }
             } else {

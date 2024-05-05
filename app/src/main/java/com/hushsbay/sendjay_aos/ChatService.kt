@@ -182,6 +182,7 @@ class ChatService : Service() {
     private fun initDeamon() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
+            //SimpleWorker를 막은 건 1) AlarmReceiver와 드물게 충돌 한번 났음 2) 굳이 없어도 AlarmReceiver만으로도 충분히 커버하므로 막음
             //val workManager = WorkManager.getInstance(applicationContext) //https://tristan91.tistory.com/480
             //workManager.cancelAllWork()
             //val periodicRequest = PeriodicWorkRequest.Builder(SimpleWorker::class.java, 15, TimeUnit.MINUTES).build() //minimum 15 minutes
@@ -477,12 +478,12 @@ class ChatService : Service() {
                         try {
                             val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
                             Util.log(logTitle, "client_socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )
-                            if (screenState == "on") {
+                            //if (screenState == "on") {
                                 val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
                                 if (autoLogin == "Y") {
                                     if (!isBeingSockChecked) Util.connectSockWithCallback(applicationContext, connManager!!) //SocketIO.connect()
                                 }
-                            }
+                            //}
                         } catch (e: InterruptedException) {
                             logger.error("$logTitle: e ${e.toString()}")
                             Util.log(logTitle, "(OK) thread interrupted")

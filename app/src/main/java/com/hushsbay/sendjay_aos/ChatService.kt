@@ -119,6 +119,7 @@ class ChatService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int { //onCreate -> onStartCommand
         serviceIntent = intent
         return START_STICKY //https://stackoverflow.com/questions/25716864/why-is-my-service-started-twice
+        //return START_REDELIVER_INTENT
     }
 
     override fun onBind(intent: Intent?): IBinder? {
@@ -127,6 +128,8 @@ class ChatService : Service() {
 
     override fun onTaskRemoved(rootIntent: Intent?) { //See android:stopWithTask="false" in AndroidManifest.xml
         super.onTaskRemoved(rootIntent)
+        Util.log("@@@@@", "restartChatServiceAAA")
+        //stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf() //and restartChatService()
     }
 
@@ -134,8 +137,10 @@ class ChatService : Service() {
     //To explicitly stop a service, call stopService from any Context, or stopSelf from the Service.
     override fun onDestroy() {
         super.onDestroy()
+        Toast.makeText(applicationContext, Const.TITLE + ": Service is destrying..restarting..", Toast.LENGTH_LONG).show()
+        Util.log("$$$$$$$$", "restartChatServiceBBB")
+        //if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt()
         state = Const.ServiceState.STOPPED
-        logger.error("onDestroy")
         restartChatService()
         unregisterReceiver(screenReceiver)
     }
@@ -143,6 +148,7 @@ class ChatService : Service() {
     private fun startForegroundWithNotification() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
+            Util.log("startForegroundWithNotification")
             shouldThreadStop = false
             var manager: NotificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             var channel: NotificationChannel = NotificationChannel(Const.NOTICHANID_FOREGROUND, Const.NOTICHANID_FOREGROUND, NotificationManager.IMPORTANCE_LOW)
@@ -163,7 +169,7 @@ class ChatService : Service() {
             val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
             builder.setContentIntent(pendingIntent)
             val notification = builder.build()
-            startForeground(Const.NOTI_ID_FOREGROUND_SERVICE, notification) //id should not be zero
+            startForeground(Const.NOTI_ID_FOREGROUND_SERVICE, notification) //id should not be zero. startForegroundService() 호출이후 대략 5초안에 호출하지 않으면 오류 발생
             //Timer().schedule(mainTask(), 1000) //or postDelayed
         } catch (e: Exception) {
             logger.error("$logTitle: ${e.toString()}")
@@ -176,10 +182,10 @@ class ChatService : Service() {
     private fun initDeamon() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
-            val workManager = WorkManager.getInstance(applicationContext) //https://tristan91.tistory.com/480
-            workManager.cancelAllWork()
-            val periodicRequest = PeriodicWorkRequest.Builder(SimpleWorker::class.java, 15, TimeUnit.MINUTES).build() //minimum 15 minutes
-            workManager.enqueue(periodicRequest)
+            //val workManager = WorkManager.getInstance(applicationContext) //https://tristan91.tistory.com/480
+            //workManager.cancelAllWork()
+            //val periodicRequest = PeriodicWorkRequest.Builder(SimpleWorker::class.java, 15, TimeUnit.MINUTES).build() //minimum 15 minutes
+            //workManager.enqueue(periodicRequest)
             val r: Runnable = Daemon()
             thread = Thread(r)
             thread!!.setDaemon(true)
@@ -197,20 +203,20 @@ class ChatService : Service() {
     private fun restartChatService() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
-            logger.error("restartChatService0")
-            if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt()
+            Util.log(logTitle, "restartChatService0")
+            //if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt()
             shouldThreadStop = true
             disposable?.dispose()
             if (SocketIO.sock != null && SocketIO.sock!!.connected()) SocketIO.sock!!.disconnect()
-            logger.error("restartChatService1")
+            Util.log(logTitle, "restartChatService01")
             if (MainActivity.stopServiceByLogout || cut_mobile) {
                 serviceIntent = null
                 state = Const.ServiceState.LOGOUTED
                 cut_mobile = false
-                logger.error("restartChatService2")
+                Util.log(logTitle, "restartChatService02")
                 return
             }
-            logger.error("restartChatService3")
+            Util.log(logTitle, "restartChatService03")
             curState_sock = false
             val calendar = Calendar.getInstance()
             calendar.timeInMillis = System.currentTimeMillis()
@@ -219,7 +225,7 @@ class ChatService : Service() {
             val sender = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
             val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager[AlarmManager.RTC_WAKEUP, calendar.timeInMillis] = sender
-            logger.error("restartChatService4")
+            Util.log(logTitle, "restartChatService04")
         } catch (e: Exception) {
             logger.error("$logTitle: ${e.toString()}")
             Util.log(logTitle, e.toString())
@@ -468,8 +474,9 @@ class ChatService : Service() {
             try {
                 while (!shouldThreadStop) {
                     synchronized(this) {
-                        try { //Util.log(logTitle, "client_socket_connected_check : ${SocketIO.sock!!.connected()}")
+                        try {
                             val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
+                            Util.log(logTitle, "client_socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )
                             if (screenState == "on") {
                                 val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
                                 if (autoLogin == "Y") {

@@ -58,7 +58,7 @@ class Util {
 
         fun log(title: String?=null, vararg exStr: String) {
             var titleDisp = title ?: Const.TITLE
-            if (!titleDisp.startsWith(Const.TITLE)) titleDisp = Const.TITLE + "|" + titleDisp
+            //if (!titleDisp.startsWith(Const.TITLE)) titleDisp = Const.TITLE + "|" + titleDisp
             var str = ""
             for ((idx, item) in exStr.withIndex()) {
                 if (idx == 0) {
@@ -67,7 +67,7 @@ class Util {
                     str += ", $item"
                 }
             }
-            Log.i("$titleDisp ###############", str)
+            Log.i("$titleDisp ########", str)
         }
 
         fun procException(context: Activity, e: Exception, title: String?=null) {

@@ -100,7 +100,7 @@ class Util {
             if (ChatService.isBeingSockChecked) return
             ChatService.isBeingSockChecked = true
             CoroutineScope(Dispatchers.Main).launch {
-                try {
+                try { //Toast.makeText(context, Const.TITLE + ": connectSockWithCallback", Toast.LENGTH_LONG).show()
                     var json = SocketIO.connect(context, connManager).await()
                     val code = json.get("code").asString
                     if (code == Const.RESULT_OK) {

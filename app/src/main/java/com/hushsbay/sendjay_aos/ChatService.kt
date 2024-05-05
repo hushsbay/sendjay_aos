@@ -139,7 +139,7 @@ class ChatService : Service() {
         super.onDestroy()
         Toast.makeText(applicationContext, Const.TITLE + ": Service is destrying..restarting..", Toast.LENGTH_LONG).show()
         Util.log("$$$$$$$$", "restartChatServiceBBB")
-        //if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt()
+        if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt()
         state = Const.ServiceState.STOPPED
         restartChatService()
         unregisterReceiver(screenReceiver)

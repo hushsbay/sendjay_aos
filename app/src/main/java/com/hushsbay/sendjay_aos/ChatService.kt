@@ -182,11 +182,19 @@ class ChatService : Service() {
     private fun initDeamon() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
-            //SimpleWorker를 막은 건 1) AlarmReceiver와 드물게 충돌 한번 났음 2) 굳이 없어도 AlarmReceiver만으로도 충분히 커버하므로 막음
-            //val workManager = WorkManager.getInstance(applicationContext) //https://tristan91.tistory.com/480
-            //workManager.cancelAllWork()
-            //val periodicRequest = PeriodicWorkRequest.Builder(SimpleWorker::class.java, 15, TimeUnit.MINUTES).build() //minimum 15 minutes
-            //workManager.enqueue(periodicRequest)
+            //SimpleWorker 작동 결과
+            //1. ChatService가 살아 있는데 스크린오프 상태로 간 경우 서비스가 제한되는데 SimpleWorker가 1초 안되게 주기적으로 실행되어
+            //   서비스가 살아나 그동안 밀렸던 톡 도착 노티가 표시됨
+            //2. ChatService를 강제로 죽이고 스크린오프 상태로 하고 배터리 설정도 기본으로 한 경우도 노티 문제없음
+            //** 문제는 SimpleWorker가 최소 주기가 15분이라서 너무 길다는 것임. 그렇다고, FCM을 적용하는 것은 노력이 많이 드는 이슈임
+            //** SimpleWorker를 여러개 운영해서 1분에 하나씩 실행시키는 것은 더욱 힘들어 보임
+            val workManager = WorkManager.getInstance(applicationContext) //https://tristan91.tistory.com/480
+            workManager.cancelAllWork()
+            val periodicRequest = PeriodicWorkRequest.Builder(SimpleWorker::class.java, 15, TimeUnit.MINUTES).build() //minimum 15 minutes
+            workManager.enqueue(periodicRequest)
+            //따라서, 아래와 같이 AlarmManager의 setExactAndAllowWhileIdle()를 사용함 (최소 1분 간격으로 Doze(Idle)모드에서도 정확도를 보임)
+            //https://velog.io/@thevlakk/Android-AlarmManager-%ED%8C%8C%ED%97%A4%EC%B9%98%EA%B8%B0-1
+
             val r: Runnable = Daemon()
             thread = Thread(r)
             thread!!.setDaemon(true)

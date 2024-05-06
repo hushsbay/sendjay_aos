@@ -26,7 +26,7 @@ class AlarmReceiver : BroadcastReceiver() {
             //<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
             Util.log("AlarmReceiver", "startForegroundService")
         } else {
-            Util.log("AlarmReceiver", "ChatService.state is not stooped => " + Const.ServiceState.STOPPED)
+            Util.log("AlarmReceiver", "ChatService.state is not stopped.")
         }
     }
 

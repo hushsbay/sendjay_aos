@@ -1,20 +1,35 @@
 package com.hushsbay.sendjay_aos
 
+import android.annotation.SuppressLint
+import android.app.AlarmManager
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
 import com.hushsbay.sendjay_aos.common.Const
 import com.hushsbay.sendjay_aos.common.Util
+import java.util.Calendar
 
 class AlarmReceiver : BroadcastReceiver() {
 
+    @SuppressLint("ScheduleExactAlarm")
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED) {
             Util.log("AlarmReceiver", "ACTION_BOOT_COMPLETED")
             Toast.makeText(context, "ACTION_BOOT_COMPLETED", Toast.LENGTH_LONG).show()
         } else { //receives right after ChatService killed
-            Util.log("AlarmReceiver", intent.action.toString()) //intent.action.toString() = null 현재로선 구분ㅁ해 가져올 것 없음
+            Util.log("AlarmReceiver", intent.action.toString()) //intent.action.toString() = null or one_minute_check
+            if (intent.action.toString() == "one_minute_check") {
+                val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                val nextIntent = Intent(context, AlarmReceiver::class.java)
+                nextIntent.action = "one_minute_check"
+                val pendingIntent = PendingIntent.getBroadcast(context,1, nextIntent, PendingIntent.FLAG_IMMUTABLE) // or PendingIntent.FLAG_UPDATE_CURRENT)
+                val calendar = Calendar.getInstance()
+                calendar.timeInMillis = System.currentTimeMillis()
+                calendar.add(Calendar.SECOND, 60)
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent) //권한 설정 필요
+            }
         }
         if (ChatService.state == Const.ServiceState.STOPPED) {
             val intentNew = Intent(context, ChatService::class.java)

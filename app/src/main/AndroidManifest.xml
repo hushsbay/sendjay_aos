@@ -16,7 +16,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" /><!-- AlarmReceiver.kt 오류해결내용 참조 -->
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" /><!-- DOZE모드나 APP STANDBY안되게 해서 백그라운드서비스에서 네트워킹 가능하게 함 -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" /><!--https://diordna91.medium.com/android-12-%EC%A0%95%ED%99%95%ED%95%9C-%EC%95%8C%EB%9E%8C-%EA%B6%8C%ED%95%9C-d92f878de695-->
+    <!--<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" /> DOZE모드나 APP STANDBY안되게 해서 백그라운드서비스에서 네트워킹 가능하게 함 -->
 
     <!-- allowBackup=false/android:fullBackupContent=false : App data is removed when uninstalled. 앱 제거시 데이터도 모두 제거됨 -->
     <application

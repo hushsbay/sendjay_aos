@@ -1,5 +1,6 @@
 package com.hushsbay.sendjay_aos
 
+import android.annotation.SuppressLint
 import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -137,7 +138,7 @@ class ChatService : Service() {
     //To explicitly stop a service, call stopService from any Context, or stopSelf from the Service.
     override fun onDestroy() {
         super.onDestroy()
-        Toast.makeText(applicationContext, Const.TITLE + ": Service is destrying..restarting..", Toast.LENGTH_LONG).show()
+        //Toast .makeText(applicationContext, Const.TITLE + ": Service is destrying..restarting..", Toast.LENGTH_LONG).show()
         Util.log("$$$$$$$$", "restartChatServiceBBB")
         if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt()
         state = Const.ServiceState.STOPPED
@@ -179,6 +180,7 @@ class ChatService : Service() {
         }
     }
 
+    @SuppressLint("ScheduleExactAlarm")
     private fun initDeamon() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
@@ -188,21 +190,24 @@ class ChatService : Service() {
             //2. ChatService를 강제로 죽이고 스크린오프 상태로 하고 배터리 설정도 기본으로 한 경우도 노티 문제없음
             //** 문제는 SimpleWorker가 최소 주기가 15분이라서 너무 길다는 것임. 그렇다고, FCM을 적용하는 것은 노력이 많이 드는 이슈임
             //** SimpleWorker를 여러개 운영해서 1분에 하나씩 실행시키는 것은 더욱 힘들어 보임
+            /* 아래 AlarmManager 사용으로 막음
             val workManager = WorkManager.getInstance(applicationContext) //https://tristan91.tistory.com/480
             workManager.cancelAllWork()
             val periodicRequest = PeriodicWorkRequest.Builder(SimpleWorker::class.java, 15, TimeUnit.MINUTES).build() //minimum 15 minutes
-            workManager.enqueue(periodicRequest)
+            workManager.enqueue(periodicRequest)*/
             //따라서, 아래와 같이 AlarmManager의 setExactAndAllowWhileIdle()를 사용함 (최소 1분 간격으로 Doze(Idle)모드에서도 정확도를 보임)
             //https://velog.io/@thevlakk/Android-AlarmManager-%ED%8C%8C%ED%97%A4%EC%B9%98%EA%B8%B0-1
-
+            //권한 허용 필요 : https://diordna91.medium.com/android-12-%EC%A0%95%ED%99%95%ED%95%9C-%EC%95%8C%EB%9E%8C-%EA%B6%8C%ED%95%9C-d92f878de695
+            //일단, 수동으로 권한 주고 위 SimpleWorker와 동일한 동작을 하는지 SimpleWorker를 막고 해보니 문제없이 잘됨 (SimpleWorker를 굳이 수행할 이유가 없어 보여 막음)
             val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val nextIntent = Intent(applicationContext, AlarmReceiver::class.java)
+            nextIntent.action = "one_minute_check"
             val pendingIntent = PendingIntent.getBroadcast(applicationContext,1, nextIntent, PendingIntent.FLAG_IMMUTABLE) // or PendingIntent.FLAG_UPDATE_CURRENT)
             val calendar = Calendar.getInstance()
             calendar.timeInMillis = System.currentTimeMillis()
             calendar.add(Calendar.SECOND, 60)
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent) //권한 설정 필요
-
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             val r: Runnable = Daemon()
             thread = Thread(r)
             thread!!.setDaemon(true)
@@ -239,6 +244,7 @@ class ChatService : Service() {
             calendar.timeInMillis = System.currentTimeMillis()
             calendar.add(Calendar.SECOND, SEC_DURING_RESTART)
             val intent = Intent(this, AlarmReceiver::class.java)
+            intent.action = "restart_service"
             val sender = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
             val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager[AlarmManager.RTC_WAKEUP, calendar.timeInMillis] = sender

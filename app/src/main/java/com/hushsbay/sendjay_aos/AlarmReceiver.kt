@@ -14,7 +14,7 @@ class AlarmReceiver : BroadcastReceiver() {
             Util.log("AlarmReceiver", "ACTION_BOOT_COMPLETED")
             Toast.makeText(context, "ACTION_BOOT_COMPLETED", Toast.LENGTH_LONG).show()
         } else { //receives right after ChatService killed
-            Util.log("AlarmReceiver", intent.action.toString())
+            Util.log("AlarmReceiver", intent.action.toString()) //intent.action.toString() = null 현재로선 구분ㅁ해 가져올 것 없음
         }
         if (ChatService.state == Const.ServiceState.STOPPED) {
             val intentNew = Intent(context, ChatService::class.java)

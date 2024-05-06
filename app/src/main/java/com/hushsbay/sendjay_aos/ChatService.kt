@@ -195,6 +195,14 @@ class ChatService : Service() {
             //따라서, 아래와 같이 AlarmManager의 setExactAndAllowWhileIdle()를 사용함 (최소 1분 간격으로 Doze(Idle)모드에서도 정확도를 보임)
             //https://velog.io/@thevlakk/Android-AlarmManager-%ED%8C%8C%ED%97%A4%EC%B9%98%EA%B8%B0-1
 
+            val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val nextIntent = Intent(applicationContext, AlarmReceiver::class.java)
+            val pendingIntent = PendingIntent.getBroadcast(applicationContext,1, nextIntent, PendingIntent.FLAG_IMMUTABLE) // or PendingIntent.FLAG_UPDATE_CURRENT)
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = System.currentTimeMillis()
+            calendar.add(Calendar.SECOND, 60)
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent) //권한 설정 필요
+
             val r: Runnable = Daemon()
             thread = Thread(r)
             thread!!.setDaemon(true)
@@ -213,7 +221,7 @@ class ChatService : Service() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
             Util.log(logTitle, "restartChatService0")
-            //if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt()
+            //if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt() //위로 이동
             shouldThreadStop = true
             disposable?.dispose()
             if (SocketIO.sock != null && SocketIO.sock!!.connected()) SocketIO.sock!!.disconnect()

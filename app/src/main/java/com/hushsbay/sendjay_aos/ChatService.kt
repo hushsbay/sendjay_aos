@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.ServiceInfo
 import android.media.AudioManager
 import android.net.ConnectivityManager
 import android.os.IBinder
@@ -170,7 +171,7 @@ class ChatService : Service() {
             val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
             builder.setContentIntent(pendingIntent)
             val notification = builder.build()
-            startForeground(Const.NOTI_ID_FOREGROUND_SERVICE, notification) //id should not be zero. startForegroundService() 호출이후 대략 5초안에 호출하지 않으면 오류 발생
+            startForeground(Const.NOTI_ID_FOREGROUND_SERVICE, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC) //id should not be zero. startForegroundService() 호출이후 대략 5초안에 호출하지 않으면 오류 발생
             //Timer().schedule(mainTask(), 1000) //or postDelayed
         } catch (e: Exception) {
             logger.error("$logTitle: ${e.toString()}")

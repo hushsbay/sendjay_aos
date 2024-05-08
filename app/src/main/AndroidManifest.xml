@@ -69,7 +69,9 @@
         <!--            android:launchMode="singleTop"-->
         <!--            android:configChanges="keyboardHidden|orientation|screenSize">-->
         <!--        </activity>-->
-        <service android:name=".ChatService"
+        <service
+            android:name=".ChatService"
+            android:foregroundServiceType="dataSync"
             android:stopWithTask="false">
         </service><!-- stopWithTask : see onTaskRemoved() in ChatService.kt -->
         <receiver android:name=".AlarmReceiver" android:exported="true" android:enabled="true">

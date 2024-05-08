@@ -38,7 +38,6 @@ import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
 
-//20240430
 //socket.io는 json(org.json.JSONObect) 사용. Fuel은 gson(com.google.gson.JsonObject) 사용
 //onCreate -> onStart -> onResume -> onPause -> onStop -> onDestroy
 class MainActivity : Activity() {
@@ -136,7 +135,6 @@ class MainActivity : Activity() {
         //Battery Optimization (with socket.io)의 경우, 절전모드나 대기모드에서 간헐적인 disconnection이 발생함.
         //그럼에도 불구하고, FCM을 이용하면 instant messeging을 구현 가능함. 그러나, FCM은 100% 성공적이고 지연없는 배달을 보장해 주지 않음.
         start() //with Battery Optimization
-        logger.info("test@@@@@@@@@@@@@@@@")
     }
 
     override fun onNewIntent(intent: Intent?) { //onNewIntent (from Notification) -> onResume (no onCreate)

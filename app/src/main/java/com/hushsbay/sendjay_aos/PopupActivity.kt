@@ -74,6 +74,7 @@ class PopupActivity : Activity() {
             KeyChain.set(curContext, Const.KC_WEBVIEW_POPUP_VERSION, popup_version)
         }
         binding.btnRetry.setOnClickListener {
+            if (!Util.chkIfNetworkAvailable(curContext, connManager, "toast")) return@setOnClickListener
             //procAutoLogin() { setupWebViewPopup(gOrigin) }
             setupWebViewPopup(gOrigin) //임시 - 로그인 체크 필요
         }
@@ -204,6 +205,19 @@ class PopupActivity : Activity() {
                 val urlStr = request!!.url.toString() //if (!urlStr.contains(Const.PAGE_MAIN)) return false //ignore dummy page
                 view!!.loadUrl(urlStr)
                 return true //return super.shouldOverrideUrlLoading(view, request)
+            }
+            override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
+                super.onReceivedError(view, request, error) //https://gist.github.com/seongchan/752db643377f823950648d0bc80599c1
+                //val urlStr = if (request != null) request.url.toString() else ""
+                val urlStr = request?.url?.toString() ?: "" //request?.url.toString() //Multiple request shown like jquery module.
+                if (error != null && error.description != "" && urlStr.contains(Const.URL_JAY) && urlStr.contains(Const.PAGE_MAIN)) {
+                    val errMsg = "${error.errorCode}/${error.description}"
+                    //val errMsg = "${error?.errorCode}/${error?.description}"
+                    Util.log("webview error", urlStr+"===="+errMsg)
+                    toggleDispRetry(true)
+                } else { //ajax : ex) -2/net::ERR_INTERNET_DISCONNECTED : Network not available
+                    //Util.toast(curContext, "wvMain/${error?.errorCode}/${error?.description}/${urlStr}") //Multiple toast shown because of Multiple request
+                }
             }
         }
         Util.setDownloadListener(curContext, binding.wvPopup)

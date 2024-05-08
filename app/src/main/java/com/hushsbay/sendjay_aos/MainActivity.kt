@@ -1,5 +1,6 @@
 package com.hushsbay.sendjay_aos
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
@@ -107,6 +108,7 @@ class MainActivity : Activity() {
         })
         keyboardVisibilityChecker = KeyboardVisibilityChecker(window, onHideKeyboard = { })
         binding.btnRetry.setOnClickListener {
+            if (!Util.chkIfNetworkAvailable(curContext, connManager, "toast")) return@setOnClickListener
             if (ChatService.state != Const.ServiceState.RUNNING) {
                 start()
             } else {
@@ -498,6 +500,7 @@ class MainActivity : Activity() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun toggleDispRetry(show: Boolean, webview: String, urlStr: String? = null, errMsg: String? = null, noAutoRetry: Boolean? = null) {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         if (show) {
@@ -527,7 +530,11 @@ class MainActivity : Activity() {
             binding.btnRetry.visibility = View.VISIBLE
             binding.txtRmks.visibility = View.VISIBLE
             binding.txtUrl.visibility = View.VISIBLE
-            binding.txtUrl.text = urlStr + "\n" + errMsg //container.background = null //container.setBackgroundColor(Color.WHITE)
+            if (urlStr == null) {
+                binding.txtUrl.text = ""
+            } else {
+                binding.txtUrl.text = "위치 : $urlStr\n$errMsg" //container.background = null //container.setBackgroundColor(Color.WHITE)
+            }
             //wvLocal.visibility = View.VISIBLE
         } else {
             if (webview == "Room") binding.wvRoom.visibility = View.VISIBLE
@@ -567,9 +574,12 @@ class MainActivity : Activity() {
         binding.wvMain.webViewClient = object : WebViewClient() {
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                 super.onReceivedError(view, request, error) //https://gist.github.com/seongchan/752db643377f823950648d0bc80599c1
-                val urlStr = if (request != null) request.url.toString() else "" //request?.url.toString() //Multiple request shown like jquery module.
+                //val urlStr = if (request != null) request.url.toString() else ""
+                val urlStr = request?.url?.toString() ?: "" //request?.url.toString() //Multiple request shown like jquery module.
                 if (error != null && error.description != "" && urlStr.contains(Const.URL_JAY) && urlStr.contains(Const.PAGE_MAIN)) {
                     val errMsg = "${error.errorCode}/${error.description}"
+                    //val errMsg = "${error?.errorCode}/${error?.description}"
+                    Util.log("webview error", urlStr+"===="+errMsg)
                     toggleDispRetry(true, "Main", urlStr, errMsg)
                 } else { //ajax : ex) -2/net::ERR_INTERNET_DISCONNECTED : Network not available
                     //Util.toast(curContext, "wvMain/${error?.errorCode}/${error?.description}/${urlStr}") //Multiple toast shown because of Multiple request

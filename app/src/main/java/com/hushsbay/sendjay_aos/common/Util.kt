@@ -105,8 +105,10 @@ class Util {
                     val code = json.get("code").asString
                     if (code == Const.RESULT_OK) {
                         sendToDownWhenConnDisconn(context, Const.SOCK_EV_MARK_AS_CONNECT)
+                        //Util.log("@@@", "SOCK_EV_MARK_AS_CONNECT")
                     } else {
                         sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
+                        //Util.log("@@@", "EVENT_DISCONNECT")
                     }
                     ChatService.isBeingSockChecked = false
                     callback(json)

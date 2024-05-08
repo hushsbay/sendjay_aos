@@ -162,7 +162,7 @@ class ChatService : Service() {
             style.setBigContentTitle(null)
             style.setSummaryText(null)
             builder.setStyle(style)
-            builder.setContentTitle("아이콘 숨김을 위해 터치해 주세요.")
+            builder.setContentTitle("좌우로 드래그하면 이 알림을 제거합니다.")
             builder.setContentText(null)
             builder.setOngoing(true)
             builder.setWhen(0)

@@ -188,8 +188,7 @@ class ChatService : Service() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
             //SimpleWorker 작동 결과
-            //1. ChatService가 살아 있는데 스크린오프 상태로 간 경우 서비스가 제한되는데 SimpleWorker가 1초 안되게 주기적으로 실행되어
-            //   서비스가 살아나 그동안 밀렸던 톡 도착 노티가 표시됨
+            //1. 스크린오프 상태로 간 경우 서비스가 제한되는데 이 경우도 서비스를 재시작해야 함. SimpleWorker가 주기적으로 실행되어 서비스가 살아나 그동안 밀렸던 톡 도착 노티가 표시됨
             //2. ChatService를 강제로 죽이고 스크린오프 상태로 하고 배터리 설정도 기본으로 한 경우도 노티 문제없음
             //** 문제는 SimpleWorker가 최소 주기가 15분이라서 너무 길다는 것임. 그렇다고, FCM을 적용하는 것은 노력이 많이 드는 이슈임
             //** SimpleWorker를 여러개 운영해서 1분에 하나씩 실행시키는 것은 더욱 힘들어 보임

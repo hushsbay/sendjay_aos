@@ -2,19 +2,24 @@ package com.hushsbay.sendjay_aos
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.AlarmManager
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.PowerManager
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import com.google.gson.JsonObject
 import com.hushsbay.sendjay_aos.common.Const
@@ -38,6 +43,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
+
 
 //socket.io는 json(org.json.JSONObect) 사용. Fuel은 gson(com.google.gson.JsonObject) 사용
 //onCreate -> onStart -> onResume -> onPause -> onStop -> onDestroy
@@ -86,8 +92,61 @@ class MainActivity : Activity() {
     private var roomidForChatService = "" //for wvRoom
     private var msgidCopied = ""
 
+    //권한 허용 : https://velog.io/@alsgus92/Android-Runtime-%EA%B6%8C%ED%95%9CPermission-%EC%9A%94%EC%B2%AD-Flow-%EB%B0%8F-Tutorial
+    //런타임권한(protectionlevel = "dangerous")에 관한 것이며 일반권한이나 서명권한이 아닌 경우이며 사용자에게 권한부여 요청을 필요로 함
+    //AndroidManifest.xml에 있는 uses-permission은 일반적인 것과 위험한 권한으로 나뉘는데 위험한 권한은 아래와 같이 checkPermission()이 필요함
+    //그런데, 구글링하면 어던 것이 위험한 권한인지 구분은 되나 실제로는 녹녹치 않으므로 모든 권한을 요청해 버리면 수월함 (아래 권한은 Manifest에 있는 모든 권한을 요청하는 것임)
+    //SYSTEM_ALERT_WINDOW와 SCHEDULE_EXACT_ALARM : 여기서 해결되지 않아 onCreate()에서 권한#1로 구현해 허용받음
+    //SCHEDULE_EXACT_ALARM : 마찬가지로 여기서 해결되지 않아 권한#2로 구현해 허용받음
+    private val REQUEST_PERMISSION = 100
+    private var permissions = listOf(
+        android.Manifest.permission.INTERNET, android.Manifest.permission.FOREGROUND_SERVICE,
+        android.Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC, android.Manifest.permission.ACCESS_NETWORK_STATE,
+        android.Manifest.permission.RECEIVE_BOOT_COMPLETED, android.Manifest.permission.VIBRATE,
+        android.Manifest.permission.POST_NOTIFICATIONS, android.Manifest.permission.USE_EXACT_ALARM
+        //android.Manifest.permission.SYSTEM_ALERT_WINDOW, android.Manifest.permission.SCHEDULE_EXACT_ALARM
+    )
+
+    private fun checkPermission(permissionList: List<String>) {
+        val requestList = ArrayList<String>()
+        for (permission in permissionList) {
+            if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) requestList.add(permission)
+        }
+        if (requestList.isNotEmpty()) ActivityCompat.requestPermissions(this, requestList.toTypedArray(), REQUEST_PERMISSION)
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_PERMISSION) {
+            val deniedPermission = ArrayList<String>()
+            for ((index, result) in grantResults.withIndex()) {
+                if (result == PackageManager.PERMISSION_DENIED) deniedPermission.add(permissions[index])
+            }
+            if (deniedPermission.isNotEmpty()) { //여기 스낵바를 넣어 인터액션하면 좋을 것인데 일단 넘어감
+                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                val uri = Uri.fromParts("package", packageName, null)
+                intent.data = uri
+                startActivity(intent)
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        checkPermission(permissions)
+        //권한#1 SYSTEM_ALERT_WINDOW
+        if (!Settings.canDrawOverlays(this)) {
+            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+            startActivity(intent)
+        }
+        //권한#2 SCHEDULE_EXACT_ALARM
+        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        if (!alarmManager.canScheduleExactAlarms()) {
+            val appDetail = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName"))
+            appDetail.addCategory(Intent.CATEGORY_DEFAULT)
+            appDetail.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(appDetail)
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root) //setContentView(R.layout.activity_main)
         logger = LogHelper.getLogger(applicationContext, this::class.simpleName)
@@ -266,7 +325,7 @@ class MainActivity : Activity() {
     private fun start() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
 //        if (!packageManager.canRequestPackageInstalls()) {
-//            Util.alert(curContext, "이 앱은 플레이스토어에서 다운로드받지 않는 인하우스앱입니다. 따라서, 출처를 알 수 없는 앱(${Const.TITLE}) 사용을 허용해 주시기 바랍니다.", Const.TITLE, {
+//            Util.alert(curContext, "이 앱은 플레이스토어에서 다운로드받지 않는 인하우스앱입니다. 출처를 알 수 없는 앱(${Const.TITLE}) 사용을 허용해 주시기 바랍니다.", Const.TITLE, {
 //                startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
 //            })
 //        } else {
@@ -340,13 +399,13 @@ class MainActivity : Activity() {
                 val kc_chat_version = KeyChain.get(curContext, Const.KC_WEBVIEW_CHAT_VERSION) ?: ""
                 val kc_popup_version =
                     KeyChain.get(curContext, Const.KC_WEBVIEW_POPUP_VERSION) ?: ""
-                if (main_version != kc_main_version) {
+                if (main_version != kc_main_version && kc_main_version != "") { //kc_main_version 빈칸 체크하지 않으면 웹뷰가 더서 웹페이지 내용이 로그인 이전에 실행되는 부분이 있어 체크 필요
                     binding.wvMain.clearCache(true)
                     binding.wvMain.clearHistory()
                     KeyChain.set(curContext, Const.KC_WEBVIEW_MAIN_VERSION, main_version)
                     setupWebViewMain()
                 }
-                if (chat_version != kc_chat_version) {
+                if (chat_version != kc_chat_version && kc_chat_version != "") {
                     binding.wvRoom.clearCache(true)
                     binding.wvRoom.clearHistory()
                     KeyChain.set(curContext, Const.KC_WEBVIEW_CHAT_VERSION, chat_version)

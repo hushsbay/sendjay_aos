@@ -3,7 +3,6 @@ package com.hushsbay.sendjay_aos.common
 import android.app.Activity
 import android.app.DownloadManager
 import android.content.Context
-import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
@@ -25,7 +24,6 @@ import io.socket.client.Socket
 //import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.File
@@ -52,7 +50,7 @@ class Util {
             dialog.show()
         }
 
-        fun toast(context: Activity, msg: String) {
+        fun toast(context: Context, msg: String) {
             Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
         }
 

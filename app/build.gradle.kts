@@ -80,6 +80,7 @@ dependencies {
     implementation("io.reactivex.rxjava2:rxjava:2.1.13")
     implementation("log4j:log4j:1.2.17")
     implementation("de.mindpipe.android:android-logging-log4j:1.0.3")
+    implementation("com.google.android.material:material:1.12.0")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

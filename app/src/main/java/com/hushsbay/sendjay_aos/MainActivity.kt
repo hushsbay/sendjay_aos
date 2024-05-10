@@ -389,16 +389,14 @@ class MainActivity : Activity() {
             Log.i("#######", jsonApp.get("version").asString + "==" + pInfo.versionName)
             if (jsonApp.get("version").asString == pInfo.versionName) {
                 val jsonEtc = json.getAsJsonObject(Const.VERSIONCHK_ETC)
-                ChatService.gapScreenOffOnDualMode =
-                    jsonEtc.get("screenoff").asString //Dual means socket on both PC Web and Mobile
+                ChatService.gapScreenOffOnDualMode = jsonEtc.get("screenoff").asString //Dual means socket on both PC Web and Mobile
                 ChatService.gapScreenOnOnDualMode = jsonEtc.get("screenon").asString
                 val main_version = json.get(Const.KC_WEBVIEW_MAIN_VERSION).asString
                 val chat_version = json.get(Const.KC_WEBVIEW_CHAT_VERSION).asString
                 val popup_version = json.get(Const.KC_WEBVIEW_POPUP_VERSION).asString
                 val kc_main_version = KeyChain.get(curContext, Const.KC_WEBVIEW_MAIN_VERSION) ?: ""
                 val kc_chat_version = KeyChain.get(curContext, Const.KC_WEBVIEW_CHAT_VERSION) ?: ""
-                val kc_popup_version =
-                    KeyChain.get(curContext, Const.KC_WEBVIEW_POPUP_VERSION) ?: ""
+                val kc_popup_version = KeyChain.get(curContext, Const.KC_WEBVIEW_POPUP_VERSION) ?: ""
                 if (main_version != kc_main_version && kc_main_version != "") { //kc_main_version 빈칸 체크하지 않으면 웹뷰가 더서 웹페이지 내용이 로그인 이전에 실행되는 부분이 있어 체크 필요
                     binding.wvMain.clearCache(true)
                     binding.wvMain.clearHistory()
@@ -411,11 +409,7 @@ class MainActivity : Activity() {
                     KeyChain.set(curContext, Const.KC_WEBVIEW_CHAT_VERSION, chat_version)
                 }
                 if (popup_version != kc_popup_version) { //See PopupActivity.
-                    KeyChain.set(
-                        curContext,
-                        Const.KC_WEBVIEW_POPUP_VERSION,
-                        "clear_cache" + popup_version
-                    )
+                    KeyChain.set(curContext, Const.KC_WEBVIEW_POPUP_VERSION, "clear_cache" + popup_version)
                 }
                 return true
             } else {

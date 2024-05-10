@@ -57,8 +57,8 @@ class ChatService : Service() {
         var gapScreenOnOnDualMode = "3000"
     }
 
-    private var SEC_DURING_DAEMON: Long = 5000 //try connecting every 5 second only in case of disconnection
-    private var SEC_DURING_RESTART = 5 //try restarting after 5 seconds (just once) when service killed (see another periodic trying with SimpleWorker.kt)
+    private var SEC_DURING_DAEMON: Long = 3000 //try connecting every 5 second only in case of disconnection
+    private var SEC_DURING_RESTART = 3 //try restarting after 5 seconds (just once) when service killed (see another periodic trying with SimpleWorker.kt)
 
     private lateinit var logger: Logger
     private lateinit var screenReceiver: BroadcastReceiver

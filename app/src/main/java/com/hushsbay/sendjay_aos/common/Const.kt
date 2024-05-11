@@ -62,10 +62,11 @@ class Const {
         const val KC_TOPORGNM = "TOP_ORG_NM" // ""
         const val KC_NOTI_OFF = "NOTI_OFF"
         const val KC_SOUND_OFF = "SOUND_OFF"
-        const val KC_TM_FR = "TM_FR"
-        const val KC_TM_TO = "TM_TO"
+        const val KC_VIB_OFF = "VIB_OFF"
         const val KC_BODY_OFF = "BODY_OFF"
         const val KC_SENDER_OFF = "SENDER_OFF"
+        const val KC_TM_FR = "TM_FR"
+        const val KC_TM_TO = "TM_TO"
         const val KC_TOKEN = "token" //소문자
         const val KC_USERKEY = "userkey"
         const val KC_AUTOLOGIN = "autologin"

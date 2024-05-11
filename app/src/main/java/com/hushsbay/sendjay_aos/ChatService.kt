@@ -463,10 +463,11 @@ class ChatService : Service() {
                         if (userid == uInfo.userid) {
                             KeyChain.set(applicationContext, Const.KC_NOTI_OFF, data.getString("notioff"))
                             KeyChain.set(applicationContext, Const.KC_SOUND_OFF, data.getString("soundoff"))
-                            KeyChain.set(applicationContext, Const.KC_TM_FR, data.getString("fr"))
-                            KeyChain.set(applicationContext, Const.KC_TM_TO, data.getString("to"))
+                            KeyChain.set(applicationContext, Const.KC_VIB_OFF, data.getString("viboff"))
                             KeyChain.set(applicationContext, Const.KC_BODY_OFF, data.getString("bodyoff"))
                             KeyChain.set(applicationContext, Const.KC_SENDER_OFF, data.getString("senderoff"))
+                            KeyChain.set(applicationContext, Const.KC_TM_FR, data.getString("fr"))
+                            KeyChain.set(applicationContext, Const.KC_TM_TO, data.getString("to"))
                             uInfo = UserInfo(applicationContext) //org.json not gson //KeyChain Get
                         }
                     } else if (kind == "noti") {

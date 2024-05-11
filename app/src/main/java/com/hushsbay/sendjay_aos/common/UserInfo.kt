@@ -20,6 +20,7 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
 
     var notioff: String
     var soundoff: String
+    var viboff: String
     var fr: String
     var to: String
     var bodyoff: String
@@ -83,15 +84,10 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         } else {
             this.soundoff = json.get(Const.KC_SOUND_OFF).asString
         }
-        if (json.get(Const.KC_TM_FR) == null) {
-            this.fr = ""
+        if (json.get(Const.KC_VIB_OFF) == null) {
+            this.viboff = ""
         } else {
-            this.fr = json.get(Const.KC_TM_FR).asString
-        }
-        if (json.get(Const.KC_TM_TO) == null) {
-            this.to = ""
-        } else {
-            this.to = json.get(Const.KC_TM_TO).asString
+            this.viboff = json.get(Const.KC_VIB_OFF).asString
         }
         if (json.get(Const.KC_BODY_OFF) == null) {
             this.bodyoff = ""
@@ -102,6 +98,16 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
             this.senderoff = ""
         } else {
             this.senderoff = json.get(Const.KC_SENDER_OFF).asString
+        }
+        if (json.get(Const.KC_TM_FR) == null) {
+            this.fr = ""
+        } else {
+            this.fr = json.get(Const.KC_TM_FR).asString
+        }
+        if (json.get(Const.KC_TM_TO) == null) {
+            this.to = ""
+        } else {
+            this.to = json.get(Const.KC_TM_TO).asString
         }
         if (this.token != "") KeyChain.set(context, Const.KC_TOKEN, this.token) //token이 빈값으로 내려오는 경우 KeyChain 건들지 말기
         KeyChain.set(context, Const.KC_USERID, this.userid)
@@ -115,6 +121,7 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         KeyChain.set(context, Const.KC_TOPORGNM, this.toporgnm)
         KeyChain.set(context, Const.KC_NOTI_OFF, this.notioff)
         KeyChain.set(context, Const.KC_SOUND_OFF, this.soundoff)
+        KeyChain.set(context, Const.KC_VIB_OFF, this.viboff)
         KeyChain.set(context, Const.KC_TM_FR, this.fr)
         KeyChain.set(context, Const.KC_TM_TO, this.to)
         KeyChain.set(context, Const.KC_BODY_OFF, this.bodyoff)
@@ -134,6 +141,7 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         this.toporgnm = KeyChain.get(context, Const.KC_TOPORGNM) ?: ""
         this.notioff = KeyChain.get(context, Const.KC_NOTI_OFF) ?: ""
         this.soundoff = KeyChain.get(context, Const.KC_SOUND_OFF) ?: ""
+        this.viboff = KeyChain.get(context, Const.KC_VIB_OFF) ?: ""
         this.fr = KeyChain.get(context, Const.KC_TM_FR) ?: ""
         this.to = KeyChain.get(context, Const.KC_TM_TO) ?: ""
         this.bodyoff = KeyChain.get(context, Const.KC_BODY_OFF) ?: ""

@@ -86,7 +86,7 @@ class ChatService : Service() {
             status_sock = Const.SockState.BEFORE_CONNECT
             state = Const.ServiceState.RUNNING
             logger = LogHelper.getLogger(applicationContext, this::class.simpleName)
-            NotiCenter(applicationContext, packageName) //kotlin invoke method : NotiCenter.invoke() //see MainActivity.kt also
+            NotiCenter(applicationContext, packageName) //NotiCenter.invoke() //see MainActivity.kt also
             connManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             pwrManager = getSystemService(Context.POWER_SERVICE) as PowerManager
             screenReceiver = object : BroadcastReceiver() {
@@ -323,7 +323,9 @@ class ChatService : Service() {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         //val json = HttpFuel.get(applicationContext, "${Const.DIR_ROUTE}/qry_unread", null).await()
-                        val json = HttpFuel.post(applicationContext, "/msngr/qry_unread", null).await()
+                        val param = org.json.JSONObject()
+                        param.put("type", "R") //모바일에서만 호출
+                        val json = HttpFuel.post(applicationContext, "/msngr/qry_unread", param.toString()).await()
                         if (json.get("code").asString == Const.RESULT_OK) {
                             val list = json.getAsJsonArray("list")
                             if (list.size() == 0) return@launch
@@ -336,7 +338,7 @@ class ChatService : Service() {
                                 val cdt = arr[1]
                                 val type = arr[2]
                                 val body = arr[3]
-                                val body1 = "qry_unread) " + Util.getTalkBodyCustom(type, body)
+                                val body1 = "안읽은톡) " + Util.getTalkBodyCustom(type, body)
                                 NotiCenter.notiByRoom(applicationContext, uInfo, roomid, body1, false, msgid, cdt)
                             }
                         } else {
@@ -431,17 +433,17 @@ class ChatService : Service() {
                         val body1 = Util.getTalkBodyCustom(type, body)
                         NotiCenter.notiByRoom(applicationContext, uInfo, returnTo, body1, webConnectedAlso, msgid, cdt)
                     }
-                    CoroutineScope(Dispatchers.IO).launch {
-                        try {
-                            //val param = listOf("type" to "U")
-                            //HttpFuel.get(applicationContext, "${Const.DIR_ROUTE}/qry_unread", param).await()
-                            val param = org.json.JSONObject()
-                            param.put("type", "U")
-                            HttpFuel.post(applicationContext, "/msngr/qry_unread", param.toString()).await()
-                        } catch (e: Exception) {
-                            //do nothing
-                        }
-                    }
+//                    CoroutineScope(Dispatchers.IO).launch {
+//                        try {
+//                            //val param = listOf("type" to "U")
+//                            //HttpFuel.get(applicationContext, "${Const.DIR_ROUTE}/qry_unread", param).await()
+//                            val param = org.json.JSONObject()
+//                            param.put("type", "U")
+//                            HttpFuel.post(applicationContext, "/msngr/qry_unread", param.toString()).await()
+//                        } catch (e: Exception) {
+//                            //do nothing
+//                        }
+//                    }
                 } else if (ev == Const.SOCK_EV_READ_MSG) {
                     val data = json.getJSONObject("data")
                     val type = data.getString("type")

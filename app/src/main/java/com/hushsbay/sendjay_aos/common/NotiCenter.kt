@@ -11,6 +11,7 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.VibrationEffect
 import android.os.Vibrator
+import android.os.VibratorManager
 import androidx.core.app.NotificationCompat
 import com.google.gson.Gson
 import com.google.gson.JsonObject
@@ -37,15 +38,17 @@ object NotiCenter {
     private var packageName: String? = null
     private var idNotiMax = Const.NOTI_CNT_START
 
-    operator fun invoke(context: Context, packageName1: String) { //IMPORTANCE_MIN (no display on status bar) was not worked
-        if (channel == null) channel = NotificationChannel(Const.NOTICHANID_COMMON, Const.NOTICHANID_COMMON, NotificationManager.IMPORTANCE_LOW) //IMPORTANCE_LOW : no sound and display on status bar)
+    operator fun invoke(context: Context, strPackageName: String) { //IMPORTANCE_MIN (no display on status bar) was not worked
+        if (channel == null) { //IMPORTANCE_LOW(no sound), IMPORTANCE_DEFAULT(sound ok), IMPORTANCE_HIGH(sound + headup(popup))
+            channel = NotificationChannel(Const.NOTICHANID_COMMON, Const.NOTICHANID_COMMON, NotificationManager.IMPORTANCE_HIGH)
+        }
         if (manager == null) {
             manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager!!.createNotificationChannel(NotiCenter.channel!!)
         }
         if (audio == null) audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (vib == null) vib = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        packageName = packageName1
+        packageName = strPackageName
     }
 
     fun notiByRoom(context: Context, uInfo: UserInfo, roomid: String, body: String, webConnectedAlso: Boolean, msgid: String, cdt: String) {
@@ -177,6 +180,18 @@ object NotiCenter {
             idNotiMax = Const.NOTI_CNT_START
             mapRoomid.clear()
             mapRoomInfo.clear()
+        }
+        CoroutineScope(Dispatchers.IO).launch {
+            //모바일에서만 호출. 웹과는 다르게 알림이 표시되고 나면 사용자는 언젠가는 알림을 보게 될 것이고
+            //알림을 보고 난 후에는 다음에 재연결될 때는 기존 알림을 또 보는 것이 성가시게 될 것이므로 (아니면 사용자가 일일이 방마다 읽음 처리해야 하므로..)
+            //LASTCHKDT 필드값을 업데이트해서 그 이후에 온 안읽은 톡만 알림을 표시하는 것이 합리적일 것으로 보임
+            try {
+                val param = org.json.JSONObject()
+                param.put("type", "U")
+                HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
+            } catch (e: Exception) {
+                //do nothing
+            }
         }
     }
 

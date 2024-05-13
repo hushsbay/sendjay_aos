@@ -405,21 +405,38 @@ class ChatService : Service() {
                 val ev = gson.get("ev").asString
                 val returnTo = gson.get("returnTo").asString
                 val returnToAnother = gson.get("returnToAnother")?.asString
-                var needNoti = true
+                /*var needNoti = true
                 val noti_off = KeyChain.get(applicationContext, Const.KC_NOTI_OFF) ?: ""
-                if (noti_off == "Y") needNoti = false
+                if (noti_off == "Y") needNoti = false*/
                 //아래 returnToAnother는 org.json.JSONObject로 가져오면 try catch 필요하게 되어 번거로움 (gson으로 가져옴)
                 //json.get("data")가 아닌 넘어온 객체 전체인 json임을 유의. json으로 넘기지 않고 gson.toString()에서 변환한 json시 처리가 더 불편함
                 RxToDown.post(RxEvent(ev, json, returnTo, returnToAnother))
-                val roomidForService = KeyChain.get(applicationContext, Const.KC_ROOMID_FOR_CHATSERVICE)
+                val roomidForService = KeyChain.get(applicationContext, Const.KC_ROOMID_FOR_CHATSERVICE)!!
                 if (returnTo != "" && returnTo == roomidForService) {
                     RxToRoom.post(RxEvent(ev, json, returnTo, returnToAnother))
-                    val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
-                    if (screenState == "on" && MainActivity.isOnTop) needNoti = false
+                    /*val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
+                    if (screenState == "on" && MainActivity.isOnTop) needNoti = false*/
                 } else if (returnTo == "all") {
                     RxToRoom.post(RxEvent(ev, json, returnTo, returnToAnother))
                 } //아래 몇가지는 모바일에서 필요한 처리이므로 구현해야 함
                 if (ev == Const.SOCK_EV_SEND_MSG) {
+//                    var needNoti = true
+//                    if (KeyChain.get(applicationContext, Const.KC_NOTI_OFF) == "Y") {
+//                        needNoti = false
+//                    } else {
+//                        var dt = Util.getCurDateTimeStr() //20240512130549
+//                        val tm = dt.substring(8, 12) //1305 //Util.log("@@@@", tm)
+//                        val tm_fr = KeyChain.get(applicationContext, Const.KC_TM_FR) ?: "0000"
+//                        val tm_to = KeyChain.get(applicationContext, Const.KC_TM_TO) ?: "2400"
+//                        if (tm < tm_fr && tm > tm_to) {
+//                            needNoti = false
+//                        } else {
+//                            if (returnTo != "" && returnTo == roomidForService && KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) == "on" && MainActivity.isOnTop) {
+//                                needNoti = false
+//                            }
+//                        }
+//                    }
+                    var needNoti = NotiCenter.chkNotiOn(applicationContext, returnTo, roomidForService)
                     if (needNoti) {
                         val data = json.getJSONObject("data")
                         val senderid = data.getString("senderid")

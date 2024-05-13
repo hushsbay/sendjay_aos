@@ -51,6 +51,28 @@ object NotiCenter {
         packageName = strPackageName
     }
 
+    fun chkNotiOn(context: Context, returnTo: String, roomidForService: String) : Boolean {
+        //환경설정 데이터를 읽어서 알림을 표시할 지 말지를 결정
+        //해당, 챗방이 열려 있다면 (이미 읽은 것으로 보므로) 알림이 필요없음
+        var needNoti = true
+        if (KeyChain.get(context, Const.KC_NOTI_OFF) == "Y") {
+            needNoti = false
+        } else {
+            var dt = Util.getCurDateTimeStr() //20240512130549
+            val tm = dt.substring(8, 12) //1305 //Util.log("@@@@", tm)
+            val tm_fr = KeyChain.get(context, Const.KC_TM_FR) ?: "0000"
+            val tm_to = KeyChain.get(context, Const.KC_TM_TO) ?: "2400"
+            if (tm < tm_fr && tm > tm_to) {
+                needNoti = false
+            } else {
+                if (returnTo != "" && returnTo == roomidForService && KeyChain.get(context, Const.KC_SCREEN_STATE) == "on" && MainActivity.isOnTop) {
+                    needNoti = false
+                }
+            }
+        }
+        return needNoti
+    }
+
     fun notiByRoom(context: Context, uInfo: UserInfo, roomid: String, body: String, webConnectedAlso: Boolean, msgid: String, cdt: String) {
         CoroutineScope(Dispatchers.IO).launch {
             val intentNoti = Intent(context, MainActivity::class.java)

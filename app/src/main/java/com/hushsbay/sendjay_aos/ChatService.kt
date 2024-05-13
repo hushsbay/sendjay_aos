@@ -436,19 +436,27 @@ class ChatService : Service() {
 //                            }
 //                        }
 //                    }
-                    var needNoti = NotiCenter.chkNotiOn(applicationContext, returnTo, roomidForService)
-                    if (needNoti) {
-                        val data = json.getJSONObject("data")
-                        val senderid = data.getString("senderid")
-                        if (senderid == uInfo.userid) return@on //Util.log("@@@@@@@@@@", senderid + "====" + uInfo.userid + "====" + uInfo.userkey)
-                        val msgid = data.getString("msgid")
-                        val body = data.getString("body")
-                        val type = data.getString("type")
-                        val userkeyArr = data.getJSONArray("userkeyArr")
-                        val cdt = data.getString("cdt")
-                        val webConnectedAlso = userkeyArr.toString().contains(Const.W_KEY + uInfo.userid + "\"") //["W__userid1","W__userid2"]
-                        val body1 = Util.getTalkBodyCustom(type, body)
-                        NotiCenter.notiByRoom(applicationContext, uInfo, returnTo, body1, webConnectedAlso, msgid, cdt)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val data = json.getJSONObject("data")
+                            var needNoti = NotiCenter.needNoti(applicationContext, uInfo, returnTo, roomidForService, data)
+                            if (!needNoti) return@launch
+                            //if (needNoti) {
+                                //val data = json.getJSONObject("data")
+                                //val senderid = data.getString("senderid")
+                                //if (senderid == uInfo.userid) return@on //Util.log("@@@@@@@@@@", senderid + "====" + uInfo.userid + "====" + uInfo.userkey)
+                            val msgid = data.getString("msgid")
+                            val body = data.getString("body")
+                            val type = data.getString("type")
+                            val userkeyArr = data.getJSONArray("userkeyArr")
+                            val cdt = data.getString("cdt")
+                            val webConnectedAlso = userkeyArr.toString().contains(Const.W_KEY + uInfo.userid + "\"") //["W__userid1","W__userid2"]
+                            val body1 = Util.getTalkBodyCustom(type, body)
+                            NotiCenter.notiByRoom(applicationContext, uInfo, returnTo, body1, webConnectedAlso, msgid, cdt)
+                            //}
+                        } catch (e: Exception) {
+                            //do nothing
+                        }
                     }
 //                    CoroutineScope(Dispatchers.IO).launch {
 //                        try {

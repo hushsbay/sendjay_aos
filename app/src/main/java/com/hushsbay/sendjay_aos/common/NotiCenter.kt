@@ -51,22 +51,41 @@ object NotiCenter {
         packageName = strPackageName
     }
 
-    fun chkNotiOn(context: Context, returnTo: String, roomidForService: String) : Boolean {
-        //환경설정 데이터를 읽어서 알림을 표시할 지 말지를 결정
-        //해당, 챗방이 열려 있다면 (이미 읽은 것으로 보므로) 알림이 필요없음
+    suspend fun needNoti(context: Context, uInfo: UserInfo, returnTo: String?=null, roomidForService: String?=null, data: org.json.JSONObject?=null) : Boolean {
         var needNoti = true
         if (KeyChain.get(context, Const.KC_NOTI_OFF) == "Y") {
-            needNoti = false
+            needNoti = false //전체 알림 Off면 노티가 필요없음
         } else {
             var dt = Util.getCurDateTimeStr() //20240512130549
             val tm = dt.substring(8, 12) //1305 //Util.log("@@@@", tm)
             val tm_fr = KeyChain.get(context, Const.KC_TM_FR) ?: "0000"
             val tm_to = KeyChain.get(context, Const.KC_TM_TO) ?: "2400"
             if (tm < tm_fr && tm > tm_to) {
-                needNoti = false
+                needNoti = false //지정된 알림시간내에 있지 않으면 노티가 필요없음
             } else {
-                if (returnTo != "" && returnTo == roomidForService && KeyChain.get(context, Const.KC_SCREEN_STATE) == "on" && MainActivity.isOnTop) {
+                if (returnTo != null && returnTo == roomidForService && KeyChain.get(context, Const.KC_SCREEN_STATE) == "on" && MainActivity.isOnTop) {
+                    needNoti = false //기기가 켜져 있고 해당 챗방이 열려 있을 때는 노티가 필요없음
+                }
+            }
+        }
+        if (needNoti) { //그럼에도 노티가 필요하면
+            if (data != null && returnTo != null) {
+                val senderid = data.getString("senderid")
+                if (senderid == uInfo.userid) {
                     needNoti = false
+                } else {
+                    val msgid = data.getString("msgid")
+                    val param = org.json.JSONObject()
+                    param.put("msgid", msgid)
+                    param.put("roomid", returnTo)
+                    val json = HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
+                    if (json.get("code").asString == Const.RESULT_OK) {
+                        val list = json.getAsJsonArray("list")
+                        if (list.size() > 0) {
+                            val item = list[0].asJsonObject
+                            if (item.get("UNREAD").asInt == 0) needNoti = false
+                        }
+                    }
                 }
             }
         }

@@ -819,7 +819,6 @@ class MainActivity : Activity() {
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             CoroutineScope(Dispatchers.Main).launch {
                 try {
-Util.log("openPopup", origin, objStr)
                     val pIntent = Intent(curContext, PopupActivity::class.java)
                     pIntent.putExtra("origin", origin)
                     pIntent.putExtra("objStr", objStr)

@@ -774,17 +774,7 @@ class MainActivity : Activity() {
         @JavascriptInterface
         fun reload() {
             CoroutineScope(Dispatchers.Main).launch {
-                var dt = Util.getCurDateTimeStr() //20240512130549
-                val tm = dt.substring(8, 12) //1305
-                Util.log("@@@@", tm)
-                val tm_fr = KeyChain.get(applicationContext, Const.KC_TM_FR) ?: "0000"
-                val tm_to = KeyChain.get(applicationContext, Const.KC_TM_TO) ?: "2400"
-                if (tm >= tm_fr && tm <= tm_to) {
-                    Util.log("@@@@", "알림 OOOOO")
-                } else {
-                    Util.log("@@@@", "알림 XXXXX")
-                }
-                //setupWebViewMain()
+                setupWebViewMain()
             }
         }
 

@@ -16,7 +16,7 @@ class WebInterface(private val curContext: Activity, private val connManager: Co
     fun send(ev: String, data: String, returnTo: String?=null, returnToAnother: String?=null, procMsg: Boolean) {
         val json = JSONObject(data) //results in "data":{"userkeys":["W__1",~ in server
         //val json = Gson().fromJson(data, JsonObject::class.java) => results in "data":"{\"userkeys\":[\"W__1\",~ in server
-        RxToUp.post(RxEvent(ev, json, returnTo, returnToAnother, procMsg))
+        RxToUp.post(RxEvent(ev, json, returnTo, returnToAnother, procMsg)) //procMsg는 procSocetEmit() in ChatService.kt 참조
     }
 
     @JavascriptInterface

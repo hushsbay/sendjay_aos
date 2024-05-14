@@ -513,7 +513,15 @@ class ChatService : Service() {
                         logger.debug("stopSelf..SOCK_EV_CUT_MOBILE")
                     }
                 } else if (ev == Const.SOCK_EV_CHK_ROOMFOCUS) {
-                    Util.log("#########", "+++++++++++++++")
+                    Util.log("@@@@@", "+++++++++++++++")
+                    val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
+                    val focusedRoomid = if (screenState == "on" && MainActivity.isOnTop && roomidForService != "") {
+                        roomidForService
+                    } else {
+                        ""
+                    }
+                    Util.log("focusedRoomid", focusedRoomid)
+                    RxToUp.post(RxEvent(Const.SOCK_EV_CHK_ROOMFOCUS, JSONObject().put("focusedRoomid", focusedRoomid), "parent"))
                 }
             } catch (e: Exception) {
                 logger.error("$logTitle: SOCK_EV_COMMON ${e.toString()}")

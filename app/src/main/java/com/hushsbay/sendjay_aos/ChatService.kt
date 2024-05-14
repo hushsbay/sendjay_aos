@@ -339,7 +339,7 @@ class ChatService : Service() {
                                 val type = arr[2]
                                 val body = arr[3]
                                 val body1 = "안읽은톡) " + Util.getTalkBodyCustom(type, body)
-                                NotiCenter.notiByRoom(applicationContext, uInfo, roomid, body1, false, msgid, cdt)
+                                //NotiCenter.notiByRoom(applicationContext, uInfo, roomid, body1, false, msgid, cdt)
                             }
                         } else {
                             RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:qry_unread: ${json.get("msg").asString}")))
@@ -445,15 +445,16 @@ class ChatService : Service() {
                                 //val data = json.getJSONObject("data")
                                 //val senderid = data.getString("senderid")
                                 //if (senderid == uInfo.userid) return@on //Util.log("@@@@@@@@@@", senderid + "====" + uInfo.userid + "====" + uInfo.userkey)
-                            val msgid = data.getString("msgid")
+                            /*val msgid = data.getString("msgid")
                             val body = data.getString("body")
                             val type = data.getString("type")
                             val userkeyArr = data.getJSONArray("userkeyArr")
-                            val cdt = data.getString("cdt")
+                            val cdt = data.getString("cdt") //서버의 send_msg.js에서 현재일시를 가져옴
                             val webConnectedAlso = userkeyArr.toString().contains(Const.W_KEY + uInfo.userid + "\"") //["W__userid1","W__userid2"]
                             val body1 = Util.getTalkBodyCustom(type, body)
-                            NotiCenter.notiByRoom(applicationContext, uInfo, returnTo, body1, webConnectedAlso, msgid, cdt)
+                            NotiCenter.notiByRoom(applicationContext, uInfo, returnTo, body1, webConnectedAlso, msgid, cdt)*/
                             //}
+                            NotiCenter.notiToRoom(applicationContext, uInfo, returnTo, data)
                         } catch (e: Exception) {
                             //do nothing
                         }

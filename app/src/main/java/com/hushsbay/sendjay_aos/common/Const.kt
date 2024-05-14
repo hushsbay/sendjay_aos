@@ -48,7 +48,7 @@ class Const {
         const val NOTICHANID_COMMON = "${Const.APP_NAME} notification"
         const val NOTI_ID_FOREGROUND_SERVICE = 1
         const val NOTI_CNT_START = 1001
-        const val NOTI_CNT_END = 1010
+        const val NOTI_CNT_END = 1100
         const val NOTI_ID_SUMMARY = NOTI_CNT_END + 1
         const val NOTI_ID_CHK_UNREAD = NOTI_ID_SUMMARY + 1
         ///////// 아래에서 대문자는 DB(mysql)에서 내려오는 경우에만 json.get(~)과 KeyChain에서 바로 편리하게 쓰려고 사용하는 것이며 그 외는 소문자임

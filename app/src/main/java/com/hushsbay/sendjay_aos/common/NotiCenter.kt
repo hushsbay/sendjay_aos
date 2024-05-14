@@ -57,10 +57,13 @@ object NotiCenter {
             needNoti = false //전체 알림 Off면 노티가 필요없음
         } else {
             var dt = Util.getCurDateTimeStr() //20240512130549
-            val tm = dt.substring(8, 12) //1305 //Util.log("@@@@", tm)
-            val tm_fr = KeyChain.get(context, Const.KC_TM_FR) ?: "0000"
-            val tm_to = KeyChain.get(context, Const.KC_TM_TO) ?: "2400"
-            if (tm < tm_fr && tm > tm_to) {
+            val tm = dt.substring(8, 12) //1305
+            var tm_fr = KeyChain.get(context, Const.KC_TM_FR) ?: ""
+            var tm_to = KeyChain.get(context, Const.KC_TM_TO) ?: ""
+            if (tm_fr == "") tm_fr = "0000"
+            if (tm_to == "") tm_to = "2400"
+            //Util.log("@@@@", tm+"==="+tm_fr+"==="+tm_to+"==="+returnTo+"==="+roomidForService)
+            if (tm < tm_fr || tm > tm_to) {
                 needNoti = false //지정된 알림시간내에 있지 않으면 노티가 필요없음
             } else {
                 if (returnTo != null && returnTo == roomidForService && KeyChain.get(context, Const.KC_SCREEN_STATE) == "on" && MainActivity.isOnTop) {
@@ -73,27 +76,34 @@ object NotiCenter {
                 val senderid = data.getString("senderid")
                 if (senderid == uInfo.userid) {
                     needNoti = false
-                } else {
-                    val msgid = data.getString("msgid")
-                    val param = org.json.JSONObject()
-                    param.put("msgid", msgid)
-                    param.put("roomid", returnTo)
-                    val json = HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
-                    if (json.get("code").asString == Const.RESULT_OK) {
-                        val list = json.getAsJsonArray("list")
-                        if (list.size() > 0) {
-                            val item = list[0].asJsonObject
-                            if (item.get("UNREAD").asInt == 0) needNoti = false
-                        }
-                    }
+                } else { //아래는 일단
+//                    val msgid = data.getString("msgid")
+//                    val param = org.json.JSONObject()
+//                    param.put("msgid", msgid)
+//                    param.put("roomid", returnTo)
+//                    val json = HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
+//                    if (json.get("code").asString == Const.RESULT_OK) {
+//                        val list = json.getAsJsonArray("list")
+//                        if (list.size() > 0) {
+//                            val item = list[0].asJsonObject
+//                            if (item.get("UNREAD").asInt == 0) needNoti = false //해당 메시지를 읽었으면 노티가 필요없음
+//                        }
+//                    }
                 }
             }
         }
         return needNoti
     }
 
-    fun notiByRoom(context: Context, uInfo: UserInfo, roomid: String, body: String, webConnectedAlso: Boolean, msgid: String, cdt: String) {
+    fun notiToRoom(context: Context, uInfo: UserInfo, roomid: String, data: org.json.JSONObject) {
         CoroutineScope(Dispatchers.IO).launch {
+            val msgid = data.getString("msgid")
+            var body = data.getString("body")
+            val type = data.getString("type")
+            val userkeyArr = data.getJSONArray("userkeyArr")
+            val cdt = data.getString("cdt") //서버의 send_msg.js에서 현재일시를 가져옴
+            val webConnectedAlso = userkeyArr.toString().contains(Const.W_KEY + uInfo.userid + "\"") //["W__userid1","W__userid2"]
+            body = Util.getTalkBodyCustom(type, body)
             val intentNoti = Intent(context, MainActivity::class.java)
             intentNoti.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             intentNoti.putExtra("type", "open")
@@ -101,7 +111,7 @@ object NotiCenter {
             intentNoti.putExtra("origin", "noti")
             intentNoti.putExtra("objStr", "")
             if (mapRoomid[roomid] == null) mapRoomid[roomid] = idNotiMax++
-            var noiseForRoom = true
+            //var noiseForRoom = true
             var title = if (mapRoomInfo[roomid] != null) {
                 mapRoomInfo[roomid]?.get("roomtitle").toString()
             } else {
@@ -115,37 +125,87 @@ object NotiCenter {
                     ""
                 }
             }
-            val m_cdt = mapRoomInfo[roomid]?.get("cdt") //Util.log("notiByRoom", "skip: already notified: $cdt === ${m_cdt.toString()}")
+            if (mapRoomInfo[roomid]?.get("noti").toString() == "X") return@launch
+            val m_cdt = mapRoomInfo[roomid]?.get("cdt") //각 메세지의 현재 시각을 체크해서 그 방의 해당 메시지보다 이전의 메시지면 굳이 노티할 이유가 없음
             if (m_cdt != null && cdt <= m_cdt.toString()) return@launch
             mapRoomInfo[roomid]?.put("cdt", cdt)
             if (uInfo.senderoff == "Y") title = "" //sender
-            if (mapRoomInfo[roomid]?.get("noti").toString() == "X") noiseForRoom = false
             val realTitle = if (title == "") null else title
             val realBody = if (uInfo.bodyoff == "Y") null else body
             val noti = setupNoti(context, realTitle, realBody, intentNoti, mapRoomid[roomid]!!)
             val notiSummary = setupNotiSummmary(context)
-            if (webConnectedAlso && msgid != "") { //["W__userid1","W__userid2"]
-                val screenState = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
-                val delaySec: Long = if (screenState != "on") gapScreenOffOnDualMode.toLong() else gapScreenOnOnDualMode.toLong()
-                delay(delaySec) //Handler().postDelayed({ ... }, delaySec)
-                //val param = listOf("msgid" to msgid, "roomid" to roomid)
-                //val json = HttpFuel.get(context, "${Const.DIR_ROUTE}/qry_unread", param).await()
-                val param = org.json.JSONObject()
-                param.put("msgid", msgid)
-                param.put("roomid", roomid)
-                val json = HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
-                if (json.get("code").asString == Const.RESULT_OK) {
-                    val list = json.getAsJsonArray("list")
-                    if (list.size() > 0) {
-                        val item = list[0].asJsonObject
-                        if (item.get("UNREAD").asInt > 0) procNoti(context, uInfo, roomid, noti, notiSummary, noiseForRoom)
-                    }
-                }
-            } else { //Noti can be called right away when only mobile is online or mobile just reconnected
-                procNoti(context, uInfo, roomid, noti, notiSummary, noiseForRoom)
-            }
+//            if (webConnectedAlso && msgid != "") { //["W__userid1","W__userid2"]
+//                val param = org.json.JSONObject()
+//                param.put("msgid", msgid)
+//                param.put("roomid", roomid)
+//                val json = HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
+//                if (json.get("code").asString == Const.RESULT_OK) {
+//                    val list = json.getAsJsonArray("list")
+//                    if (list.size() > 0) {
+//                        val item = list[0].asJsonObject
+//                        if (item.get("UNREAD").asInt > 0) procNoti(context, uInfo, roomid, noti, notiSummary)
+//                    }
+//                }
+//            } else { //Noti can be called right away when only mobile is online or mobile just reconnected
+                procNoti(context, uInfo, roomid, noti, notiSummary)
+            //}
         }
     }
+
+//    fun notiByRoom(context: Context, uInfo: UserInfo, roomid: String, body: String, webConnectedAlso: Boolean, msgid: String, cdt: String) {
+//        CoroutineScope(Dispatchers.IO).launch {
+//            val intentNoti = Intent(context, MainActivity::class.java)
+//            intentNoti.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+//            intentNoti.putExtra("type", "open")
+//            intentNoti.putExtra("roomid", roomid)
+//            intentNoti.putExtra("origin", "noti")
+//            intentNoti.putExtra("objStr", "")
+//            if (mapRoomid[roomid] == null) mapRoomid[roomid] = idNotiMax++
+//            var noiseForRoom = true
+//            var title = if (mapRoomInfo[roomid] != null) {
+//                mapRoomInfo[roomid]?.get("roomtitle").toString()
+//            } else {
+//                //val json = HttpFuel.get(context, "${Const.DIR_ROUTE}/get_roominfo", listOf("roomid" to roomid)).await()
+//                val param = org.json.JSONObject()
+//                param.put("roomid", roomid)
+//                val json = HttpFuel.post(context, "/msngr/get_roominfo", param.toString()).await()
+//                if (json.get("code").asString == Const.RESULT_OK) {
+//                    getRoomInfo(json, roomid)["roomtitle"].toString()
+//                } else {
+//                    ""
+//                }
+//            }
+//            val m_cdt = mapRoomInfo[roomid]?.get("cdt") //Util.log("notiByRoom", "skip: already notified: $cdt === ${m_cdt.toString()}")
+//            if (m_cdt != null && cdt <= m_cdt.toString()) return@launch
+//            mapRoomInfo[roomid]?.put("cdt", cdt)
+//            if (uInfo.senderoff == "Y") title = "" //sender
+//            if (mapRoomInfo[roomid]?.get("noti").toString() == "X") noiseForRoom = false
+//            val realTitle = if (title == "") null else title
+//            val realBody = if (uInfo.bodyoff == "Y") null else body
+//            val noti = setupNoti(context, realTitle, realBody, intentNoti, mapRoomid[roomid]!!)
+//            val notiSummary = setupNotiSummmary(context)
+//            if (webConnectedAlso && msgid != "") { //["W__userid1","W__userid2"]
+//                val screenState = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
+//                val delaySec: Long = if (screenState != "on") gapScreenOffOnDualMode.toLong() else gapScreenOnOnDualMode.toLong()
+//                delay(delaySec) //Handler().postDelayed({ ... }, delaySec)
+//                //val param = listOf("msgid" to msgid, "roomid" to roomid)
+//                //val json = HttpFuel.get(context, "${Const.DIR_ROUTE}/qry_unread", param).await()
+//                val param = org.json.JSONObject()
+//                param.put("msgid", msgid)
+//                param.put("roomid", roomid)
+//                val json = HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
+//                if (json.get("code").asString == Const.RESULT_OK) {
+//                    val list = json.getAsJsonArray("list")
+//                    if (list.size() > 0) {
+//                        val item = list[0].asJsonObject
+//                        if (item.get("UNREAD").asInt > 0) procNoti(context, uInfo, roomid, noti, notiSummary, noiseForRoom)
+//                    }
+//                }
+//            } else { //Noti can be called right away when only mobile is online or mobile just reconnected
+//                procNoti(context, uInfo, roomid, noti, notiSummary, noiseForRoom)
+//            }
+//        }
+//    }
 
     fun getRoomInfo(json: JsonObject, roomid: String) : MutableMap<String, String> {
         var ret = mutableMapOf("roomtitle" to "not found", "noti" to "X")
@@ -213,10 +273,24 @@ object NotiCenter {
         return builder.build()
     }
 
-    private fun procNoti(context: Context, uInfo: UserInfo, roomid: String, noti: Notification, notiSummary: Notification, noiseForRoom: Boolean) {
+    private fun procNoti(context: Context, uInfo: UserInfo, roomid: String, noti: Notification, notiSummary: Notification) {
         manager!!.notify(mapRoomid[roomid]!!, noti)
         manager!!.notify(Const.NOTI_ID_SUMMARY, notiSummary)
-        decideVerboseNoti(context, uInfo, noiseForRoom)
+        if (audio!!.ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            if (uInfo.soundoff == "Y" && uInfo.viboff == "Y") {
+                //소리 Off, 진동 Off
+            } else if (uInfo.soundoff == "Y") { //소리만 Off인 경우
+                procVibrate() //진동 On
+            } else { //진동만 Off인 경우
+                procSound(context) //소리 On
+            }
+        } else if (audio!!.ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
+            if (uInfo.soundoff == "Y" && uInfo.viboff == "Y") {
+                //소리 Off, 진동 Off
+            } else {
+                procVibrate() //진동 On
+            }
+        }
         if (idNotiMax > Const.NOTI_CNT_END) {
             idNotiMax = Const.NOTI_CNT_START
             mapRoomid.clear()
@@ -236,34 +310,57 @@ object NotiCenter {
         }
     }
 
-    private fun decideVerboseNoti(context: Context, uInfo: UserInfo, noiseForRoom: Boolean) {
-        var skipNoisy = false
-        if (uInfo.fr != "" && uInfo.to != "") {
-            val curTm = Util.getCurDateTimeStr().substring(8, 12) //Util.log("@@@@", curTm, uInfo.fr, uInfo.to)
-            if (uInfo.fr <= uInfo.to) {
-                if (curTm >= uInfo.fr && curTm <= uInfo.to) { //OK
-                } else {
-                    skipNoisy = true
-                }
-            } else {
-                if ((curTm >= uInfo.fr && curTm <= "2400") || (curTm <= uInfo.to && curTm >= "0000")) { //OK
-                } else {
-                    skipNoisy = true
-                }
-            }
-        }
-        if (!skipNoisy && uInfo.notioff != "Y" && noiseForRoom) {
-            if (audio!!.ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-                if (uInfo.soundoff != "Y") {
-                    procSound(context)
-                } else {
-                    procVibrate()
-                }
-            } else if (audio!!.ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
-                procVibrate()
-            }
-        }
-    }
+//    private fun procNoti(context: Context, uInfo: UserInfo, roomid: String, noti: Notification, notiSummary: Notification, noiseForRoom: Boolean) {
+//        manager!!.notify(mapRoomid[roomid]!!, noti)
+//        manager!!.notify(Const.NOTI_ID_SUMMARY, notiSummary)
+//        decideVerboseNoti(context, uInfo, noiseForRoom)
+//        if (idNotiMax > Const.NOTI_CNT_END) {
+//            idNotiMax = Const.NOTI_CNT_START
+//            mapRoomid.clear()
+//            mapRoomInfo.clear()
+//        }
+//        CoroutineScope(Dispatchers.IO).launch {
+//            //모바일에서만 호출. 웹과는 다르게 알림이 표시되고 나면 사용자는 언젠가는 알림을 보게 될 것이고
+//            //알림을 보고 난 후에는 다음에 재연결될 때는 기존 알림을 또 보는 것이 성가시게 될 것이므로 (아니면 사용자가 일일이 방마다 읽음 처리해야 하므로..)
+//            //LASTCHKDT 필드값을 업데이트해서 그 이후에 온 안읽은 톡만 알림을 표시하는 것이 합리적일 것으로 보임
+//            try {
+//                val param = org.json.JSONObject()
+//                param.put("type", "U")
+//                HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
+//            } catch (e: Exception) {
+//                //do nothing
+//            }
+//        }
+//    }
+//
+//    private fun decideVerboseNoti(context: Context, uInfo: UserInfo, noiseForRoom: Boolean) {
+//        var skipNoisy = false
+//        if (uInfo.fr != "" && uInfo.to != "") {
+//            val curTm = Util.getCurDateTimeStr().substring(8, 12) //Util.log("@@@@", curTm, uInfo.fr, uInfo.to)
+//            if (uInfo.fr <= uInfo.to) {
+//                if (curTm >= uInfo.fr && curTm <= uInfo.to) { //OK
+//                } else {
+//                    skipNoisy = true
+//                }
+//            } else {
+//                if ((curTm >= uInfo.fr && curTm <= "2400") || (curTm <= uInfo.to && curTm >= "0000")) { //OK
+//                } else {
+//                    skipNoisy = true
+//                }
+//            }
+//        }
+//        if (!skipNoisy && uInfo.notioff != "Y" && noiseForRoom) {
+//            if (audio!!.ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+//                if (uInfo.soundoff != "Y") {
+//                    procSound(context)
+//                } else {
+//                    procVibrate()
+//                }
+//            } else if (audio!!.ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
+//                procVibrate()
+//            }
+//        }
+//    }
 
     private fun procSound(context: Context) {
         val ringtone = RingtoneManager.getRingtone(context, Uri.parse("android.resource://$packageName/${R.raw.sendjay}"))

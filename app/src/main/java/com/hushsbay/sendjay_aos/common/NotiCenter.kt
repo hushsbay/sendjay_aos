@@ -32,8 +32,7 @@ object NotiCenter {
     var mapRoomid: MutableMap<String, Int> = mutableMapOf<String, Int>() //See MainActivity.kt
     var mapRoomInfo: MutableMap<String, MutableMap<String, String>> = mutableMapOf<String, MutableMap<String, String>>() //See MainActivity.kt
 
-    var gapScreenOffOnDualMode = "10000"
-    var gapScreenOnOnDualMode = "5000"
+    val gapScreenOffOnDualMode = "1000"
 
     private var packageName: String? = null
     private var idNotiMax = Const.NOTI_CNT_START
@@ -76,7 +75,7 @@ object NotiCenter {
                 val senderid = data.getString("senderid")
                 if (senderid == uInfo.userid) {
                     needNoti = false
-                } else { //아래는 일단
+//                } else { //
 //                    val msgid = data.getString("msgid")
 //                    val param = org.json.JSONObject()
 //                    param.put("msgid", msgid)
@@ -134,21 +133,26 @@ object NotiCenter {
             val realBody = if (uInfo.bodyoff == "Y") null else body
             val noti = setupNoti(context, realTitle, realBody, intentNoti, mapRoomid[roomid]!!)
             val notiSummary = setupNotiSummmary(context)
-//            if (webConnectedAlso && msgid != "") { //["W__userid1","W__userid2"]
-//                val param = org.json.JSONObject()
-//                param.put("msgid", msgid)
-//                param.put("roomid", roomid)
-//                val json = HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
-//                if (json.get("code").asString == Const.RESULT_OK) {
-//                    val list = json.getAsJsonArray("list")
-//                    if (list.size() > 0) {
-//                        val item = list[0].asJsonObject
-//                        if (item.get("UNREAD").asInt > 0) procNoti(context, uInfo, roomid, noti, notiSummary)
-//                    }
-//                }
-//            } else { //Noti can be called right away when only mobile is online or mobile just reconnected
+            if (webConnectedAlso && msgid != "") { //["W__userid1","W__userid2"]
+                val screenState = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
+                if (screenState == "off") {
+                    val delaySec: Long = gapScreenOffOnDualMode.toLong()
+                    delay(delaySec) //Handler().postDelayed({ ... }, delaySec)
+                }
+                val param = org.json.JSONObject()
+                param.put("msgid", msgid)
+                param.put("roomid", roomid)
+                val json = HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
+                if (json.get("code").asString == Const.RESULT_OK) {
+                    val list = json.getAsJsonArray("list")
+                    if (list.size() > 0) {
+                        val item = list[0].asJsonObject
+                        if (item.get("UNREAD").asInt > 0) procNoti(context, uInfo, roomid, noti, notiSummary)
+                    }
+                }
+            } else { //Noti can be called right away when only mobile is online or mobile just reconnected
                 procNoti(context, uInfo, roomid, noti, notiSummary)
-            //}
+            }
         }
     }
 

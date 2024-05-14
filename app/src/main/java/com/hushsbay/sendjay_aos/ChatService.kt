@@ -401,7 +401,7 @@ class ChatService : Service() {
                 val json = it[0] as JSONObject
                 val jsonStr = it[0].toString() //it.get(0).toString()
                 val gson = Gson().fromJson(jsonStr, JsonObject::class.java)
-                Util.log("$logTitle(in)", jsonStr, it[0].javaClass.kotlin.qualifiedName!!)
+                Util.log("(in)$logTitle", jsonStr, it[0].javaClass.kotlin.qualifiedName!!)
                 val ev = gson.get("ev").asString
                 val returnTo = gson.get("returnTo").asString
                 val returnToAnother = gson.get("returnToAnother")?.asString
@@ -512,6 +512,8 @@ class ChatService : Service() {
                         stopSelf()
                         logger.debug("stopSelf..SOCK_EV_CUT_MOBILE")
                     }
+                } else if (ev == Const.SOCK_EV_CHK_ROOMFOCUS) {
+                    Util.log("#########", "+++++++++++++++")
                 }
             } catch (e: Exception) {
                 logger.error("$logTitle: SOCK_EV_COMMON ${e.toString()}")

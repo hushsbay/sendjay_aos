@@ -46,7 +46,11 @@ object NotiCenter {
             manager!!.createNotificationChannel(NotiCenter.channel!!)
         }
         if (audio == null) audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        if (vib == null) vib = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        //if (vib == null) vib = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
+        if (vib == null) {
+            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+            vib = vibratorManager.defaultVibrator
+        }
         packageName = strPackageName
     }
 
@@ -94,14 +98,19 @@ object NotiCenter {
         return needNoti
     }
 
-    fun notiToRoom(context: Context, uInfo: UserInfo, roomid: String, data: org.json.JSONObject) {
+    fun notiToRoom(context: Context, uInfo: UserInfo, roomid: String, data: org.json.JSONObject, callFromSendMsg: Boolean) {
         CoroutineScope(Dispatchers.IO).launch {
             val msgid = data.getString("msgid")
             var body = data.getString("body")
             val type = data.getString("type")
-            val userkeyArr = data.getJSONArray("userkeyArr")
             val cdt = data.getString("cdt") //서버의 send_msg.js에서 현재일시를 가져옴
-            val webConnectedAlso = userkeyArr.toString().contains(Const.W_KEY + uInfo.userid + "\"") //["W__userid1","W__userid2"]
+            var webConnectedAlso: Boolean
+            if (callFromSendMsg) { //웹 연결 체크해 없으면 굳이 웹을 신경쓸 필요없음
+                val userkeyArr = data.getJSONArray("userkeyArr")
+                webConnectedAlso = userkeyArr.toString().contains(Const.W_KEY + uInfo.userid + "\"") //["W__userid1","W__userid2"]
+            } else { //userkeyArr을 가져오기가 어려워 무조건 웹도 연결되어 있다고 보고 처리
+                webConnectedAlso = true
+            }
             body = Util.getTalkBodyCustom(type, body)
             val intentNoti = Intent(context, MainActivity::class.java)
             intentNoti.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
@@ -135,7 +144,7 @@ object NotiCenter {
             val notiSummary = setupNotiSummmary(context)
             if (webConnectedAlso && msgid != "") { //["W__userid1","W__userid2"]
                 val screenState = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
-                if (screenState == "off") {
+                if (screenState == "off") { //PC 브라우저가 이 챗방을 열어 놓고 있으면 여기서 delay만큼 늦게 읽으므로 이미 읽음처리되어 노티가 필요없음
                     val delaySec: Long = gapScreenOffOnDualMode.toLong()
                     delay(delaySec) //Handler().postDelayed({ ... }, delaySec)
                 }
@@ -371,10 +380,12 @@ object NotiCenter {
         ringtone.play()
     }
 
-    private fun procVibrate() {
+    private fun procVibrate() { //현재 디바이스 앱 알림 설정에서 무음으로 하지 않으면 기존 진동과 여기서 설정한 진동이 혼재되어 발생함
+        //일단, 앱 알림 허용 코딩에서 무음으로 하는 방법을 찾아 보기로 함
         val timings = longArrayOf(0, 900, 0, 0) //val timings = longArrayOf(0, 300, 200, 300)
         val amp = intArrayOf(0, 60, 0, 0) //val amp = intArrayOf(0, 50, 0, 50)
         vib!!.vibrate(VibrationEffect.createWaveform(timings, amp, -1))
+        //vib!!.vibrate(VibrationEffect.createOneShot(900, VibrationEffect.DEFAULT_AMPLITUDE))
     }
 
 }

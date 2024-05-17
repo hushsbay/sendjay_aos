@@ -331,6 +331,7 @@ class ChatService : Service() {
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         //val json = HttpFuel.get(applicationContext, "${Const.DIR_ROUTE}/qry_unread", null).await()
+                        val roomidForService = KeyChain.get(applicationContext, Const.KC_ROOMID_FOR_CHATSERVICE)!!
                         val param = org.json.JSONObject()
                         param.put("type", "R") //모바일에서만 호출
                         val json = HttpFuel.post(applicationContext, "/msngr/qry_unread", param.toString()).await()
@@ -348,6 +349,15 @@ class ChatService : Service() {
                                 val body = arr[3]
                                 val body1 = "안읽은톡) " + Util.getTalkBodyCustom(type, body)
                                 //NotiCenter.notiByRoom(applicationContext, uInfo, roomid, body1, false, msgid, cdt)
+                                val param = org.json.JSONObject()
+                                param.put("msgid", msgid)
+                                param.put("body", body1)
+                                param.put("type", type)
+                                param.put("cdt", cdt)
+                                param.put("senderid", "dummy") //서버의 qry_unread.js where 조건 보면 어차피 내가 보낸 건 빼고 가져옴 (=내가 보낸 건 없음)
+                                var needNoti = NotiCenter.needNoti(applicationContext, uInfo, roomid, roomidForService, param)
+                                if (!needNoti) return@launch
+                                NotiCenter.notiToRoom(applicationContext, uInfo, roomid, param, false)
                             }
                         } else {
                             RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:qry_unread: ${json.get("msg").asString}")))
@@ -462,7 +472,7 @@ class ChatService : Service() {
                             val body1 = Util.getTalkBodyCustom(type, body)
                             NotiCenter.notiByRoom(applicationContext, uInfo, returnTo, body1, webConnectedAlso, msgid, cdt)*/
                             //}
-                            NotiCenter.notiToRoom(applicationContext, uInfo, returnTo, data)
+                            NotiCenter.notiToRoom(applicationContext, uInfo, returnTo, data, true)
                         } catch (e: Exception) {
                             //do nothing
                         }

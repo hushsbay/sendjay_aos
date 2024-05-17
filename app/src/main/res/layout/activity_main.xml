@@ -33,10 +33,8 @@
         app:layout_constraintRight_toRightOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:gravity="center"
-        android:layout_marginTop="180dp"
-        android:text="Could not connect to sendjay Server."
-        android:textColor="@color/jayDarkRed"
-        android:visibility="gone"/><!--android:text="Could not connect to Sendjay Server\nor Mobile Network not available for now."-->
+        android:layout_marginTop="130dp"
+        android:textColor="@color/jayDarkRed"/><!--android:visibility="gone", android:text="Could not connect to sendjay Server."-->
     <TextView
         android:id="@+id/txtUrl"
         android:layout_width="wrap_content"

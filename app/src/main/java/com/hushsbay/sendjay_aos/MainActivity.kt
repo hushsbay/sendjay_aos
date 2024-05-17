@@ -340,7 +340,9 @@ class MainActivity : Activity() {
                         param.put("userkey", uInfo.userkey)
                         param.put("winid", winid)
                         val json = HttpFuel.post(curContext, "/msngr/chk_redis", param.toString()).await()
-                        if (json.get("code").asString != Const.RESULT_OK) {
+                        if (authJson.get("msg").asString.contains("timeout")) {
+                            Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)
+                        } else if (json.get("code").asString != Const.RESULT_OK) {
                             Util.alert(curContext, json.get("msg").asString, logTitle)
                         } else {
                             KeyChain.set(curContext, Const.KC_WINID, winid)
@@ -381,12 +383,16 @@ class MainActivity : Activity() {
             } //아래만 get 방식이고 나머지는 모두 post
             val json = HttpFuel.get(curContext, "${Const.URL_SERVER}/applist.json", null).await() //여기만 get 방식
             if (json.get("code").asString != Const.RESULT_OK) {
-                Util.alert(curContext, json.get("code").asString + "\n" + json.get("msg").asString, logTitle)
+                if (json.get("msg").asString.contains("timeout")) {
+                    toggleDispRetry(true, "Main", logTitle, Const.NETWORK_UNSTABLE, true)
+                } else {
+                    Util.alert(curContext, json.get("code").asString + "\n" + json.get("msg").asString, logTitle)
+                }
                 return false
             }
             val jsonApp = json.getAsJsonObject(Const.VERSIONCHK_APP) //Util.log(json1.get("version").asString,"=====", BuildConfig.VERSION_NAME)
             val pInfo = packageManager.getPackageInfo(packageName, 0)
-            Log.i("#######", jsonApp.get("version").asString + "==" + pInfo.versionName)
+            //Log.i("#######", jsonApp.get("version").asString + "==" + pInfo.versionName)
             if (jsonApp.get("version").asString == pInfo.versionName) {
                 val jsonEtc = json.getAsJsonObject(Const.VERSIONCHK_ETC)
                 ChatService.gapScreenOffOnDualMode = jsonEtc.get("screenoff").asString //Dual means socket on both PC Web and Mobile
@@ -503,8 +509,12 @@ class MainActivity : Activity() {
                 authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
                 if (authJson.get("code").asString == Const.RESULT_OK) {
                     uInfo = UserInfo(curContext, authJson)
-                } else if (authJson.get("code").asString == Const.RESULT_ERR_HTTPFUEL) {
-                    toggleDispRetry(true, "Main", logTitle, authJson.get("msg").asString, true)
+                } else if (authJson.get("msg").asString.contains("timeout")) {
+                    Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)
+                    return
+                } else if (authJson.get("code").asString != Const.RESULT_OK) { //} else if (authJson.get("code").asString == Const.RESULT_ERR_HTTPFUEL) {
+                    //toggleDispRetry(true, "Main", logTitle, authJson.get("msg").asString, true)
+                    Util.alert(curContext, authJson.get("msg").asString, logTitle)
                     return
                 } else {
                     loginNeeded = true
@@ -530,7 +540,9 @@ class MainActivity : Activity() {
                             param.put("uid", inUserid.text.toString().trim())
                             param.put("pwd", inPwd.text.toString().trim())
                             authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
-                            if (authJson.get("code").asString != Const.RESULT_OK) {
+                            if (authJson.get("msg").asString.contains("timeout")) {
+                                Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)
+                            } else if (authJson.get("code").asString != Const.RESULT_OK) {
                                 Util.alert(curContext, authJson.get("msg").asString, logTitle)
                             } else {
                                 KeyChain.set(curContext, Const.KC_AUTOLOGIN, "Y")
@@ -581,7 +593,7 @@ class MainActivity : Activity() {
             binding.wvRoom.visibility = View.GONE //if (webview == "Room") wvRoom.visibility = View.GONE
             binding.wvMain.visibility = View.GONE
             binding.btnRetry.visibility = View.VISIBLE
-            binding.txtRmks.visibility = View.VISIBLE
+            //binding.txtRmks.visibility = View.VISIBLE
             binding.txtUrl.visibility = View.VISIBLE
             if (urlStr == null) {
                 binding.txtUrl.text = ""
@@ -593,7 +605,7 @@ class MainActivity : Activity() {
             if (webview == "Room") binding.wvRoom.visibility = View.VISIBLE
             binding.wvMain.visibility = View.VISIBLE
             binding.btnRetry.visibility = View.GONE
-            binding.txtRmks.visibility = View.GONE
+            //binding.txtRmks.visibility = View.GONE
             binding.txtUrl.visibility = View.GONE
             binding.txtUrl.text = ""
             binding.txtAuto.visibility = View.GONE

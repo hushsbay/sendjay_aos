@@ -22,7 +22,7 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
     //Parent Job is cancelled 라는 오류 방지를 위해 SupervisorJob으로 처리
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     private const val DELAY = 500L
-    private const val SEC = 3000L
+    private const val SEC = 1500L
 
     operator fun invoke(context: Context, uInfo: UserInfo, winid: String, userip: String) {
         val option: IO.Options = IO.Options().apply {
@@ -58,7 +58,6 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                             code = Const.RESULT_ERR
                             msg = "Socket not ready yet." //원래 사용자 입장에서는 이 msg가 표시되면 안됨
                         } else if (!sock!!.connected()) {
-                            Util.log("SocketIO", "reconnecting..")
                             SocketIO.sock!!.connect() //cannot connect on doze mode
                             val result = chkConnected().await()
                             if (result == null) {
@@ -71,7 +70,7 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                     code = Const.RESULT_ERR
                     msg = "Network not available."
                 }
-                if (msg != "") msg += "\n${Const.WAIT_FOR_RECONNECT}"
+                //if (msg != "") msg += "\n${Const.WAIT_FOR_RECONNECT}"
                 val jsonStr = """{ code : '$code', msg : '${Const.TITLE}: $msg' }"""
                 Gson().fromJson(jsonStr, JsonObject::class.java)
             } catch (e: Exception) {
@@ -83,11 +82,11 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
 
     private fun chkConnected(): Deferred<String?> {
         return CoroutineScope(Dispatchers.Default).async {
-            val result = withTimeoutOrNull(SEC) {
-                while (true) {
+            val result = withTimeoutOrNull(SEC) {// 말그대로 타임아웃까지 가면 null을 반환
+                while (true) { //소켓 연결상태면 Done을 반환. 아니면 맨 아래 null 인 result를 반환
                     if (sock != null && sock!!.connected()) break
-                    delay(DELAY)
-                }
+                    delay(DELAY) //사실, chkConnected는 데몬안에서 한번만 체크하고 넘어가도 상관없겠지만
+                } //데몬 말고 루프돌면서 체크하고자 할 경우도 고려해 SEC동안 DELAY 사용해 체크해 봄
                 "Done"
             }
             result

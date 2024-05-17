@@ -57,8 +57,8 @@ class ChatService : Service() {
         var gapScreenOnOnDualMode = "3000"
     }
 
-    private var SEC_DURING_DAEMON: Long = 3000 //try connecting every 5 second only in case of disconnection
-    private var SEC_DURING_RESTART = 3 //try restarting after 5 seconds (just once) when service killed (see another periodic trying with SimpleWorker.kt)
+    private var SEC_DURING_DAEMON: Long = 3000 //try connecting every 3 second in case of disconnection
+    private var SEC_DURING_RESTART = 3 //try restarting after 3 seconds (just once) when service killed (see another periodic trying with SimpleWorker.kt)
 
     private lateinit var logger: Logger
     private lateinit var screenReceiver: BroadcastReceiver
@@ -287,7 +287,7 @@ class ChatService : Service() {
         disposable?.dispose()
         disposable = RxToUp.subscribe<RxEvent>().subscribe {
             try {
-                Util.log("$logTitle(out)", it.toString())
+                Util.log("(out)$logTitle", it.toString())
                 val json = JSONObject()
                 json.put("ev", it.ev)
                 json.putOpt("data", it.data)
@@ -299,6 +299,14 @@ class ChatService : Service() {
                         Toast.makeText(applicationContext, Const.TITLE + ": " + it.get("msg").asString, Toast.LENGTH_LONG).show()
                         return@connectSockWithCallback
                     }
+                    //if (SocketIO.sock == null) {
+                    //    Util.log(logTitle, it.get("msg").asString + "$$$$")
+                    //} else {
+                    //    Util.log(logTitle, it.get("msg").asString + "%%%%")
+                    //}
+                    //서버 다운시 connectSockWithCallback()내 SocketIO.connect() 결과 Unable to connect~라는 msg 위에서 찍으면 잘 나옴. SocketIO.sock은 null 아님
+                    //그런데 아래에서 emit하려고 하면 오류가 안나고 실행이 멈춤 (emit안에서 더 이상 진행이 안되는 느낌)
+                    //따라서, 아래 행에서 try catch하지 않아도 오류 없이 멈춤
                     SocketIO.sock!!.emit(Const.SOCK_EV_COMMON, json)
                 }
             } catch (e: Exception) {
@@ -358,7 +366,7 @@ class ChatService : Service() {
                 RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e1.toString()}")))
             }
         }.off(Socket.EVENT_DISCONNECT).on(Socket.EVENT_DISCONNECT) {
-            try {
+            try { //설명은 class Daemon의 ###10 참조
                 Util.log(logTitle, Socket.EVENT_DISCONNECT)
                 curState_sock = false
                 if (status_sock == Const.SockState.BEFORE_CONNECT) status_sock = Const.SockState.FIRST_DISCONNECTED
@@ -502,7 +510,7 @@ class ChatService : Service() {
                         setRoomInfo(json, ev)
                     }
                 } else if (ev == Const.SOCK_EV_RENAME_ROOM) {
-                    setRoomInfo(json, ev)
+                    setRoomInfo(json, ev) //ChatService내 ajax (서버다운시) 테스트가 쉽지 않음. 소켓통신이 되고 ajax가 안되는 상황을 만들어야 하는데 어려워 그냥 MainActivity.kt에서만 테스트 수행
                 } else if (ev == Const.SOCK_EV_CUT_MOBILE) {
                     val data = json.getJSONObject("data")
                     val userid = data.getString("userid")
@@ -539,26 +547,28 @@ class ChatService : Service() {
                 while (!shouldThreadStop) {
                     synchronized(this) {
                         try {
+                            //###10 소켓연결이 끊어지면 여기가 아닌 procSocketOn()의 DISCONNECT 이벤트에서 제일 먼저 인지되는데
+                            //거기서는 단지, 연결이 끊어진 걸 앱과 웹뷰에 전달하는 정도가 전부임. 다시 재연결하는 노력은 여기서 진행됨
+                            //소켓연결이 끊어지는 건 1) ChatService가 살아 있으면서 단순히 통신 이상이거나 2) ChatService가 살아 있으면서 서버가 다운되거나
+                            //3) ChatService가 (사용자에 의해) 강제 종료되면서 끊어지는 경우가 있는데 이 모든 경우에 대해 다시 원상복구해야 함
                             val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
-                            Util.log(logTitle, "client_socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )
-                            //if (screenState == "on") {
-                                val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
-                                if (autoLogin == "Y") {
-                                    if (!isBeingSockChecked) Util.connectSockWithCallback(applicationContext, connManager!!) //SocketIO.connect()
-                                }
-                            //}
+                            Util.log(logTitle, "socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )
+                            val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
+                            if (autoLogin == "Y") {
+                                if (!isBeingSockChecked) Util.connectSockWithCallback(applicationContext, connManager!!)
+                            }
                         } catch (e: InterruptedException) {
                             logger.error("$logTitle: e ${e.toString()}")
-                            Util.log(logTitle, "(OK) thread interrupted")
+                            Util.log(logTitle, "thread interrupted")
                         } catch (e1: Exception) {
                             logger.error("$logTitle: e1 ${e1.toString()}")
                             Util.log(logTitle, "e1 ${e1.toString()}")
                         } finally {
                             try {
-                                Thread.sleep(SEC_DURING_DAEMON) //Thread.sleep(sleep_sec)
+                                Thread.sleep(SEC_DURING_DAEMON)
                             } catch (ex11: InterruptedException) {
                                 logger.error("$logTitle: ex11 ${ex11.toString()}")
-                                Util.log(logTitle, "${ex11.toString()} (OK) thread interrupted finally")
+                                Util.log(logTitle, "${ex11.toString()} thread interrupted finally")
                             } catch (ex12: Exception) {
                                 logger.error("$logTitle: ex12 ${ex12.toString()}")
                                 Util.log(logTitle, "${ex12.toString()} finally")
@@ -568,7 +578,7 @@ class ChatService : Service() {
                 }
             } catch (ex: InterruptedException) {
                 logger.error("$logTitle: ex ${ex.toString()}")
-                Util.log(logTitle, "${ex.toString()} (OK) thread interrupted last finally")
+                Util.log(logTitle, "${ex.toString()} thread interrupted last finally")
             } catch (ex1: Exception) {
                 logger.error("$logTitle: ex1 ${ex1.toString()}")
                 Util.log(logTitle, "${ex1.toString()} last finally")

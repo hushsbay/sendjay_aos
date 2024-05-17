@@ -89,13 +89,14 @@ class Const {
         const val SOCK_EV_MARK_AS_CONNECT = "mark_as_connect"
         const val SOCK_EV_CHK_ROOMFOCUS = "chk_roomfocus"
         /////////////////////////////////////////////////////////////////////////
-        const val RESTFUL_TIMEOUT = 10000 //same as web client
+        const val RESTFUL_TIMEOUT = 5000 //same as web client
         const val RESULT_OK = "0"
         const val RESULT_ERR = "-1"
         const val RESULT_ERR_HTTPFUEL = "-200"
         const val CELL_REVOKED = "message cancelled"
-        const val CHECK_MOBILE_NETWORK = "$TITLE: No network available.\nCheck mobile network or wifi."
-        const val WAIT_FOR_RECONNECT = "Please wait until network reconnected."
+        const val NETWORK_UNAVAILABLE = "네트워크가 연결되어 있지 않습니다."
+        const val NETWORK_UNSTABLE = "네트워크가 원할하지 않거나 서버 작업중입니다."
+        //const val WAIT_FOR_RECONNECT = "Please wait until network reconnected."
     }
 
 }

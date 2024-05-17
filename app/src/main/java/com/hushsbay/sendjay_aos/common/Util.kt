@@ -86,27 +86,26 @@ class Util {
                 true //return true even if wifi is on and has errors.
             } else {
                 if (type == "toast") {
-                    Util.toast(context, Const.CHECK_MOBILE_NETWORK)
+                    Util.toast(context, Const.NETWORK_UNAVAILABLE)
                 } else if (type == "alert") {
-                    Util.alert(context, Const.CHECK_MOBILE_NETWORK, Const.TITLE)
+                    Util.alert(context, Const.NETWORK_UNAVAILABLE, Const.TITLE)
                 }
                 false
             }
         }
 
         fun connectSockWithCallback(context: Context, connManager: ConnectivityManager, callback: (json: JsonObject) -> Unit = {}) {
+            val logTitle = object{}.javaClass.enclosingMethod?.name!!
             if (ChatService.isBeingSockChecked) return
             ChatService.isBeingSockChecked = true
             CoroutineScope(Dispatchers.Main).launch {
-                try { //Toast.makeText(context, Const.TITLE + ": connectSockWithCallback", Toast.LENGTH_LONG).show()
+                try {
                     var json = SocketIO.connect(context, connManager).await()
                     val code = json.get("code").asString
                     if (code == Const.RESULT_OK) {
-                        sendToDownWhenConnDisconn(context, Const.SOCK_EV_MARK_AS_CONNECT)
-                        //Util.log("@@@", "SOCK_EV_MARK_AS_CONNECT")
+                        sendToDownWhenConnDisconn(context, Const.SOCK_EV_MARK_AS_CONNECT) //Util.log(logTitle, "SOCK_EV_MARK_AS_CONNECT..")
                     } else {
-                        sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
-                        //Util.log("@@@", "EVENT_DISCONNECT")
+                        sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT) //Util.log(logTitle, "EVENT_DISCONNECT..")
                     }
                     ChatService.isBeingSockChecked = false
                     callback(json)

@@ -15,6 +15,8 @@ import java.net.HttpCookie
 
 object HttpFuel { //Fuel is single instance and uses gson(com.google.gson.JsonObject)
 
+    //timeout(Const.RESTFUL_TIMEOUT) 안 먹히고 있음 (일단 그대로 둠)
+
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob()) //Parent Job is cancelled 라는 오류 방지를 위해 SupervisorJob으로 처리
 
     fun get(context: Context, url: String, param: List<Pair<String, Any?>>?=null): Deferred<JsonObject> {

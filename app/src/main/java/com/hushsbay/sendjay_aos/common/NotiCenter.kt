@@ -49,6 +49,7 @@ object NotiCenter {
         channel!!.vibrationPattern = longArrayOf(0, 900, 0, 0)
         channel!!.enableVibration(true)
         if (manager == null) {
+
             manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager!!.createNotificationChannel(NotiCenter.channel!!)
         }

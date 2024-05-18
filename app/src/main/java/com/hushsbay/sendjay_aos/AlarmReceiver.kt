@@ -41,7 +41,7 @@ class AlarmReceiver : BroadcastReceiver() {
             //android.app.ForegroundServiceStartNotAllowedException: startForegroundService() not allowed due to mAllowStartForeground false
             //위 오류 발생해 재가동 안되는데 일단, 배터리 최적화 대상에서 제외하고 돌려보아도 안됨 (원래 아래 링크 읽어 보면 해결된다고 나오는데 안됨)
             //https://developer.android.com/develop/background-work/services/foreground-services?hl=ko#background-start-restriction-exemptions
-            //대신, 위 링크에서 아래와 같이 SYSTEM_ALERT_WINDOW 권한을 보유하면 된다고 해서 해보니 과연 해결됨
+            //대신, 위 링크에서 아래와 같이 SYSTEM_ALERT_WINDOW 권한을 보유하면 된다고 해서 해보니 과연 해결됨 (lock이나 noti 위에 display되는 권한)
             //<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
             Util.log("AlarmReceiver", "startForegroundService")
             //Toast.makeText(context, "AlarmReceiver, startForegroundService", Toast.LENGTH_SHORT).show()

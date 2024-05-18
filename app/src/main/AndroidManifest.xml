@@ -16,7 +16,8 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+<!--    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />-->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" /><!-- 다른 앱 위에 표시. AlarmReceiver.kt 오류해결내용 참조 -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" /><!--알람 및 리마인더 설정 허용. https://diordna91.medium.com/android-12-%EC%A0%95%ED%99%95%ED%95%9C-%EC%95%8C%EB%9E%8C-%EA%B6%8C%ED%95%9C-d92f878de695-->
     <!-- <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />앱내에서 다른 앱 설치시 -->

@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.RingtoneManager
 import android.net.Uri
@@ -27,8 +28,8 @@ object NotiCenter {
 
     var manager: NotificationManager? = null //See MainActivity.kt
     var channel: NotificationChannel? = null
-    var audio: AudioManager? = null
-    var vib: Vibrator? = null
+    //var audio: AudioManager? = null
+    //var vib: Vibrator? = null
     var mapRoomid: MutableMap<String, Int> = mutableMapOf<String, Int>() //See MainActivity.kt
     var mapRoomInfo: MutableMap<String, MutableMap<String, String>> = mutableMapOf<String, MutableMap<String, String>>() //See MainActivity.kt
 
@@ -38,20 +39,24 @@ object NotiCenter {
     private var idNotiMax = Const.NOTI_CNT_START
 
     operator fun invoke(context: Context, strPackageName: String) { //IMPORTANCE_MIN (no display on status bar) was not worked
+        packageName = strPackageName
         if (channel == null) { //IMPORTANCE_LOW(no sound), IMPORTANCE_DEFAULT(sound ok), IMPORTANCE_HIGH(sound + headup(popup))
             channel = NotificationChannel(Const.NOTICHANID_COMMON, Const.NOTICHANID_COMMON, NotificationManager.IMPORTANCE_HIGH)
         }
+        val audioAttributes = AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).setUsage(AudioAttributes.USAGE_NOTIFICATION).build()
+        val uri = Uri.parse("android.resource://$packageName/${R.raw.sendjay}")
+        channel!!.setSound(uri, audioAttributes)
+        channel!!.vibrationPattern = longArrayOf(0, 900, 0, 0)
+        channel!!.enableVibration(true)
         if (manager == null) {
             manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager!!.createNotificationChannel(NotiCenter.channel!!)
         }
-        if (audio == null) audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
-        //if (vib == null) vib = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-        if (vib == null) {
-            val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vib = vibratorManager.defaultVibrator
-        }
-        packageName = strPackageName
+        //if (audio == null) audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        //if (vib == null) {
+        //    val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
+        //    vib = vibratorManager.defaultVibrator
+        //}
     }
 
     suspend fun needNoti(context: Context, uInfo: UserInfo, returnTo: String?=null, roomidForService: String?=null, data: org.json.JSONObject?=null) : Boolean {
@@ -64,8 +69,7 @@ object NotiCenter {
             var tm_fr = KeyChain.get(context, Const.KC_TM_FR) ?: ""
             var tm_to = KeyChain.get(context, Const.KC_TM_TO) ?: ""
             if (tm_fr == "") tm_fr = "0000"
-            if (tm_to == "") tm_to = "2400"
-            //Util.log("@@@@", tm+"==="+tm_fr+"==="+tm_to+"==="+returnTo+"==="+roomidForService)
+            if (tm_to == "") tm_to = "2400" //Util.log("@@@@", tm+"==="+tm_fr+"==="+tm_to+"==="+returnTo+"==="+roomidForService)
             if (tm < tm_fr || tm > tm_to) {
                 needNoti = false //지정된 알림시간내에 있지 않으면 노티가 필요없음
             } else {
@@ -271,6 +275,10 @@ object NotiCenter {
         builder.setContentText(body ?: "New message arrived.")
         builder.setContentTitle(title)
         builder.setAutoCancel(true) //builder.setOngoing(true)
+        val uri = Uri.parse("android.resource://$packageName/${R.raw.sendjay}")
+        builder.setSound(uri)
+        val timings = longArrayOf(0, 900, 0, 0)
+        builder.setVibrate(timings)
         val pendingIntent = PendingIntent.getActivity(context, requestCode, intentNoti, PendingIntent.FLAG_IMMUTABLE)
         builder.setContentIntent(pendingIntent)
         return builder.build()
@@ -283,27 +291,21 @@ object NotiCenter {
         builder.setGroup(Const.APP_NAME)
         builder.setGroupSummary(true) //single icon for multi room
         builder.setAutoCancel(true) //builder.setOngoing(true)
+        val uri = Uri.parse("android.resource://$packageName/${R.raw.sendjay}")
+        builder.setSound(uri)
+        val timings = longArrayOf(0, 900, 0, 0)
+        builder.setVibrate(timings)
         return builder.build()
     }
 
     private fun procNoti(context: Context, uInfo: UserInfo, roomid: String, noti: Notification, notiSummary: Notification) {
         manager!!.notify(mapRoomid[roomid]!!, noti)
         manager!!.notify(Const.NOTI_ID_SUMMARY, notiSummary)
-        if (audio!!.ringerMode == AudioManager.RINGER_MODE_NORMAL) {
-            if (uInfo.soundoff == "Y" && uInfo.viboff == "Y") {
-                //소리 Off, 진동 Off
-            } else if (uInfo.soundoff == "Y") { //소리만 Off인 경우
-                procVibrate() //진동 On
-            } else { //진동만 Off인 경우
-                procSound(context) //소리 On
-            }
-        } else if (audio!!.ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
-            if (uInfo.soundoff == "Y" && uInfo.viboff == "Y") {
-                //소리 Off, 진동 Off
-            } else {
-                procVibrate() //진동 On
-            }
-        }
+        //if (audio!!.ringerMode == AudioManager.RINGER_MODE_NORMAL) {
+            //if (uInfo.soundoff != "Y") procSound(context) //소리 On
+        //} else if (audio!!.ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
+            //if (uInfo.viboff != "Y") procVibrate() //진동 On
+        //}
         if (idNotiMax > Const.NOTI_CNT_END) {
             idNotiMax = Const.NOTI_CNT_START
             mapRoomid.clear()
@@ -375,17 +377,16 @@ object NotiCenter {
 //        }
 //    }
 
-    private fun procSound(context: Context) {
+    private fun procSound(context: Context) { //Notification에 통합된 방법이 아님. 기존 사운드와 혼재되어 발생함
         val ringtone = RingtoneManager.getRingtone(context, Uri.parse("android.resource://$packageName/${R.raw.sendjay}"))
         ringtone.play()
     }
 
-    private fun procVibrate() { //현재 디바이스 앱 알림 설정에서 무음으로 하지 않으면 기존 진동과 여기서 설정한 진동이 혼재되어 발생함
-        //일단, 앱 알림 허용 코딩에서 무음으로 하는 방법을 찾아 보기로 함
+    private fun procVibrate() { //Notification에 통합된 방법이 아님. 기존 진동과 혼재되어 발생함
         val timings = longArrayOf(0, 900, 0, 0) //val timings = longArrayOf(0, 300, 200, 300)
         val amp = intArrayOf(0, 60, 0, 0) //val amp = intArrayOf(0, 50, 0, 50)
-        vib!!.vibrate(VibrationEffect.createWaveform(timings, amp, -1))
-        //vib!!.vibrate(VibrationEffect.createOneShot(900, VibrationEffect.DEFAULT_AMPLITUDE))
+        //vib!!.vibrate(VibrationEffect.createWaveform(timings, amp, -1))
+        /*vib!!.vibrate(VibrationEffect.createOneShot(900, VibrationEffect.DEFAULT_AMPLITUDE))*/
     }
 
 }

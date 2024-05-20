@@ -117,7 +117,12 @@ class Util {
                         param.put("cdt", getCurDateTimeStr(true))
                         val dt = KeyChain.get(context, Const.KC_DT_DISCONNECT) ?: ""
                         param.put("udt", dt)
-                        param.put("dur", 1)
+                        if (dt == "") {
+                            param.put("dur", 0) //접속이 끊어진 적이 없음 (예: 최초 연결시)
+                        } else { //duration(seconds) = 현재시각 - dt
+
+                            param.put("dur", 1)
+                        }
                         HttpFuel.post(context, "/msngr/append_log", param.toString()).await() //로깅이므로 오류가 나도 넘어가도록 함
                     }
                     callback(json)

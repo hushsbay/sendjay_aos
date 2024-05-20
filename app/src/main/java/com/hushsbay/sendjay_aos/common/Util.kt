@@ -108,6 +108,16 @@ class Util {
                         sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT) //Util.log(logTitle, "EVENT_DISCONNECT..")
                     }
                     ChatService.isBeingSockChecked = false
+                    if (json.get("msg").asString == "connect") { //접속 로그를 위한 단순 구분 코드
+                        val param = org.json.JSONObject()
+                        param.put("device", Const.AOS)
+                        param.put("work", "conn")
+                        param.put("state", KeyChain.get(context, Const.KC_SCREEN_STATE))
+                        param.put("cdt", getCurDateTimeStr(true))
+                        param.put("udt", "")
+                        param.put("dur", 1)
+                        val jsonRI = HttpFuel.post(context, "/msngr/append_log", param.toString()).await() //로깅이므로 오류가 나도 넘어가도록 함
+                    }
                     callback(json)
                 } catch (e: Exception) {
                     ChatService.isBeingSockChecked = false

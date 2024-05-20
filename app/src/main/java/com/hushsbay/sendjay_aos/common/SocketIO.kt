@@ -63,6 +63,8 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                             if (result == null) {
                                 code = Const.RESULT_ERR
                                 msg = "Unable to connect to socket server."
+                            } else {
+                                msg = "connect" //접속 로그를 위한 단순 구분 코드
                             }
                         }
                     }

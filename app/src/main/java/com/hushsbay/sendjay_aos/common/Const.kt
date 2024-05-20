@@ -77,6 +77,7 @@ class Const {
         const val KC_WEBVIEW_MAIN_VERSION = "webview_main_version"
         const val KC_WEBVIEW_CHAT_VERSION = "webview_chat_version"
         const val KC_WEBVIEW_POPUP_VERSION = "webview_popup_version"
+        const val KC_DT_DISCONNECT = "dt_disconnect"
         /////////////////////////////////////////////////////////////////////////
         const val SOCK_EV_ALERT = "alert"
         const val SOCK_EV_TOAST = "toast"

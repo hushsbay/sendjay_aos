@@ -112,11 +112,13 @@ class Util {
                         val param = org.json.JSONObject()
                         param.put("device", Const.AOS)
                         param.put("work", "conn")
-                        param.put("state", KeyChain.get(context, Const.KC_SCREEN_STATE))
+                        val screen = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
+                        param.put("state", screen)
                         param.put("cdt", getCurDateTimeStr(true))
-                        param.put("udt", "")
+                        val dt = KeyChain.get(context, Const.KC_DT_DISCONNECT) ?: ""
+                        param.put("udt", dt)
                         param.put("dur", 1)
-                        val jsonRI = HttpFuel.post(context, "/msngr/append_log", param.toString()).await() //로깅이므로 오류가 나도 넘어가도록 함
+                        HttpFuel.post(context, "/msngr/append_log", param.toString()).await() //로깅이므로 오류가 나도 넘어가도록 함
                     }
                     callback(json)
                 } catch (e: Exception) {

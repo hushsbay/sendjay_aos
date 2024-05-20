@@ -381,6 +381,7 @@ class ChatService : Service() {
                 curState_sock = false
                 if (status_sock == Const.SockState.BEFORE_CONNECT) status_sock = Const.SockState.FIRST_DISCONNECTED
                 Util.sendToDownWhenConnDisconn(applicationContext, Socket.EVENT_DISCONNECT)
+                KeyChain.set(applicationContext, Const.KC_DT_DISCONNECT, Util.getCurDateTimeStr(true)) //Util.connectSockWithCallback() 참조
             } catch (e: Exception) {
                 logger.error("$logTitle: EVENT_DISCONNECT ${e.toString()}")
                 Util.log(logTitle, e.toString())

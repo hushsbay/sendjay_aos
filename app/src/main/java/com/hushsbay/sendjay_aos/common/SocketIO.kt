@@ -73,7 +73,8 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                     msg = "Network not available."
                 }
                 //if (msg != "") msg += "\n${Const.WAIT_FOR_RECONNECT}"
-                val jsonStr = """{ code : '$code', msg : '${Const.TITLE}: $msg' }"""
+                //val jsonStr = """{ code : '$code', msg : '${Const.TITLE}: $msg' }"""
+                val jsonStr = """{ code : '$code', msg : '$msg' }"""
                 Gson().fromJson(jsonStr, JsonObject::class.java)
             } catch (e: Exception) {
                 val jsonStr = """{ code : '${Const.RESULT_ERR}', msg : '${Const.TITLE}:SocketIO:connect: ${e.message}' }"""

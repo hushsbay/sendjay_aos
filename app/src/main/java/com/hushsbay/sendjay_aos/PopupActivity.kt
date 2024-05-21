@@ -56,33 +56,38 @@ class PopupActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityPopupBinding.inflate(layoutInflater)
-        setContentView(binding.root) //setContentView(R.layout.activity_popup)
-        logger = LogHelper.getLogger(applicationContext, this::class.simpleName)
-        WebView.setWebContentsDebuggingEnabled(true)
-        curContext = this@PopupActivity
-        connManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        uInfo = UserInfo(curContext) //KeyChain Get
-        //1) origin = "/popup?type=image&msgid=" + msgid + "&body=" + body, objStr = "" : from jay_chat.js
-        gOrigin = intent.getStringExtra("origin")!!
-        gObjStr = intent.getStringExtra("objStr")!!
-        var popup_version = KeyChain.get(curContext, Const.KC_WEBVIEW_POPUP_VERSION) ?: ""
-        if (popup_version.startsWith("clear_cache")) {
-            binding.wvPopup.clearCache(true)
-            binding.wvPopup.clearHistory()
-            popup_version = popup_version.replace("clear_cache", "")
-            KeyChain.set(curContext, Const.KC_WEBVIEW_POPUP_VERSION, popup_version)
-        }
-        binding.btnRetry.setOnClickListener {
-            if (!Util.chkIfNetworkAvailable(curContext, connManager, "toast")) return@setOnClickListener
+        try {
+            binding = ActivityPopupBinding.inflate(layoutInflater)
+            setContentView(binding.root) //setContentView(R.layout.activity_popup)
+            logger = LogHelper.getLogger(applicationContext, this::class.simpleName)
+            WebView.setWebContentsDebuggingEnabled(true)
+            curContext = this@PopupActivity
+            connManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            uInfo = UserInfo(curContext) //KeyChain Get
+            //1) origin = "/popup?type=image&msgid=" + msgid + "&body=" + body, objStr = "" : from jay_chat.js
+            gOrigin = intent.getStringExtra("origin")!!
+            gObjStr = intent.getStringExtra("objStr")!!
+            var popup_version = KeyChain.get(curContext, Const.KC_WEBVIEW_POPUP_VERSION) ?: ""
+            if (popup_version.startsWith("clear_cache")) {
+                binding.wvPopup.clearCache(true)
+                binding.wvPopup.clearHistory()
+                popup_version = popup_version.replace("clear_cache", "")
+                KeyChain.set(curContext, Const.KC_WEBVIEW_POPUP_VERSION, popup_version)
+            }
+            binding.btnRetry.setOnClickListener {
+                if (!Util.chkIfNetworkAvailable(curContext, connManager, "toast")) return@setOnClickListener
+                //procAutoLogin() { setupWebViewPopup(gOrigin) }
+                setupWebViewPopup(gOrigin) //임시 - 로그인 체크 필요
+            }
+            binding.btnSave.setOnClickListener {
+                Util.loadUrl(binding.wvPopup, "save")
+            }
             //procAutoLogin() { setupWebViewPopup(gOrigin) }
             setupWebViewPopup(gOrigin) //임시 - 로그인 체크 필요
+        } catch (e: Exception) {
+            logger.error("onCreate: ${e.toString()}")
+            Util.procException(curContext, e, "onCreate")
         }
-        binding.btnSave.setOnClickListener {
-            Util.loadUrl(binding.wvPopup, "save")
-        }
-        //procAutoLogin() { setupWebViewPopup(gOrigin) }
-        setupWebViewPopup(gOrigin) //임시 - 로그인 체크 필요
     }
 
     override fun onDestroy() {

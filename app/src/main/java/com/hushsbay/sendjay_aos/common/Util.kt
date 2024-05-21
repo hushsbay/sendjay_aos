@@ -28,10 +28,13 @@ import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.File
 import java.net.URLDecoder
+import java.text.SimpleDateFormat
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlin.collections.ArrayList
+import kotlin.math.abs
 
 class Util {
 
@@ -114,14 +117,19 @@ class Util {
                         param.put("work", "conn")
                         val screen = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
                         param.put("state", screen)
-                        param.put("cdt", getCurDateTimeStr(true))
-                        val dt = KeyChain.get(context, Const.KC_DT_DISCONNECT) ?: ""
-                        param.put("udt", dt)
-                        if (dt == "") {
-                            param.put("dur", 0) //접속이 끊어진 적이 없음 (예: 최초 연결시)
+                        val strDtNow = getCurDateTimeStr(true)
+                        val strDtDisconnect = KeyChain.get(context, Const.KC_DT_DISCONNECT) ?: ""
+                        param.put("cdt", strDtNow)
+                        param.put("udt", strDtDisconnect)
+                        if (strDtDisconnect == "") {
+                            param.put("dur", -1) //접속이 끊어진 적이 없음 (예: 최초 연결시)
                         } else { //duration(seconds) = 현재시각 - dt
-
-                            param.put("dur", 1)
+                            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                            val date1 = dateFormat.parse(strDtDisconnect)
+                            val date2 = dateFormat.parse(strDtNow)
+                            var diff: Long = abs(date2.time - date1.time) / 1000 //초(seconds)
+                            if (diff > 31536000) diff = 31536000 //1년 넘으면 1년으로 최대치 설정
+                            param.put("dur", diff)
                         }
                         HttpFuel.post(context, "/msngr/append_log", param.toString()).await() //로깅이므로 오류가 나도 넘어가도록 함
                     }

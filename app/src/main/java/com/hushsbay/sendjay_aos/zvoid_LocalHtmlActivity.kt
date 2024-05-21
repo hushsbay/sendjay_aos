@@ -4,21 +4,16 @@ import android.app.Activity
 import android.content.Context
 import android.net.ConnectivityManager
 import android.os.Bundle
-import android.view.*
 import android.webkit.*
-import androidx.appcompat.app.AppCompatActivity
 import com.hushsbay.sendjay_aos.common.*
 import com.hushsbay.sendjay_aos.databinding.ActivityLocalhtmlBinding
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 //import kotlinx.android.synthetic.main.activity_localhtml.*
 //import kotlinx.android.synthetic.main.activity_main.*
 //import kotlinx.android.synthetic.main.activity_popup.*
 import org.apache.log4j.Logger
 import java.io.InputStream
 
-class LocalHtmlActivity : Activity() {
+class zvoid_LocalHtmlActivity : Activity() {
 
     private lateinit var curContext: Activity
     private lateinit var logger: Logger
@@ -41,7 +36,7 @@ class LocalHtmlActivity : Activity() {
         setContentView(binding.root) //setContentView(R.layout.activity_localhtml)
         logger = LogHelper.getLogger(applicationContext, this::class.simpleName)
         WebView.setWebContentsDebuggingEnabled(true)
-        curContext = this@LocalHtmlActivity
+        curContext = this@zvoid_LocalHtmlActivity
         connManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
         //uInfo = UserInfo(curContext)
         //1) origin = "/popup?type=image&msgid=" + msgid + "&body=" + body, objStr = "" : from jay_chat.js

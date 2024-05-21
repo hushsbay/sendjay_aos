@@ -47,6 +47,7 @@ import java.net.URL
 
 //socket.io는 json(org.json.JSONObect) 사용. Fuel은 gson(com.google.gson.JsonObject) 사용
 //onCreate -> onStart -> onResume -> onPause -> onStop -> onDestroy
+
 class MainActivity : Activity() {
 
     companion object { //See ChatService.kt
@@ -65,7 +66,6 @@ class MainActivity : Activity() {
     private lateinit var imm: InputMethodManager
     private lateinit var keyboardVisibilityChecker: KeyboardVisibilityChecker
 
-    //private var hasPermissionToAccept = false
     private lateinit var binding: ActivityMainBinding
     private lateinit var authJson: JsonObject //Gson
 
@@ -112,10 +112,7 @@ class MainActivity : Activity() {
         for (permission in permissionList) {
             if (ActivityCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) requestList.add(permission)
         }
-        if (requestList.isNotEmpty()) {
-            //if (hasPermissionToAccept) Util.toast(curContext, "권한허용후 앱을 다시 시작하시기 바랍니다.")
-            ActivityCompat.requestPermissions(this, requestList.toTypedArray(), REQUEST_PERMISSION)
-        }
+        if (requestList.isNotEmpty()) ActivityCompat.requestPermissions(this, requestList.toTypedArray(), REQUEST_PERMISSION)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -136,80 +133,74 @@ class MainActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-//        if (!packageManager.canRequestPackageInstalls()) {
-//            Util.alert(curContext, "이 앱은 플레이스토어에서 다운로드받지 않는 인하우스앱입니다. 출처를 알 수 없는 앱(${Const.TITLE}) 사용을 허용해 주시기 바랍니다.", Const.TITLE, {
-//                startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
-//            })
-//        }
-        checkPermission(permissions)
-//        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-//        if (!notificationManager.isNotificationPolicyAccessGranted) {
-//            startActivity(Intent(Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS))
-//        }
-        //권한#1 SYSTEM_ALERT_WINDOW
-        if (!Settings.canDrawOverlays(this)) { //hasPermission으로 보면 됨
-            //hasPermissionToAccept = true
-            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
-            startActivity(intent)
-        }
-        //권한#2 SCHEDULE_EXACT_ALARM
-        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-        if (!alarmManager.canScheduleExactAlarms()) { //hasPermission으로 보면 됨
-            //hasPermissionToAccept = true
-            val appDetail = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName"))
-            appDetail.addCategory(Intent.CATEGORY_DEFAULT)
-            appDetail.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            startActivity(appDetail)
-        }
-        binding = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root) //setContentView(R.layout.activity_main)
-        logger = LogHelper.getLogger(applicationContext, this::class.simpleName)
-        binding.wvMain.setBackgroundColor(0) //make it transparent (if not, white background will be shown)
-        WebView.setWebContentsDebuggingEnabled(true) //for debug
-        curContext = this@MainActivity
-        NotiCenter(curContext, packageName) //NotiCenter.invoke() //ChatService.kt onCreate()에서도 실행하고 있으나 여기서도 여러 메소드 사용중이므로 중복 호출
-        isOnCreate = true
-        stopServiceByLogout = false
-        roomidForChatService = ""
-        KeyChain.set(curContext, Const.KC_ROOMID_FOR_CHATSERVICE, "")
-        KeyChain.set(curContext, Const.KC_SCREEN_STATE, "on")
-        pm = getSystemService(Context.POWER_SERVICE) as PowerManager
-        connManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-        keyboardVisibilityChecker = KeyboardVisibilityChecker(window, onShowKeyboard = { keyboardHeight ->
-            if (roomidForChatService != "") Util.loadUrl(binding.wvRoom, "scrollToBottomFromWebView")
-        })
-        keyboardVisibilityChecker = KeyboardVisibilityChecker(window, onHideKeyboard = { })
-        binding.btnRetry.setOnClickListener {
-            if (!Util.chkIfNetworkAvailable(curContext, connManager, "toast")) return@setOnClickListener
-            if (ChatService.state != Const.ServiceState.RUNNING) {
-                start()
-            } else {
-                CoroutineScope(Dispatchers.Main).launch {
-                    procLogin(true) { //related with Reset Authentication
-                        Util.connectSockWithCallback(curContext, connManager) {
-                            if (it.get("code").asString != Const.RESULT_OK) {
-                                Util.toast(curContext, it.get("msg").asString)
-                                return@connectSockWithCallback
-                            }
-                            retried = true
-                            if (roomidForChatService != "") { //When wvRoom shown
-                                setupWebViewRoom(true)
-                            } else {
-                                if (mainLoaded) {
-                                    toggleDispRetry(false, "Main")
+        try {
+            checkPermission(permissions)
+            //권한#1 SYSTEM_ALERT_WINDOW
+            if (!Settings.canDrawOverlays(this)) { //hasPermission으로 보면 됨
+                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+                startActivity(intent)
+            }
+            //권한#2 SCHEDULE_EXACT_ALARM
+            val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+            if (!alarmManager.canScheduleExactAlarms()) { //hasPermission으로 보면 됨
+                val appDetail = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName"))
+                appDetail.addCategory(Intent.CATEGORY_DEFAULT)
+                appDetail.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(appDetail)
+            }
+            binding = ActivityMainBinding.inflate(layoutInflater)
+            setContentView(binding.root) //setContentView(R.layout.activity_main)
+            logger = LogHelper.getLogger(applicationContext, this::class.simpleName)
+            binding.wvMain.setBackgroundColor(0) //make it transparent (if not, white background will be shown)
+            WebView.setWebContentsDebuggingEnabled(true) //for debug
+            curContext = this@MainActivity
+            NotiCenter(curContext, packageName) //NotiCenter.invoke() //ChatService.kt onCreate()에서도 실행하고 있으나 여기서도 여러 메소드 사용중이므로 중복 호출
+            isOnCreate = true
+            stopServiceByLogout = false
+            roomidForChatService = ""
+            KeyChain.set(curContext, Const.KC_ROOMID_FOR_CHATSERVICE, "")
+            KeyChain.set(curContext, Const.KC_SCREEN_STATE, "on")
+            pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+            connManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            keyboardVisibilityChecker = KeyboardVisibilityChecker(window, onShowKeyboard = { keyboardHeight ->
+                if (roomidForChatService != "") Util.loadUrl(binding.wvRoom, "scrollToBottomFromWebView")
+            })
+            keyboardVisibilityChecker = KeyboardVisibilityChecker(window, onHideKeyboard = { })
+            binding.btnRetry.setOnClickListener {
+                if (!Util.chkIfNetworkAvailable(curContext, connManager, "toast")) return@setOnClickListener
+                if (ChatService.state != Const.ServiceState.RUNNING) {
+                    start()
+                } else {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        procLogin(true) { //related with Reset Authentication
+                            Util.connectSockWithCallback(curContext, connManager) {
+                                if (it.get("code").asString != Const.RESULT_OK) {
+                                    Util.toast(curContext, it.get("msg").asString)
+                                    return@connectSockWithCallback
+                                }
+                                retried = true
+                                if (roomidForChatService != "") { //When wvRoom shown
+                                    setupWebViewRoom(true)
                                 } else {
-                                    setupWebViewMain()
+                                    if (mainLoaded) {
+                                        toggleDispRetry(false, "Main")
+                                    } else {
+                                        setupWebViewMain()
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+            //Battery Optimization (with socket.io)의 경우, 절전모드나 대기모드에서 간헐적인 disconnection이 발생함.
+            //그럼에도 불구하고, FCM을 이용하면 instant messeging을 구현 가능함. 그러나, FCM은 100% 성공적이고 지연없는 배달을 보장해 주지 않음.
+            start() //with Battery Optimization
+        } catch (e: Exception) {
+            logger.error("onCreate: ${e.toString()}")
+            Util.procException(curContext, e, "onCreate")
         }
-        //Battery Optimization (with socket.io)의 경우, 절전모드나 대기모드에서 간헐적인 disconnection이 발생함.
-        //그럼에도 불구하고, FCM을 이용하면 instant messeging을 구현 가능함. 그러나, FCM은 100% 성공적이고 지연없는 배달을 보장해 주지 않음.
-        start() //with Battery Optimization
     }
 
     override fun onNewIntent(intent: Intent?) { //onNewIntent (from Notification) -> onResume (no onCreate)
@@ -343,38 +334,38 @@ class MainActivity : Activity() {
 //                startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
 //            })
 //        } else {
-            CoroutineScope(Dispatchers.Main).launch {
-                if (!chkUpdate(true)) return@launch
-                procLogin(false) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        try {
-                            val winid = Util.getRnd().toString() + "_" + Util.getCurDateTimeStr()
-                            val param = org.json.JSONObject()
-                            param.put("type", "set_new")
-                            param.put("userkey", uInfo.userkey)
-                            param.put("winid", winid)
-                            val json = HttpFuel.post(curContext, "/msngr/chk_redis", param.toString()).await()
-                            if (authJson.get("msg").asString.contains("timeout")) {
-                                Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)
-                            } else if (json.get("code").asString != Const.RESULT_OK) {
-                                Util.alert(curContext, json.get("msg").asString, logTitle)
-                            } else {
-                                KeyChain.set(curContext, Const.KC_WINID, winid)
-                                KeyChain.set(curContext, Const.KC_USERIP, json.get("userip").asString)
-                                if (ChatService.serviceIntent == null) {
-                                    val intentNew = Intent(curContext, ChatService::class.java)
-                                    startForegroundService(intentNew)
-                                }
-                                setupWebViewMain()
-                                //setupWebViewLocal()
+        CoroutineScope(Dispatchers.Main).launch {
+            if (!chkUpdate(true)) return@launch
+            procLogin(false) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    try {
+                        val winid = Util.getRnd().toString() + "_" + Util.getCurDateTimeStr()
+                        val param = org.json.JSONObject()
+                        param.put("type", "set_new")
+                        param.put("userkey", uInfo.userkey)
+                        param.put("winid", winid)
+                        val json = HttpFuel.post(curContext, "/msngr/chk_redis", param.toString()).await()
+                        if (authJson.get("msg").asString.contains("timeout")) {
+                            Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)
+                        } else if (json.get("code").asString != Const.RESULT_OK) {
+                            Util.alert(curContext, json.get("msg").asString, logTitle)
+                        } else {
+                            KeyChain.set(curContext, Const.KC_WINID, winid)
+                            KeyChain.set(curContext, Const.KC_USERIP, json.get("userip").asString)
+                            if (ChatService.serviceIntent == null) {
+                                val intentNew = Intent(curContext, ChatService::class.java)
+                                startForegroundService(intentNew)
                             }
-                        } catch (e: Exception) {
-                            logger.error("$logTitle: ${e.toString()}")
-                            Util.procException(curContext, e, logTitle)
+                            setupWebViewMain()
+                            //setupWebViewLocal()
                         }
+                    } catch (e: Exception) {
+                        logger.error("$logTitle: ${e.toString()}")
+                        Util.procException(curContext, e, logTitle)
                     }
                 }
             }
+        }
         //}
     }
 

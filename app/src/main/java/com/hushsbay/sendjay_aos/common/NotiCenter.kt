@@ -16,6 +16,7 @@ import android.os.VibratorManager
 import androidx.core.app.NotificationCompat
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import com.hushsbay.sendjay_aos.ChatService
 //import com.hushsbay.sendjay.common.*
 import com.hushsbay.sendjay_aos.MainActivity
 import com.hushsbay.sendjay_aos.R
@@ -101,7 +102,7 @@ object NotiCenter {
                 webConnectedAlso = true
             }
             body = Util.getTalkBodyCustom(type, body)
-            val intentNoti = Intent(context, MainActivity::class.java)
+            val intentNoti = Intent(context, MainActivity::class.java) //val intentNoti = Intent(context, ChatService::class.java)
             intentNoti.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
             intentNoti.putExtra("type", "open")
             intentNoti.putExtra("roomid", roomid)

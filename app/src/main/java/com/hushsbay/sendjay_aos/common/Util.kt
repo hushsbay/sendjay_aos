@@ -131,6 +131,7 @@ class Util {
                             if (diff > 31536000) diff = 31536000 //1년 넘으면 1년으로 최대치 설정
                             param.put("dur", diff)
                         }
+                        KeyChain.set(context, Const.KC_DT_DISCONNECT, "") //reset해야 로깅에 의미가 있음
                         HttpFuel.post(context, "/msngr/append_log", param.toString()).await() //로깅이므로 오류가 나도 넘어가도록 함
                     }
                     callback(json)

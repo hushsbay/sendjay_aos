@@ -81,4 +81,9 @@ object HttpFuel { //Fuel is single instance and uses gson(com.google.gson.JsonOb
         }
     }
 
+    fun isNetworkUnstableMsg(gson: JsonObject) : Boolean {
+        if (gson.get("msg").asString.contains("timeout") || gson.get("msg").asString.contains("Unable to resolve host")) return true
+        return false
+    }
+
 }

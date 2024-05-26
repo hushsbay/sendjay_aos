@@ -179,7 +179,8 @@ class ChatService : Service() {
             logger.error("$logTitle: ${e.toString()}")
             Util.log(logTitle, e.toString())
             e.printStackTrace()
-            RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
+            //RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
+            Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${e.toString()}")
         }
     }
 
@@ -220,7 +221,8 @@ class ChatService : Service() {
             logger.error("$logTitle: ${e.toString()}")
             Util.log(logTitle, e.toString())
             e.printStackTrace()
-            RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
+            //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
+            Util.showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${e.toString()}")
         }
      }
 
@@ -255,7 +257,8 @@ class ChatService : Service() {
             logger.error("$logTitle: ${e.toString()}")
             Util.log(logTitle, e.toString())
             e.printStackTrace()
-            RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
+            //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
+            Util.showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${e.toString()}")
         }
     }
 
@@ -270,15 +273,18 @@ class ChatService : Service() {
                 if (jsonRI.get("code").asString == Const.RESULT_OK) {
                     NotiCenter.getRoomInfo(jsonRI, roomid)
                 } else if (HttpFuel.isNetworkUnstableMsg(jsonRI)) {
-                    RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", Const.NETWORK_UNSTABLE)))
+                    //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", Const.NETWORK_UNSTABLE)))
+                    Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE)
                 } else {
-                    RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:setRoomInfo: ${jsonRI.get("msg").asString}")))
+                    //RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:setRoomInfo: ${jsonRI.get("msg").asString}")))
+                    Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${jsonRI.get("msg").asString}")
                 }
             } catch (e: Exception) {
                 logger.error("$logTitle: ${e.toString()}")
                 Util.log(logTitle, e.toString())
                 e.printStackTrace()
-                RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:setRoomInfo: ${e.toString()}")))
+                //RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:setRoomInfo: ${e.toString()}")))
+                Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${e.toString()}")
             }
         }
     }
@@ -314,7 +320,8 @@ class ChatService : Service() {
                 logger.error("$logTitle: ${e.toString()}")
                 Util.log(logTitle, e.toString())
                 e.printStackTrace()
-                RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
+                //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
+                Util.showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${e.toString()}")
             }
         }
     }
@@ -375,22 +382,26 @@ class ChatService : Service() {
                                 )
                             }
                         } else if (HttpFuel.isNetworkUnstableMsg(json)) {
-                            RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", Const.NETWORK_UNSTABLE)))
+                            //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", Const.NETWORK_UNSTABLE)))
+                            Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE)
                         } else {
-                            RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:qry_unread: ${json.get("msg").asString}")))
+                            //RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:qry_unread: ${json.get("msg").asString}")))
+                            Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${json.get("msg").asString}")
                         }
                     } catch (e: Exception) {
                         logger.error("$logTitle: EVENT_CONNECT ${e.toString()}")
                         Util.log(logTitle, e.toString())
                         e.printStackTrace()
-                        RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:qry_unread: ${e.toString()}")))
+                        //RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:qry_unread: ${e.toString()}")))
+                        Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle:qry_unread: ${e.toString()}")
                     }
                 }
             } catch (e1: Exception) {
                 logger.error("$logTitle: EVENT_CONNECT1 ${e1.toString()}")
                 Util.log(logTitle, e1.toString())
                 e1.printStackTrace()
-                RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e1.toString()}")))
+                //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e1.toString()}")))
+                Util.showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${e1.toString()}")
             }
         }.off(Socket.EVENT_DISCONNECT).on(Socket.EVENT_DISCONNECT) {
             try { //설명은 class Daemon의 ###10 참조
@@ -403,7 +414,8 @@ class ChatService : Service() {
                 logger.error("$logTitle: EVENT_DISCONNECT ${e.toString()}")
                 Util.log(logTitle, e.toString())
                 e.printStackTrace()
-                RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
+                //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
+                Util.showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${e.toString()}")
             }
         }.off(Const.SOCK_EV_ALERT).on(Const.SOCK_EV_ALERT) {
             try {
@@ -552,7 +564,8 @@ class ChatService : Service() {
                 logger.error("$logTitle: SOCK_EV_COMMON ${e.toString()}")
                 Util.log(logTitle + ": " + Const.SOCK_EV_COMMON, e.toString())
                 e.printStackTrace()
-                RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
+                //RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
+                Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${e.toString()}")
             }
         }
     }

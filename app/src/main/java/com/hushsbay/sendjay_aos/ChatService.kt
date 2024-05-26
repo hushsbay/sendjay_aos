@@ -264,7 +264,6 @@ class ChatService : Service() {
             try {
                 val data = json.getJSONObject("data")
                 val roomid = data.getString("roomid")
-                //val jsonRI = HttpFuel.get(applicationContext, "${Const.DIR_ROUTE}/get_roominfo", listOf("roomid" to roomid)).await()
                 val param = org.json.JSONObject()
                 param.put("roomid", roomid)
                 val jsonRI = HttpFuel.post(applicationContext, "/msngr/get_roominfo", param.toString()).await()
@@ -330,7 +329,6 @@ class ChatService : Service() {
                 }
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        //val json = HttpFuel.get(applicationContext, "${Const.DIR_ROUTE}/qry_unread", null).await()
                         val roomidForService = KeyChain.get(applicationContext, Const.KC_ROOMID_FOR_CHATSERVICE)!!
                         val param = org.json.JSONObject()
                         param.put("type", "R") //모바일에서만 호출
@@ -478,17 +476,6 @@ class ChatService : Service() {
                             //do nothing
                         }
                     }
-//                    CoroutineScope(Dispatchers.IO).launch {
-//                        try {
-//                            //val param = listOf("type" to "U")
-//                            //HttpFuel.get(applicationContext, "${Const.DIR_ROUTE}/qry_unread", param).await()
-//                            val param = org.json.JSONObject()
-//                            param.put("type", "U")
-//                            HttpFuel.post(applicationContext, "/msngr/qry_unread", param.toString()).await()
-//                        } catch (e: Exception) {
-//                            //do nothing
-//                        }
-//                    }
                 } else if (ev == Const.SOCK_EV_READ_MSG) {
                     val data = json.getJSONObject("data")
                     val type = data.getString("type")

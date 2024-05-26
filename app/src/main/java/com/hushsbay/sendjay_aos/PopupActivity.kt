@@ -80,6 +80,8 @@ class PopupActivity : Activity() {
             binding.btnSave.setOnClickListener {
                 Util.loadUrl(binding.wvPopup, "save")
             }
+            disposableMsg?.dispose()
+            disposableMsg = Util.procRxMsg(curContext)
             setupWebViewPopup(gOrigin)
         } catch (e: Exception) {
             logger.error("onCreate: ${e.toString()}")
@@ -211,8 +213,8 @@ class PopupActivity : Activity() {
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             CoroutineScope(Dispatchers.Main).launch {
                 try {
-                    disposableMsg?.dispose()
-                    disposableMsg = Util.procRxMsg(curContext)
+                    //disposableMsg?.dispose()
+                    //disposableMsg = Util.procRxMsg(curContext)
                     disposableMain?.dispose()
                     disposableMain = RxToDown.subscribe<RxEvent>().subscribe { //disposable = RxBus.subscribe<RxEvent>().observeOn(AndroidSchedulers.mainThread()) //to receive the event on main thread
                         CoroutineScope(Dispatchers.Main).launch {

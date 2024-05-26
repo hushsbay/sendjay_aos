@@ -5,6 +5,8 @@ import io.reactivex.subjects.PublishSubject
 
 class RxToDown { //https://selfish-developer.com/entry/RxJava-Subject-PublishSubject-BehaviorSubject, https://tourspace.tistory.com/281
 
+    //MainActivity.kt의 procAfterOpenMain() 설명 참조
+
     companion object {
 
         val publisher: PublishSubject<Any> = PublishSubject.create()

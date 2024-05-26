@@ -269,6 +269,8 @@ class ChatService : Service() {
                 val jsonRI = HttpFuel.post(applicationContext, "/msngr/get_roominfo", param.toString()).await()
                 if (jsonRI.get("code").asString == Const.RESULT_OK) {
                     NotiCenter.getRoomInfo(jsonRI, roomid)
+                } else if (HttpFuel.isNetworkUnstableMsg(jsonRI)) {
+                    RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", Const.NETWORK_UNSTABLE)))
                 } else {
                     RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:setRoomInfo: ${jsonRI.get("msg").asString}")))
                 }
@@ -352,11 +354,28 @@ class ChatService : Service() {
                                 param.put("body", body1)
                                 param.put("type", type)
                                 param.put("cdt", cdt)
-                                param.put("senderid", "dummy") //서버의 qry_unread.js where 조건 보면 어차피 내가 보낸 건 빼고 가져옴 (=내가 보낸 건 없음)
-                                var needNoti = NotiCenter.needNoti(applicationContext, uInfo, roomid, roomidForService, param)
+                                param.put(
+                                    "senderid",
+                                    "dummy"
+                                ) //서버의 qry_unread.js where 조건 보면 어차피 내가 보낸 건 빼고 가져옴 (=내가 보낸 건 없음)
+                                var needNoti = NotiCenter.needNoti(
+                                    applicationContext,
+                                    uInfo,
+                                    roomid,
+                                    roomidForService,
+                                    param
+                                )
                                 if (!needNoti) return@launch
-                                NotiCenter.notiToRoom(applicationContext, uInfo, roomid, param, false)
+                                NotiCenter.notiToRoom(
+                                    applicationContext,
+                                    uInfo,
+                                    roomid,
+                                    param,
+                                    false
+                                )
                             }
+                        } else if (HttpFuel.isNetworkUnstableMsg(json)) {
+                            RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", Const.NETWORK_UNSTABLE)))
                         } else {
                             RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:qry_unread: ${json.get("msg").asString}")))
                         }
@@ -454,7 +473,7 @@ class ChatService : Service() {
 //                        }
 //                    }
                     CoroutineScope(Dispatchers.IO).launch {
-                        try {
+                        try { //Util.showRxMsgInApp(Const.SOCK_EV_TOAST, "하하하하")
                             val data = json.getJSONObject("data")
                             var needNoti = NotiCenter.needNoti(applicationContext, uInfo, returnTo, roomidForService, data)
                             if (!needNoti) return@launch

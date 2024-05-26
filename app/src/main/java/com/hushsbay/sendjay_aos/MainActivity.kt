@@ -35,6 +35,7 @@ import com.hushsbay.sendjay_aos.common.SocketIO
 import com.hushsbay.sendjay_aos.common.UserInfo
 import com.hushsbay.sendjay_aos.common.Util
 import com.hushsbay.sendjay_aos.data.RxEvent
+import com.hushsbay.sendjay_aos.data.RxMsg
 import com.hushsbay.sendjay_aos.databinding.ActivityMainBinding
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.*
@@ -194,6 +195,8 @@ class MainActivity : Activity() {
                     }
                 }
             }
+            disposableMsg?.dispose()
+            disposableMsg = Util.procRxMsg(curContext)
             //Battery Optimization (with socket.io)의 경우, 절전모드나 대기모드에서 간헐적인 disconnection이 발생함.
             //그럼에도 불구하고, FCM을 이용하면 instant messeging을 구현 가능함. 그러나, FCM은 100% 성공적이고 지연없는 배달을 보장해 주지 않음.
             start() //with Battery Optimization
@@ -771,10 +774,14 @@ class MainActivity : Activity() {
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             CoroutineScope(Dispatchers.Main).launch {
                 try {
-                    disposableMsg?.dispose()
-                    disposableMsg = Util.procRxMsg(curContext)
+                    //disposableMsg?.dispose()
+                    //disposableMsg = Util.procRxMsg(curContext)
                     disposableMain?.dispose()
                     disposableMain = RxToDown.subscribe<RxEvent>().subscribe { //RxToDown.subscribe<RxEvent>().observeOn(AndroidSchedulers.mainThread()) {//to receive the event on main thread
+                        //코들린에서의 소켓이벤트시 데이터를 웹뷰로 전달함
+                        //따라서, 웹뷰내 페이지가 소켓데이터를 받을 준비가 되어 있어야 하는데 그 준비가 된 상태에서 호출하는 함수가 getFromWebViewSocket()임
+                        //그 의미는, 여기 procAfterOpenMain()가 호출되기 전엔 아래처럼 RxToDown.post()하면 안된다는 것임 (챗방에서도 마찬가지)
+                        //한편, RxMsg를 구독하는 것은 웹뷰와는 별도로 onCreate()에서 처리해야 ChatService.kt에서 사용싯점을 신경쓰지 않아도 되므로 onCreate()으로 이동시킴
                         CoroutineScope(Dispatchers.Main).launch {
                             var param: JSONObject?= null
                             try {

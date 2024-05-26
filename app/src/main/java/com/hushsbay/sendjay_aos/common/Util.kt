@@ -168,7 +168,16 @@ class Util {
             }
         }
 
+        fun showRxMsgInApp(type: String, msg: String) { //RxToDown만 처리함
+            //예) RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", Const.NETWORK_UNSTABLE)))
+            //ChatService.kt에서도 toast 또는 alert 등을 표시하기 위해 만든 함수인데 RxToDown이 많이 쓰여서 코딩 편의상 더 단순하게 줄인 형태임
+            //RxToDown.post()로 alert/toast 처리하는 것은 MainActivity.kt 등 UI에서는 굳이 사용할 필요없음
+            RxToDown.post(RxMsg(type, JSONObject().put("msg", msg)))
+        }
+
         fun sendToDownWhenConnDisconn(context: Context, ev: String) { //See Util.loadUrlJson(wvMain, "getFromWebViewSocket", param) in MainActivity.kt
+            //RxToDown.post() 사용시 그전에 구독상태가 되어 있어야 하는데 그게 아니면 아래 메시지가 전달되지 않을 것임을 유의해야 함
+            //구독 싯점은 MainActivity.kt의 procAfterOpenMain() 설명 참조
             try {
                 val json = JSONObject()
                 json.put("ev", ev)

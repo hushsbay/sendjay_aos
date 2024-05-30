@@ -86,7 +86,7 @@ class Const {
         const val SOCK_EV_SEND_MSG = "send_msg"
         const val SOCK_EV_READ_MSG = "read_msg"
         const val SOCK_EV_RENAME_ROOM = "rename_room"
-        const val SOCK_EV_CUT_MOBILE = "cut_mobile"
+        //const val SOCK_EV_CUT_MOBILE = "cut_mobile"
         const val SOCK_EV_MARK_AS_CONNECT = "mark_as_connect"
         const val SOCK_EV_CHK_ROOMFOCUS = "chk_roomfocus"
         /////////////////////////////////////////////////////////////////////////

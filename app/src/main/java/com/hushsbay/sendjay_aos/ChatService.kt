@@ -550,15 +550,15 @@ class ChatService : Service() {
                     }
                 } else if (ev == Const.SOCK_EV_RENAME_ROOM) {
                     setRoomInfo(json, ev) //ChatService내 ajax (서버다운시) 테스트가 쉽지 않음. 소켓통신이 되고 ajax가 안되는 상황을 만들어야 하는데 어려워 그냥 MainActivity.kt에서만 테스트 수행
-                } else if (ev == Const.SOCK_EV_CUT_MOBILE) {
-                    val data = json.getJSONObject("data")
-                    val userid = data.getString("userid")
-                    if (userid == uInfo.userid) { //Util.log(userid, uInfo.userid)
-                        KeyChain.set(applicationContext, Const.KC_AUTOLOGIN, "")
-                        cut_mobile = true
-                        stopSelf()
-                        logger.debug("stopSelf..SOCK_EV_CUT_MOBILE")
-                    }
+//               else if (ev == Const.SOCK_EV_CUT_MOBILE) {
+//                    val data = json.getJSONObject("data")
+//                    val userid = data.getString("userid")
+//                    if (userid == uInfo.userid) { //Util.log(userid, uInfo.userid)
+//                        KeyChain.set(applicationContext, Const.KC_AUTOLOGIN, "")
+//                        cut_mobile = true
+//                        stopSelf()
+//                        logger.debug("stopSelf..SOCK_EV_CUT_MOBILE")
+//                    }
                 } else if (ev == Const.SOCK_EV_CHK_ROOMFOCUS) {
                     Util.log("@@@@@", "+++++++++++++++")
                     val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""

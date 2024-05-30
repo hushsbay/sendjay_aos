@@ -12,6 +12,7 @@ import android.net.ConnectivityManager
 import android.os.IBinder
 import android.os.PowerManager
 import android.os.Vibrator
+import android.provider.Settings
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.work.PeriodicWorkRequest
@@ -64,6 +65,8 @@ class ChatService : Service() {
     private lateinit var screenReceiver: BroadcastReceiver
     private var pwrManager: PowerManager? = null
     private var connManager: ConnectivityManager? = null
+    private var manager: NotificationManager?= null
+    private var channel: NotificationChannel?= null
     private var disposable: Disposable? = null
     private var thread: Thread? = null
     private lateinit var uInfo: UserInfo
@@ -73,9 +76,11 @@ class ChatService : Service() {
 
     private inner class mainTask : TimerTask() { //Timer().schedule(mainTask(), 1000)과 연계되는데 아래 오류로 막음
         override fun run() {
+            Util.log("dfdsfsdfs", "fdgfdg")
             //android.app.RemoteServiceException: Bad notification for startForeground: java.lang.RuntimeException: invalid channel for service notification: null
-            //notiManager!!.cancel(Const.NOTI_ID_FOREGROUND_SERVICE)
-            //notiManager!!.deleteNotificationChannel(Const.APP_NAME) //android.app.RemoteServiceException: Bad notification for startForeground: java.lang.IllegalArgumentException: Channel does not exist
+            manager!!.cancel(Const.NOTI_ID_FOREGROUND_SERVICE)
+            //manager!!.deleteNotificationChannel(Const.APP_NAME) //android.app.RemoteServiceException: Bad notification for startForeground: java.lang.IllegalArgumentException: Channel does not exist
+            manager!!.deleteNotificationChannel(Const.NOTICHANID_FOREGROUND) //앱도 같이 스택으로 들어가버림
             this.cancel()
         }
     }
@@ -152,9 +157,11 @@ class ChatService : Service() {
         try {
             Util.log("startForegroundWithNotification")
             shouldThreadStop = false
-            var manager: NotificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            var channel: NotificationChannel = NotificationChannel(Const.NOTICHANID_FOREGROUND, Const.NOTICHANID_FOREGROUND, NotificationManager.IMPORTANCE_LOW)
-            manager.createNotificationChannel(channel) //여기 Noti는 진짜 알림을 위한 것이 아니고 foreground service 구동을 위한 것임
+            //var manager: NotificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            manager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            //var channel: NotificationChannel = NotificationChannel(Const.NOTICHANID_FOREGROUND, Const.NOTICHANID_FOREGROUND, NotificationManager.IMPORTANCE_LOW)
+            channel = NotificationChannel(Const.NOTICHANID_FOREGROUND, Const.NOTICHANID_FOREGROUND, NotificationManager.IMPORTANCE_LOW)
+            manager!!.createNotificationChannel(channel!!) //여기 Noti는 진짜 알림을 위한 것이 아니고 foreground service 구동을 위한 것임
             val builder = NotificationCompat.Builder(this, Const.NOTICHANID_FOREGROUND)
             builder.setSmallIcon(R.mipmap.ic_launcher) //If not, 2 lines of verbose explanation shows.
             val style = NotificationCompat.BigTextStyle()
@@ -174,7 +181,7 @@ class ChatService : Service() {
             //startForegroundService() 호출 이후 대략 5초안에 startForeground() 호출하지 않으면 오류 발생. id should not be zero
             //3번째 인자는 AndroidManifest.xml의 user-permission과 service태그내 type 설정이 없으면 오류 발생
             startForeground(Const.NOTI_ID_FOREGROUND_SERVICE, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
-            //Timer().schedule(mainTask(), 1000) //or postDelayed
+            //Timer().schedule(mainTask(), 10000) //or postDelayed
         } catch (e: Exception) {
             logger.error("$logTitle: ${e.toString()}")
             Util.log(logTitle, e.toString())
@@ -233,7 +240,10 @@ class ChatService : Service() {
             if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt()
             shouldThreadStop = true
             disposable?.dispose()
-            if (SocketIO.sock != null && SocketIO.sock!!.connected()) SocketIO.sock!!.disconnect()
+            if (SocketIO.sock != null && SocketIO.sock!!.connected()) {
+                SocketIO.sock!!.disconnect()
+                KeyChain.set(applicationContext, Const.KC_DT_DISCONNECT, Util.getCurDateTimeStr(true)) //Util.connectSockWithCallback() 참조
+            }
             Util.log(logTitle, "restartChatService01")
             if (MainActivity.stopServiceByLogout || cut_mobile) {
                 serviceIntent = null

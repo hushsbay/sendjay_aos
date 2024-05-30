@@ -605,8 +605,11 @@ class MainActivity : Activity() {
                             try {
                                 var json = SocketIO.connect(curContext, connManager).await()
                                 if (json.get("code").asString == Const.RESULT_OK) {
-                                    //if (btnRetry.visibility == View.VISIBLE) btnRetry.performClick()
+                                    binding.btnRetry.performClick() //if (btnRetry.visibility == View.VISIBLE) btnRetry.performClick()
+                                    //Util.toast(curContext, "conn @@@@@")
                                     break
+                                //} else {
+                                    //Util.toast(curContext, "not conn !")
                                 }
                             } catch (e: Exception) {
                                 Util.toast(curContext, logTitle + ": " + e.toString())
@@ -735,12 +738,12 @@ class MainActivity : Activity() {
         Util.setDownloadListener(curContext, binding.wvRoom)
         //wvRoom.loadUrl(KeyChain.get(curContext, Const.KC_MODE_PUBLIC) + "${Const.PAGE_ROOM}?webview=and&type=$gType&roomid=$gRoomid&origin=$gOrigin&nocache=" + Util.getRnd())
         binding.wvRoom.loadUrl(Const.URL_PUBLIC + "${Const.PAGE_ROOM}?webview=and&type=$gType&roomid=$gRoomid&origin=$gOrigin&nocache=" + Util.getRnd())
-        CoroutineScope(Dispatchers.Main).launch {
-            roomLoaded = false
-            retried = false
-            delay(Const.RESTFUL_TIMEOUT.toLong())
-            if (!roomLoaded && !retried) toggleDispRetry(true, "Room", logTitle, "RESTFUL_TIMEOUT")
-        }
+        //CoroutineScope(Dispatchers.Main).launch {
+        //    roomLoaded = false
+        //    retried = false
+        //    delay(Const.RESTFUL_TIMEOUT.toLong())
+        //    if (!roomLoaded && !retried) toggleDispRetry(true, "Room", logTitle, "RESTFUL_TIMEOUT")
+        //} //체크하려면 roomid도 비교해야 하는데, 이 부분은 사실 위 오류처리에서 먼저 처리해야 하는 것으로 보여 막아도 될 것임
     }
 
 //    private fun setupWebViewLocal() {

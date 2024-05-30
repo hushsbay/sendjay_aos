@@ -141,7 +141,7 @@ class ChatService : Service() {
         super.onDestroy()
         //Toast .makeText(applicationContext, Const.TITLE + ": Service is destrying..restarting..", Toast.LENGTH_LONG).show()
         Util.log("$$$$$$$$", "restartChatServiceBBB")
-        if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt()
+        //if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt()
         state = Const.ServiceState.STOPPED
         restartChatService()
         unregisterReceiver(screenReceiver)
@@ -230,7 +230,7 @@ class ChatService : Service() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
             Util.log(logTitle, "restartChatService0")
-            //if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt() //위로 이동
+            if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt()
             shouldThreadStop = true
             disposable?.dispose()
             if (SocketIO.sock != null && SocketIO.sock!!.connected()) SocketIO.sock!!.disconnect()

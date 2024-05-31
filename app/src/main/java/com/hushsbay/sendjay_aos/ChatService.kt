@@ -371,25 +371,10 @@ class ChatService : Service() {
                                 param.put("body", body1)
                                 param.put("type", type)
                                 param.put("cdt", cdt)
-                                param.put(
-                                    "senderid",
-                                    "dummy"
-                                ) //서버의 qry_unread.js where 조건 보면 어차피 내가 보낸 건 빼고 가져옴 (=내가 보낸 건 없음)
-                                var needNoti = NotiCenter.needNoti(
-                                    applicationContext,
-                                    uInfo,
-                                    roomid,
-                                    roomidForService,
-                                    param
-                                )
+                                param.put("senderid","dummy") //서버의 qry_unread.js where 조건 보면 어차피 내가 보낸 건 빼고 가져옴 (=내가 보낸 건 없음)
+                                var needNoti = NotiCenter.needNoti(applicationContext, uInfo, roomid, roomidForService, param)
                                 if (!needNoti) return@launch
-                                NotiCenter.notiToRoom(
-                                    applicationContext,
-                                    uInfo,
-                                    roomid,
-                                    param,
-                                    false
-                                )
+                                NotiCenter.notiToRoom(applicationContext, uInfo, roomid, param,false)
                             }
                         } else if (HttpFuel.isNetworkUnstableMsg(json)) {
                             //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", Const.NETWORK_UNSTABLE)))

@@ -105,7 +105,9 @@ class Util {
                 try {
                     var json = SocketIO.connect(context, connManager).await()
                     val code = json.get("code").asString
-                    if (code == Const.RESULT_OK) {
+                    if (code == Const.RESULT_OK) { //1) 미접속->접속일 경우 2) 접속된 상태가 계속되는 경우 2가지 모두 해당함
+                        //1) 경우는 ChatService.kt에서 socket.io 고유 이벤트 잡아서 처리하고
+                        //여기서는 2) 경우에 대해서만 처리. 2)는 계속 체크하는 의미로 1)과는 달리 SOCK_EV_MARK_AS_CONNECT로 처리함
                         sendToDownWhenConnDisconn(context, Const.SOCK_EV_MARK_AS_CONNECT) //Util.log(logTitle, "SOCK_EV_MARK_AS_CONNECT..")
                     } else {
                         sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT) //Util.log(logTitle, "EVENT_DISCONNECT..")

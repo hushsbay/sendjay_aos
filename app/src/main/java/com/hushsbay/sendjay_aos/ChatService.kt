@@ -53,7 +53,7 @@ class ChatService : Service() {
         var serviceIntent: Intent? = null //See MainActivity.kt
         var status_sock = Const.SockState.BEFORE_CONNECT
         var curState_sock = false
-        var isBeingSockChecked = false
+        //var isBeingSockChecked = false
         var gapScreenOffOnDualMode = "10000"
         var gapScreenOnOnDualMode = "3000"
     }
@@ -316,11 +316,11 @@ class ChatService : Service() {
                         Toast.makeText(applicationContext, Const.TITLE + ": " + it.get("msg").asString, Toast.LENGTH_LONG).show()
                         return@connectSockWithCallback
                     }
-                    //if (SocketIO.sock == null) {
-                    //    Util.log(logTitle, it.get("msg").asString + "$$$$")
-                    //} else {
-                    //    Util.log(logTitle, it.get("msg").asString + "%%%%")
-                    //}
+                    if (SocketIO.sock == null) {
+                        Util.log(logTitle, it.get("msg").asString + "$$$$")
+                    } else {
+                        Util.log(logTitle, it.get("msg").asString + "%%%%")
+                    }
                     //서버 다운시 connectSockWithCallback()내 SocketIO.connect() 결과 Unable to connect~라는 msg 위에서 찍으면 잘 나옴. SocketIO.sock은 null 아님
                     //그런데 아래에서 emit하려고 하면 오류가 안나고 실행이 멈춤 (emit안에서 더 이상 진행이 안되는 느낌)
                     //따라서, 아래 행에서 try catch하지 않아도 오류 없이 멈춤
@@ -595,7 +595,8 @@ class ChatService : Service() {
                             Util.log(logTitle, "socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )
                             val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
                             if (autoLogin == "Y") {
-                                if (!isBeingSockChecked) Util.connectSockWithCallback(applicationContext, connManager!!)
+                                //if (!isBeingSockChecked) Util.connectSockWithCallback(applicationContext, connManager!!)
+                                Util.connectSockWithCallback(applicationContext, connManager!!)
                             }
                         } catch (e: InterruptedException) {
                             logger.error("$logTitle: e ${e.toString()}")

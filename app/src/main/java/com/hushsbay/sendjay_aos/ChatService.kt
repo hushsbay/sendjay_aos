@@ -237,7 +237,10 @@ class ChatService : Service() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
             Util.log(logTitle, "restartChatService0")
-            if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt()
+            if (!thread!!.isInterrupted || thread!!.isAlive) {
+                thread!!.interrupt()
+                thread = null
+            }
             shouldThreadStop = true
             disposable?.dispose()
             if (SocketIO.sock != null && SocketIO.sock!!.connected()) {

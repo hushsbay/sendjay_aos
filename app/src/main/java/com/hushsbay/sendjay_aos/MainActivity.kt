@@ -136,7 +136,7 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         try {
             checkPermission(permissions)
-            //권한#1 SYSTEM_ALERT_WINDOW
+            //권한#1 SYSTEM_ALERT_WINDOW : https://greensky0026.tistory.com/222#google_vignette 백그라운드서비스와도 관련됨
             if (!Settings.canDrawOverlays(this)) { //hasPermission으로 보면 됨
                 val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
                 startActivity(intent)
@@ -368,8 +368,8 @@ class MainActivity : Activity() {
                         } else {
                             KeyChain.set(curContext, Const.KC_WINID, winid)
                             KeyChain.set(curContext, Const.KC_USERIP, json.get("userip").asString)
-                            if (ChatService.serviceIntent == null) {
-                                val intentNew = Intent(curContext, ChatService::class.java)
+                            if (ChatService.serviceIntent == null) { //https://forest71.tistory.com/185
+                                val intentNew = Intent(curContext, DummyService::class.java) //val intentNew = Intent(curContext, ChatService::class.java)
                                 startForegroundService(intentNew)
                             }
                             setupWebViewMain() //setupWebViewLocal()

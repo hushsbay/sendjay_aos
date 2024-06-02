@@ -43,7 +43,7 @@ import org.json.JSONObject
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class ChatService : Service() {
+class ChatService_Ori : Service() {
 
     //foregroundservice and notification icon => https://beehoneylife.tistory.com/5
     //https://www.spiria.com/en/blog/mobile-development/hiding-foreground-services-notifications-in-android/

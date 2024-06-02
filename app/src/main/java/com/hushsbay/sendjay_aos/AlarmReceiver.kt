@@ -36,7 +36,7 @@ class AlarmReceiver : BroadcastReceiver() {
             }
         }
         if (ChatService.state == Const.ServiceState.STOPPED) {
-            val intentNew = Intent(context, ChatService::class.java)
+            val intentNew = Intent(context, DummyService::class.java) //val intentNew = Intent(context, ChatService::class.java)
             context.startForegroundService(intentNew)
             //android.app.ForegroundServiceStartNotAllowedException: startForegroundService() not allowed due to mAllowStartForeground false
             //위 오류 발생해 재가동 안되는데 일단, 배터리 최적화 대상에서 제외하고 돌려보아도 안됨 (원래 아래 링크 읽어 보면 해결된다고 나오는데 안됨)

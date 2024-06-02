@@ -73,10 +73,14 @@
         <!--            android:configChanges="keyboardHidden|orientation|screenSize">-->
         <!--        </activity>-->
         <service
-            android:name=".ChatService"
+            android:name=".ChatService_Ori"
             android:foregroundServiceType="dataSync"
             android:stopWithTask="false">
         </service><!-- stopWithTask : see onTaskRemoved() in ChatService.kt -->
+        <service android:name=".DummyService" android:foregroundServiceType="dataSync" android:stopWithTask="false">
+        </service>
+        <service android:name=".ChatService" android:stopWithTask="false">
+        </service>
         <receiver android:name=".AlarmReceiver" android:exported="true" android:enabled="true">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />

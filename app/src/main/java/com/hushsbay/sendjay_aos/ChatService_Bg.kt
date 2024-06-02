@@ -43,7 +43,7 @@ import org.json.JSONObject
 import java.util.*
 import java.util.concurrent.TimeUnit
 
-class ChatService_Ori : Service() {
+class ChatService : Service() {
 
     //foregroundservice and notification icon => https://beehoneylife.tistory.com/5
     //https://www.spiria.com/en/blog/mobile-development/hiding-foreground-services-notifications-in-android/
@@ -58,8 +58,8 @@ class ChatService_Ori : Service() {
         var gapScreenOnOnDualMode = "3000"
     }
 
-    private var SEC_DURING_DAEMON: Long = 3000 //try connecting every 3 second in case of disconnection
-    private var SEC_DURING_RESTART = 3 //try restarting after 3 seconds (just once) when service killed (see another periodic trying with SimpleWorker.kt)
+    private var SEC_DURING_DAEMON: Long = 1000 //3000 //try connecting every 3 second in case of disconnection
+    private var SEC_DURING_RESTART = 1 //3 //try restarting after 3 seconds (just once) when service killed (see another periodic trying with SimpleWorker.kt)
 
     private lateinit var logger: Logger
     private lateinit var screenReceiver: BroadcastReceiver
@@ -73,17 +73,6 @@ class ChatService_Ori : Service() {
 
     private var shouldThreadStop = false
     private var cut_mobile = false
-
-    private inner class mainTask : TimerTask() { //Timer().schedule(mainTask(), 1000)과 연계되는데 아래 오류로 막음
-        override fun run() {
-            Util.log("dfdsfsdfs", "fdgfdg")
-            //android.app.RemoteServiceException: Bad notification for startForeground: java.lang.RuntimeException: invalid channel for service notification: null
-            manager!!.cancel(Const.NOTI_ID_FOREGROUND_SERVICE)
-            //manager!!.deleteNotificationChannel(Const.APP_NAME) //android.app.RemoteServiceException: Bad notification for startForeground: java.lang.IllegalArgumentException: Channel does not exist
-            manager!!.deleteNotificationChannel(Const.NOTICHANID_FOREGROUND) //앱도 같이 스택으로 들어가버림
-            this.cancel()
-        }
-    }
 
     override fun onCreate() {
         super.onCreate()
@@ -115,7 +104,7 @@ class ChatService_Ori : Service() {
             val winid = KeyChain.get(applicationContext, Const.KC_WINID)
             val userip = KeyChain.get(applicationContext, Const.KC_USERIP)
             SocketIO(applicationContext, uInfo, winid!!, userip!!) //kotlin invoke method : SocketIO.invoke()
-            startForegroundWithNotification()
+            //startForegroundWithNotification()
             initDeamon()
         } catch (e: Exception) {
             logger.error("onCreate: ${e.toString()}")

@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlarmManager
 import android.app.AlertDialog
-import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,13 +12,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
-import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
 import android.widget.Button
 import android.widget.EditText
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import com.google.gson.JsonObject
@@ -35,7 +32,6 @@ import com.hushsbay.sendjay_aos.common.SocketIO
 import com.hushsbay.sendjay_aos.common.UserInfo
 import com.hushsbay.sendjay_aos.common.Util
 import com.hushsbay.sendjay_aos.data.RxEvent
-import com.hushsbay.sendjay_aos.data.RxMsg
 import com.hushsbay.sendjay_aos.databinding.ActivityMainBinding
 import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.*
@@ -369,7 +365,7 @@ class MainActivity : Activity() {
                             KeyChain.set(curContext, Const.KC_WINID, winid)
                             KeyChain.set(curContext, Const.KC_USERIP, json.get("userip").asString)
                             if (ChatService.serviceIntent == null) { //https://forest71.tistory.com/185
-                                val intentNew = Intent(curContext, DummyService::class.java) //val intentNew = Intent(curContext, ChatService::class.java)
+                                val intentNew = Intent(curContext, ChatService::class.java)
                                 startForegroundService(intentNew)
                             }
                             setupWebViewMain() //setupWebViewLocal()

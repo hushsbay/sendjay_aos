@@ -1,47 +1,20 @@
 package com.hushsbay.sendjay_aos
 
-import android.annotation.SuppressLint
 import android.app.*
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.ServiceInfo
-import android.media.AudioManager
 import android.net.ConnectivityManager
 import android.os.IBinder
 import android.os.PowerManager
-import android.os.Vibrator
-import android.provider.Settings
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
-import androidx.work.PeriodicWorkRequest
-import androidx.work.WorkManager
-import com.google.gson.Gson
-import com.google.gson.JsonObject
 import com.hushsbay.sendjay_aos.common.Const
-import com.hushsbay.sendjay_aos.common.HttpFuel
-import com.hushsbay.sendjay_aos.common.KeyChain
-import com.hushsbay.sendjay_aos.common.LogHelper
-import com.hushsbay.sendjay_aos.common.NotiCenter
-import com.hushsbay.sendjay_aos.common.RxToDown
-import com.hushsbay.sendjay_aos.common.RxToRoom
-import com.hushsbay.sendjay_aos.common.RxToUp
-import com.hushsbay.sendjay_aos.common.SocketIO
 import com.hushsbay.sendjay_aos.common.UserInfo
 import com.hushsbay.sendjay_aos.common.Util
-import com.hushsbay.sendjay_aos.data.RxEvent
-import com.hushsbay.sendjay_aos.data.RxMsg
 import io.reactivex.disposables.Disposable
-import io.socket.client.Socket
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import org.apache.log4j.Logger
-import org.json.JSONObject
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 class DummyService : Service() {
 
@@ -89,7 +62,7 @@ class DummyService : Service() {
             connManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             pwrManager = getSystemService(Context.POWER_SERVICE) as PowerManager
             startForegroundWithNotification()
-            val intentNew = Intent(applicationContext, ChatService::class.java)
+            val intentNew = Intent(applicationContext, ChatService_Bg::class.java)
             startService(intentNew)
         } catch (e: Exception) {
             logger.error("onCreate: ${e.toString()}")

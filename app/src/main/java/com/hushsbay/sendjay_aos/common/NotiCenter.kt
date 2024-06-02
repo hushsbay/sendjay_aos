@@ -6,17 +6,13 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.media.AudioAttributes
 import android.media.AudioManager
-import android.media.RingtoneManager
 import android.net.Uri
-import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
 import androidx.core.app.NotificationCompat
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import com.hushsbay.sendjay_aos.ChatService
 //import com.hushsbay.sendjay.common.*
 import com.hushsbay.sendjay_aos.MainActivity
 import com.hushsbay.sendjay_aos.R

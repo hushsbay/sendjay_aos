@@ -7,9 +7,6 @@ import android.net.NetworkCapabilities
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.hushsbay.sendjay_aos.ChatService
-import com.hushsbay.sendjay_aos.common.Const
-import com.hushsbay.sendjay_aos.common.UserInfo
-import com.hushsbay.sendjay_aos.common.Util
 import io.socket.client.IO
 import io.socket.client.Socket
 import kotlinx.coroutines.*

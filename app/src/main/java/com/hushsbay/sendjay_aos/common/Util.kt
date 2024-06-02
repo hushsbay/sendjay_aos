@@ -16,7 +16,6 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import com.hushsbay.sendjay_aos.ChatService
 import com.hushsbay.sendjay_aos.data.RxEvent
 import com.hushsbay.sendjay_aos.data.RxMsg
 import io.reactivex.disposables.Disposable
@@ -29,7 +28,6 @@ import org.json.JSONObject
 import java.io.File
 import java.net.URLDecoder
 import java.text.SimpleDateFormat
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*

@@ -1,10 +1,8 @@
 package com.hushsbay.sendjay_aos
 
-import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.hushsbay.sendjay_aos.common.Const

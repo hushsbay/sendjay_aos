@@ -80,7 +80,7 @@
                                             <option name="values">
                                               <map>
                                                 <entry key="color" value="000000" />
-                                                <entry key="imagePath" value="D:\src\Git\sendjay_aos\app\src\main\res\drawable\ic_launcher.png" />
+                                                <entry key="imagePath" value="D:\src\Git\sendjay_aos\app\src\main\res\drawable\notiforservice.png" />
                                               </map>
                                             </option>
                                           </PersistentState>
@@ -108,6 +108,11 @@
                                           </PersistentState>
                                         </value>
                                       </entry>
+                                    </map>
+                                  </option>
+                                  <option name="values">
+                                    <map>
+                                      <entry key="outputName" value="ic_notiforservice" />
                                     </map>
                                   </option>
                                 </PersistentState>
@@ -174,6 +179,18 @@
                                           </PersistentState>
                                         </value>
                                       </entry>
+                                      <entry key="image">
+                                        <value>
+                                          <PersistentState>
+                                            <option name="values">
+                                              <map>
+                                                <entry key="color" value="000000" />
+                                                <entry key="imagePath" value="D:\src\Git\sendjay_aos\app\src\main\res\drawable\notiforservice.png" />
+                                              </map>
+                                            </option>
+                                          </PersistentState>
+                                        </value>
+                                      </entry>
                                       <entry key="text">
                                         <value>
                                           <PersistentState>
@@ -196,6 +213,13 @@
                                           </PersistentState>
                                         </value>
                                       </entry>
+                                    </map>
+                                  </option>
+                                  <option name="values">
+                                    <map>
+                                      <entry key="assetType" value="IMAGE" />
+                                      <entry key="imageAsset" value="D:\src\Git\sendjay_aos\app\src\main\res\drawable\notiforservice.png" />
+                                      <entry key="outputName" value="ic_notiforservice" />
                                     </map>
                                   </option>
                                 </PersistentState>

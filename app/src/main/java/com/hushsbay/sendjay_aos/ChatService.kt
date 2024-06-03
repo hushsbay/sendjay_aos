@@ -67,13 +67,11 @@ class ChatService : Service() {
     private var shouldThreadStop = false
     private var cut_mobile = false
 
-    private inner class mainTask : TimerTask() { //Timer().schedule(mainTask(), 1000)과 연계되는데 아래 오류로 막음
-        override fun run() {
-            Util.log("dfdsfsdfs", "fdgfdg")
-            //android.app.RemoteServiceException: Bad notification for startForeground: java.lang.RuntimeException: invalid channel for service notification: null
-            manager!!.cancel(Const.NOTI_ID_FOREGROUND_SERVICE)
-            //manager!!.deleteNotificationChannel(Const.APP_NAME) //android.app.RemoteServiceException: Bad notification for startForeground: java.lang.IllegalArgumentException: Channel does not exist
-            manager!!.deleteNotificationChannel(Const.NOTICHANID_FOREGROUND) //앱도 같이 스택으로 들어가버림
+    private inner class mainTask : TimerTask() {
+        override fun run() { //Timer().schedule(mainTask(), 1000)과 연계되는데 아래 오류로 막음
+            manager!!.cancel(Const.NOTI_ID_FOREGROUND_SERVICE) //안먹힘
+            manager!!.deleteNotificationChannel(Const.NOTICHANID_FOREGROUND) //앱도 같이 종료됨
+            manager!!.shouldHideSilentStatusBarIcons()
             this.cancel()
         }
     }
@@ -154,19 +152,21 @@ class ChatService : Service() {
             manager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             //var channel: NotificationChannel = NotificationChannel(Const.NOTICHANID_FOREGROUND, Const.NOTICHANID_FOREGROUND, NotificationManager.IMPORTANCE_LOW)
             channel = NotificationChannel(Const.NOTICHANID_FOREGROUND, Const.NOTICHANID_FOREGROUND, NotificationManager.IMPORTANCE_LOW)
+            channel!!.setShowBadge(false) //앱을 완전히 제거후 새로 시작하면 적용됨
             manager!!.createNotificationChannel(channel!!) //여기 Noti는 진짜 알림을 위한 것이 아니고 foreground service 구동을 위한 것임
             val builder = NotificationCompat.Builder(this, Const.NOTICHANID_FOREGROUND)
-            builder.setSmallIcon(R.mipmap.ic_launcher) //If not, 2 lines of verbose explanation shows.
+            builder.setSmallIcon(R.drawable.notiforservice) //If not, 2 lines of verbose explanation shows.
             val style = NotificationCompat.BigTextStyle()
             style.bigText(null)
             style.setBigContentTitle(null)
             style.setSummaryText(null)
             builder.setStyle(style)
-            builder.setContentTitle("좌우로 드래그하면 이 알림을 제거합니다.")
+            builder.setContentTitle("Sendjay Messaging")
             builder.setContentText(null)
-            builder.setOngoing(true)
+            builder.setOngoing(false)
             builder.setWhen(0)
             builder.setShowWhen(false)
+            builder.setAutoCancel(true) //안먹힘
             val notificationIntent = Intent(this, MainActivity::class.java)
             val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
             builder.setContentIntent(pendingIntent)

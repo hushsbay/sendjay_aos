@@ -73,6 +73,9 @@ class MainActivity : Activity() {
 
     private val MEMBER_RESULT = 300
     private val INVITE_RESULT = 400
+    //private val UNKNOWN_RESULT = 500
+    //private val SYSTEM_ALERT_WINDOW = 600
+    //private val SCHEDULE_EXACT_ALARM = 700
 
     private val RETRY_DELAY = 1000L //3000L
     private val RETRY_TIMEOUT = 10000L //30000L
@@ -123,14 +126,40 @@ class MainActivity : Activity() {
                 val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                 val uri = Uri.fromParts("package", packageName, null)
                 intent.data = uri
-                startActivity(intent)
+                startActivityForResult(intent, REQUEST_PERMISSION)
             }
         }
     }
 
+//    private fun procPermission() {
+//        if (!packageManager.canRequestPackageInstalls()) {
+//            Util.alert(curContext, "이 앱은 플레이스토어에서 다운로드받지 않는 인하우스앱입니다. 출처를 알 수 없는 앱(${Const.TITLE}) 사용을 허용해 주시기 바랍니다.", Const.TITLE, {
+//                startActivityForResult(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")), UNKNOWN_RESULT)
+//            })
+//            return
+//        }
+//        //권한#1 SYSTEM_ALERT_WINDOW : https://greensky0026.tistory.com/222#google_vignette 백그라운드서비스와도 관련됨
+//        if (!Settings.canDrawOverlays(curContext)) { //hasPermission으로 보면 됨
+//            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+//            startActivityForResult(intent, SYSTEM_ALERT_WINDOW)
+//            return
+//        }
+//        //권한#2 SCHEDULE_EXACT_ALARM
+//        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+//        if (!alarmManager.canScheduleExactAlarms()) { //hasPermission으로 보면 됨
+//            val appDetail = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName"))
+//            appDetail.addCategory(Intent.CATEGORY_DEFAULT)
+//            appDetail.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+//            startActivityForResult(appDetail, SCHEDULE_EXACT_ALARM)
+//            return
+//        }
+//        checkPermission(permissions)
+//    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
+            curContext = this@MainActivity
             checkPermission(permissions)
             //권한#1 SYSTEM_ALERT_WINDOW : https://greensky0026.tistory.com/222#google_vignette 백그라운드서비스와도 관련됨
             if (!Settings.canDrawOverlays(this)) { //hasPermission으로 보면 됨
@@ -145,12 +174,17 @@ class MainActivity : Activity() {
                 appDetail.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 startActivity(appDetail)
             }
+            if (!packageManager.canRequestPackageInstalls()) {
+                //Util.alert(curContext, "이 앱은 플레이스토어에서 다운로드받지 않는 인하우스앱입니다. 출처를 알 수 없는 앱(${Const.TITLE}) 사용을 허용해 주시기 바랍니다.", Const.TITLE, {
+                startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
+                //})
+            }
             binding = ActivityMainBinding.inflate(layoutInflater)
             setContentView(binding.root) //setContentView(R.layout.activity_main)
             logger = LogHelper.getLogger(applicationContext, this::class.simpleName)
             binding.wvMain.setBackgroundColor(0) //make it transparent (if not, white background will be shown)
             WebView.setWebContentsDebuggingEnabled(true) //for debug
-            curContext = this@MainActivity
+            //curContext = this@MainActivity
             NotiCenter(curContext, packageName) //NotiCenter.invoke() //ChatService.kt onCreate()에서도 실행하고 있으나 여기서도 여러 메소드 사용중이므로 중복 호출
             isOnCreate = true
             stopServiceByLogout = false
@@ -314,6 +348,8 @@ class MainActivity : Activity() {
                         Util.loadUrl(binding.wvRoom, "invite", obj) //chat.html의 invite 함수 호출
                     }
                 }
+            //} else if (requestCode == UNKNOWN_RESULT || requestCode == SYSTEM_ALERT_WINDOW || requestCode == SCHEDULE_EXACT_ALARM) {
+            //    procPermission()
             } else {
                 Util.log("onActivityResult", "Wrong result.")
             }
@@ -341,11 +377,11 @@ class MainActivity : Activity() {
 
     private fun start() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
-//        if (!packageManager.canRequestPackageInstalls()) {
-//            Util.alert(curContext, "이 앱은 플레이스토어에서 다운로드받지 않는 인하우스앱입니다. 출처를 알 수 없는 앱(${Const.TITLE}) 사용을 허용해 주시기 바랍니다.", Const.TITLE, {
-//                startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
-//            })
-//        } else {
+        //if (!packageManager.canRequestPackageInstalls()) {
+            //Util.alert(curContext, "이 앱은 플레이스토어에서 다운로드받지 않는 인하우스앱입니다. 출처를 알 수 없는 앱(${Const.TITLE}) 사용을 허용해 주시기 바랍니다.", Const.TITLE, {
+        //        startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
+            //})
+        //} else {
         CoroutineScope(Dispatchers.Main).launch {
             if (!chkUpdate(true)) return@launch
             procLogin(false) {
@@ -643,12 +679,12 @@ class MainActivity : Activity() {
         binding.wvMain.addJavascriptInterface(WebInterfaceMain(), "AndroidMain") //Util.log("@@@@@@@@@@", wvMain.settings.cacheMode.toString())
         toggleDispRetry(false, "Main")
         binding.wvMain.webChromeClient = object : WebChromeClient() {
-//            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
-//                consoleMessage?.apply {
-//                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvMain")
-//                }
-//                return true
-//            }
+        //            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
+        //                consoleMessage?.apply {
+        //                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvMain")
+        //                }
+        //                return true
+        //            }
             override fun onShowFileChooser(webView: WebView, filePathCallback: ValueCallback<Array<Uri?>>, fileChooserParams: FileChooserParams): Boolean {
                 filePathCallbackMain = filePathCallback
                 val intent = fileChooserParams.createIntent()
@@ -692,12 +728,12 @@ class MainActivity : Activity() {
         toggleDispRetry(false, "Room") //Util.log(refresh.toString()+"==="+gRoomid+"==="+roomidForChatService)
         if (!refresh && gRoomid != "" && gRoomid == roomidForChatService) return
         binding.wvRoom.webChromeClient = object : WebChromeClient() {
-//            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
-//                consoleMessage?.apply {
-//                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvRoom")
-//                }
-//                return true
-//            }
+        //            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
+        //                consoleMessage?.apply {
+        //                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvRoom")
+        //                }
+        //                return true
+        //            }
             override fun onShowFileChooser(webView: WebView, filePathCallback: ValueCallback<Array<Uri?>>, fileChooserParams: FileChooserParams): Boolean {
                 filePathCallbackRoom = filePathCallback
                 val intent = fileChooserParams.createIntent()
@@ -742,17 +778,16 @@ class MainActivity : Activity() {
         //} //체크하려면 roomid도 비교해야 하는데, 이 부분은 사실 위 오류처리에서 먼저 처리해야 하는 것으로 보여 막아도 될 것임
     }
 
-//    private fun setupWebViewLocal() {
-//        val logTitle = object{}.javaClass.enclosingMethod?.name!!
-//        Util.setupWebView(curContext, connManager, wvLocal) //Util.log("###", wvMain.settings.userAgentString)
-//        //wvLocal.addJavascriptInterface(WebInterfaceMain(), "AndroidLocal") //Util.log("@@@@@@@@@@", wvMain.settings.cacheMode.toString())
-//        val fin: InputStream = assets.open("local.html")
-//        val buffer = ByteArray(fin.available())
-//        fin.read(buffer)
-//        fin.close()
-//        wvLocal.loadData(String(buffer), "text/html", "UTF-8")
-//    }
-
+    //    private fun setupWebViewLocal() {
+    //        val logTitle = object{}.javaClass.enclosingMethod?.name!!
+    //        Util.setupWebView(curContext, connManager, wvLocal) //Util.log("###", wvMain.settings.userAgentString)
+    //        //wvLocal.addJavascriptInterface(WebInterfaceMain(), "AndroidLocal") //Util.log("@@@@@@@@@@", wvMain.settings.cacheMode.toString())
+    //        val fin: InputStream = assets.open("local.html")
+    //        val buffer = ByteArray(fin.available())
+    //        fin.read(buffer)
+    //        fin.close()
+    //        wvLocal.loadData(String(buffer), "text/html", "UTF-8")
+    //    }
     private fun updateAllUnreads(init: Boolean, isFromNoti: Boolean) { //for room only
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
@@ -911,9 +946,9 @@ class MainActivity : Activity() {
             }
         }
 
-    }
+        }
 
-    inner class WebInterfaceRoom {
+        inner class WebInterfaceRoom {
 
         @JavascriptInterface
         fun procAfterOpenRoom() {

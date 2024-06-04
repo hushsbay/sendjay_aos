@@ -479,25 +479,16 @@ class MainActivity : Activity() {
                 Util.toast(curContext, "App downloading for update.")
                 CoroutineScope(Dispatchers.IO).launch {
                     val filename = jsonApp.get("filename").asString
-                    val path =
-                        jsonApp.get("path").asString //Util.log("@@@@", Const.URL_SERVER + path + filename)
+                    val path = jsonApp.get("path").asString //Util.log("@@@@", Const.URL_SERVER + path + filename)
                     URL(Const.URL_SERVER + path + filename).openStream().use { input ->
                         //Util.log(logTitle, input.readBytes().size.toString()) //주의 : readBytes로 먼저 읽고 아래에서 읽으면 0 byte 나옴
-                        val file =
-                            File(curContext.filesDir, filename) //scoped storage internal(filesDir)
+                        val file = File(curContext.filesDir, filename) //scoped storage internal(filesDir)
                         FileOutputStream(file).use { output ->
                             try {
                                 input.copyTo(output)
-                                val apkUri = FileProvider.getUriForFile(
-                                    curContext,
-                                    "$packageName.provider",
-                                    file
-                                ) //provider : See AndroidManifest.xml
+                                val apkUri = FileProvider.getUriForFile(curContext,"$packageName.provider", file) //provider : See AndroidManifest.xml
                                 val intent = Intent(Intent.ACTION_VIEW)
-                                intent.setDataAndType(
-                                    apkUri,
-                                    "application/vnd.android.package-archive"
-                                )
+                                intent.setDataAndType(apkUri, "application/vnd.android.package-archive")
                                 intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP) //NOT NEW_TASK. intent.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, false) was useless
                                 curContext.startActivity(intent)

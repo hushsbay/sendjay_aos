@@ -944,7 +944,7 @@ class MainActivity : Activity() {
                     }
                     roomidForChatService = gRoomid
                     KeyChain.set(curContext, Const.KC_ROOMID_FOR_CHATSERVICE, gRoomid)
-                    updateAllUnreads(true, false)
+                    //updateAllUnreads(true, false) //웹뷰에서 수행되므로 여기서 굳이 ??!!
                 } catch (e1: Exception) {
                     logger.error("$logTitle: ${e1.toString()}")
                     Util.procException(curContext, e1, logTitle)

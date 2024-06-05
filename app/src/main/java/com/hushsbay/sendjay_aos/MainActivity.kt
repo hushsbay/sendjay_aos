@@ -476,11 +476,11 @@ class MainActivity : Activity() {
                 }
                 return true
             } else {
-                Util.toast(curContext, "App downloading for update.")
+                Util.toast(curContext, "App downloading for update.." + jsonApp.get("version").asString + "/" + pInfo.versionName)
                 CoroutineScope(Dispatchers.IO).launch {
                     val filename = jsonApp.get("filename").asString
                     val path = jsonApp.get("path").asString //Util.log("@@@@", Const.URL_SERVER + path + filename)
-                    URL(Const.URL_SERVER + path + filename).openStream().use { input ->
+                    URL(Const.URL_SERVER + path + "/" + filename).openStream().use { input ->
                         //Util.log(logTitle, input.readBytes().size.toString()) //주의 : readBytes로 먼저 읽고 아래에서 읽으면 0 byte 나옴
                         val file = File(curContext.filesDir, filename) //scoped storage internal(filesDir)
                         FileOutputStream(file).use { output ->

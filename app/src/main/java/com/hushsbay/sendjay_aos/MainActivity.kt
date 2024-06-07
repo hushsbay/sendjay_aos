@@ -549,7 +549,7 @@ class MainActivity : Activity() {
             //    return
             //}
             val autoLogin = KeyChain.get(curContext, Const.KC_AUTOLOGIN) ?: ""
-            if (autoLogin == "Y") { //val param = listOf("os" to Const.AOS, "push_and" to pushtoken)
+            if (autoLogin == "Y") {
                 val param = org.json.JSONObject()
                 param.put("uid", KeyChain.get(applicationContext, Const.KC_USERID))
                 param.put("pwd", KeyChain.get(applicationContext, Const.KC_PWD))

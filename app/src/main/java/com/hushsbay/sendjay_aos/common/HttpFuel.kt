@@ -26,8 +26,6 @@ object HttpFuel { //Fuel is single instance and uses gson(com.google.gson.JsonOb
                 val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
                 val uid = KeyChain.get(context, Const.KC_USERID) ?: ""
                 val userkey = KeyChain.get(context, Const.KC_USERKEY) ?: ""
-                val passkey = KeyChain.get(context, Const.KC_PASSKEY) ?: ""
-                //val cookieStr = "${Const.KC_USERID}=$uid; ${Const.KC_USERKEY}=$userkey; ${Const.KC_TOKEN}=$token; ${Const.KC_PASSKEY}=$passkey"
                 val cookieStr = "userid=$uid; token=$token"
                 val paramAuth = arrayOf(Headers.CONTENT_TYPE to "application/json", Headers.COOKIE to cookieStr) //application/x-www-form-urlencoded (when CORS needed)
                 val noCache = listOf("noCache" to Util.getRnd().toString())
@@ -51,8 +49,6 @@ object HttpFuel { //Fuel is single instance and uses gson(com.google.gson.JsonOb
                 val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
                 val uid = KeyChain.get(context, Const.KC_USERID) ?: ""
                 val userkey = KeyChain.get(context, Const.KC_USERKEY) ?: ""
-                val passkey = KeyChain.get(context, Const.KC_PASSKEY) ?: ""
-                //val cookieStr = "${Const.KC_USERID}=$uid; ${Const.KC_USERKEY}=$userkey; ${Const.KC_TOKEN}=$token; ${Const.KC_PASSKEY}=$passkey"
                 val cookieStr = "userid=$uid; token=$token"
                 val paramAuth = arrayOf(Headers.CONTENT_TYPE to "application/json", Headers.COOKIE to cookieStr) //application/x-www-form-urlencoded (when CORS needed)
                 var paramReal = if (param == null) {

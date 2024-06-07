@@ -55,7 +55,6 @@ class Const {
         const val KC_USERID = "USER_ID" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
         const val KC_PWD = "PWD" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
         const val KC_USERNM = "USER_NM" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
-        const val KC_PASSKEY = "PASSKEY"
         const val KC_ORGCD = "ORG_CD" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
         const val KC_ORGNM = "ORG_NM" // ""
         const val KC_TOPORGCD = "TOP_ORG_CD" // ""

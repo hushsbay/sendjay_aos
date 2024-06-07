@@ -12,7 +12,6 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
     var pwd: String
     var userkey: String
     var usernm: String
-    var passkey: String
     var orgcd: String
     var orgnm: String
     var toporgcd: String
@@ -48,11 +47,6 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
             this.usernm = ""
         } else {
             this.usernm = json.get(Const.KC_USERNM).asString
-        }
-        if (json.get(Const.KC_PASSKEY) == null) {
-            this.passkey = ""
-        } else {
-            this.passkey = json.get(Const.KC_PASSKEY).asString
         }
         if (json.get(Const.KC_ORGCD) == null) {
             this.orgcd = ""
@@ -114,7 +108,6 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         KeyChain.set(context, Const.KC_PWD, this.pwd)
         KeyChain.set(context, Const.KC_USERKEY, this.userkey)
         KeyChain.set(context, Const.KC_USERNM, this.usernm)
-        KeyChain.set(context, Const.KC_PASSKEY, this.passkey)
         KeyChain.set(context, Const.KC_ORGCD, this.orgcd)
         KeyChain.set(context, Const.KC_ORGNM, this.orgnm)
         KeyChain.set(context, Const.KC_TOPORGCD, this.toporgcd)
@@ -134,7 +127,6 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         this.pwd = KeyChain.get(context, Const.KC_PWD) ?: ""
         this.userkey = KeyChain.get(context, Const.KC_USERKEY) ?: ""
         this.usernm = KeyChain.get(context, Const.KC_USERNM) ?: ""
-        this.passkey = KeyChain.get(context, Const.KC_PASSKEY) ?: ""
         this.orgcd = KeyChain.get(context, Const.KC_ORGCD) ?: ""
         this.orgnm = KeyChain.get(context, Const.KC_ORGNM) ?: ""
         this.toporgcd = KeyChain.get(context, Const.KC_TOPORGCD) ?: ""

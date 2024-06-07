@@ -1,2 +1,3 @@
 # sendjay_aos
-Android
+Android Web Messenger.
+See [https://github.com/hushsbay/hushsbay]

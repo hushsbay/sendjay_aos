@@ -300,23 +300,23 @@ class ChatService : Service() {
         disposable?.dispose()
         disposable = RxToUp.subscribe<RxEvent>().subscribe {
             try {
-                Util.log("(out)$logTitle", it.toString())
                 val json = JSONObject()
                 json.put("ev", it.ev)
                 json.putOpt("data", it.data)
                 json.put("returnTo", it.returnTo ?: "parent")
                 json.put("returnToAnother", it.returnToAnother)
                 val procMsg = it.procMsg
+                if (it.ev != "chk_alive" && it.ev != "chk_typing") Util.log("$logTitle", it.toString())
                 Util.connectSockWithCallback(applicationContext, connManager!!) { //SocketIO.connect()
                     if (procMsg == true && it.get("code").asString != Const.RESULT_OK) {
                         Toast.makeText(applicationContext, Const.TITLE + ": " + it.get("msg").asString, Toast.LENGTH_LONG).show()
                         return@connectSockWithCallback
                     }
-                    if (SocketIO.sock == null) {
-                        Util.log(logTitle, it.get("msg").asString + "$$$$")
-                    } else {
-                        Util.log(logTitle, it.get("msg").asString + "%%%%")
-                    }
+//                    if (SocketIO.sock == null) {
+//                        Util.log(logTitle, it.get("msg").asString + "$$$$")
+//                    } else {
+//                        Util.log(logTitle, it.get("msg").asString + "%%%%")
+//                    }
                     //서버 다운시 connectSockWithCallback()내 SocketIO.connect() 결과 Unable to connect~라는 msg 위에서 찍으면 잘 나옴. SocketIO.sock은 null 아님
                     //그런데 아래에서 emit하려고 하면 오류가 안나고 실행이 멈춤 (emit안에서 더 이상 진행이 안되는 느낌)
                     //따라서, 아래 행에서 try catch하지 않아도 오류 없이 멈춤
@@ -440,10 +440,10 @@ class ChatService : Service() {
                 val json = it[0] as JSONObject
                 val jsonStr = it[0].toString() //it.get(0).toString()
                 val gson = Gson().fromJson(jsonStr, JsonObject::class.java)
-                Util.log("(in)$logTitle", jsonStr, it[0].javaClass.kotlin.qualifiedName!!)
                 val ev = gson.get("ev").asString
                 val returnTo = gson.get("returnTo").asString
                 val returnToAnother = gson.get("returnToAnother")?.asString
+                if (ev != "chk_alive" && ev != "chk_typing") Util.log("$logTitle", jsonStr, it[0].javaClass.kotlin.qualifiedName!!)
                 /*var needNoti = true
                 val noti_off = KeyChain.get(applicationContext, Const.KC_NOTI_OFF) ?: ""
                 if (noti_off == "Y") needNoti = false*/
@@ -573,7 +573,7 @@ class ChatService : Service() {
                             //소켓연결이 끊어지는 건 1) ChatService가 살아 있으면서 단순히 통신 이상이거나 2) ChatService가 살아 있으면서 서버가 다운되거나
                             //3) ChatService가 (사용자에 의해) 강제 종료되면서 끊어지는 경우가 있는데 이 모든 경우에 대해 다시 원상복구해야 함
                             val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
-                            Util.log(logTitle, "socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )
+                            //Util.log(logTitle, "socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )
                             val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
                             if (autoLogin == "Y") {
                                 //if (!isBeingSockChecked) Util.connectSockWithCallback(applicationContext, connManager!!)

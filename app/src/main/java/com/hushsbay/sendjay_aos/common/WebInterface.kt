@@ -17,7 +17,7 @@ class WebInterface(private val curContext: Activity, private val connManager: Co
         val json = JSONObject(data) //results in "data":{"userkeys":["W__1",~ in server
         //val json = Gson().fromJson(data, JsonObject::class.java) => results in "data":"{\"userkeys\":[\"W__1\",~ in server
         RxToUp.post(RxEvent(ev, json, returnTo, returnToAnother, procMsg)) //procMsg는 procSocetEmit() in ChatService.kt 참조
-    }
+    } //RxToUp.post()도 안드로이드에서 독자적으로 송신하는 곳은 극소수임. 대부분 웹뷰에서 .send()로 호출
 
     @JavascriptInterface
     fun reconnectDone() {

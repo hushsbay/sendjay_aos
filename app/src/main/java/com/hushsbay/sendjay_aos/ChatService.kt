@@ -301,19 +301,32 @@ class ChatService : Service() {
         disposable = RxToUp.subscribe<RxEvent>().subscribe {
             try {
                 val json = JSONObject()
-                json.put("ev", it.ev)
+                val evt = it.ev
+                val dataStr = it.data.toString()
+                json.put("ev", evt)
                 json.putOpt("data", it.data)
                 json.put("returnTo", it.returnTo ?: "parent")
                 json.put("returnToAnother", it.returnToAnother)
-                if (it.ev != "chk_alive" && it.ev != "chk_typing") Util.log("$logTitle", it.toString())
+                if (evt != "chk_alive" && evt != "chk_typing") Util.log("$logTitle", it.toString())
                 val procMsg = it.procMsg //모바일 전용 (웹에는 없음). 아래 buffering하고도 일부는 관련있는 파라미터임 (토스트 뿌리면 true 안뿌리게 하려면 false가 넘어와야 함)
                 //아래는 소켓 끊어질 때 버퍼링 관련임. common.js의 hush.sock.sendVolatile() 설명 참조
                 //socket.io의 기본 설정은 소켓이 끊어지더라도 버퍼에 두고 있다가 재연결시 내보내는 것인데 Android socket.io 라이브러리에서 volatile을 지원하는 것을 아직 찾지 못해, 사용하지 않으려 함
                 //따라서, 앱이든 웹이든 버퍼에 저장하지 않게 하기 위해 아예 소켓이 연결되어 있지 않으면 전송을 멈추기로 함
                 Util.connectSockWithCallback(applicationContext, connManager!!) { //SocketIO.connect()
                     if (it.get("code").asString != Const.RESULT_OK) {
-                        if (procMsg == true) Toast.makeText(applicationContext, Const.TITLE + ": " + it.get("msg").asString, Toast.LENGTH_LONG).show()
-                        return@connectSockWithCallback
+                        if (evt == Const.SOCK_EV_SEND_MSG) {
+                            val gson = Gson().fromJson(dataStr, JsonObject::class.java)
+                            val type = gson.get("type").asString
+                            if (type == "leave" || type == "invite" || type == "notice" || type == "check") {
+                                //소켓이 끊어지더라도 일단 소켓객체에 전달해 emit => chat.html의 procSendAndAppend() 설명 참조
+                            } else { //talk, flink
+                                if (procMsg == true) Toast.makeText(applicationContext, Const.TITLE + ": " + it.get("msg").asString, Toast.LENGTH_LONG).show()
+                                return@connectSockWithCallback
+                            }
+                        } else {
+                            if (procMsg == true) Toast.makeText(applicationContext, Const.TITLE + ": " + it.get("msg").asString, Toast.LENGTH_LONG).show()
+                            return@connectSockWithCallback
+                        }
                     } //서버 다운시 connectSockWithCallback()내 SocketIO.connect() 결과 Unable to connect~라는 msg 위에서 찍으면 잘 나옴. 그 때 SocketIO.sock은 null 아님
                     SocketIO.sock!!.emit(Const.SOCK_EV_COMMON, json)
                 }

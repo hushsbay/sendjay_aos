@@ -317,8 +317,8 @@ class ChatService : Service() {
                         if (evt == Const.SOCK_EV_SEND_MSG) {
                             val gson = Gson().fromJson(dataStr, JsonObject::class.java)
                             val type = gson.get("type").asString
-                            if (type == "leave" || type == "invite" || type == "notice" || type == "check") {
-                                //소켓이 끊어지더라도 일단 소켓객체에 전달해 emit => chat.html의 procSendAndAppend() 설명 참조
+                            if (type == "leave" || type == "invite" || type == "notice") {
+                                //버퍼링. 소켓이 끊어지더라도 일단 소켓객체에 전달해 emit => chat.html의 procSendAndAppend() 설명 참조
                             } else { //talk, flink
                                 if (procMsg == true) Toast.makeText(applicationContext, Const.TITLE + ": " + it.get("msg").asString, Toast.LENGTH_LONG).show()
                                 return@connectSockWithCallback

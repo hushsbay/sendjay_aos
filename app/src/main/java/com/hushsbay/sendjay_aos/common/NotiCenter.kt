@@ -121,6 +121,11 @@ object NotiCenter {
             val m_cdt = mapRoomInfo[roomid]?.get("cdt") //각 메세지의 현재 시각을 체크해서 그 방의 해당 메시지보다 이전의 메시지면 굳이 노티할 이유가 없음
             if (m_cdt != null && cdt <= m_cdt.toString()) return@launch
             mapRoomInfo[roomid]?.put("cdt", cdt)
+            if (uInfo.popupoff == "Y") {
+                if (channel!!.importance == NotificationManager.IMPORTANCE_HIGH) channel!!.importance = NotificationManager.IMPORTANCE_DEFAULT
+            } else {
+                if (channel!!.importance == NotificationManager.IMPORTANCE_DEFAULT) channel!!.importance = NotificationManager.IMPORTANCE_HIGH
+            }
             if (uInfo.senderoff == "Y") title = "" //sender
             val realTitle = if (title == "") null else title
             val realBody = if (uInfo.bodyoff == "Y") null else body

@@ -530,6 +530,7 @@ class ChatService : Service() {
                             KeyChain.set(applicationContext, Const.KC_VIB_OFF, data.getString("viboff"))
                             KeyChain.set(applicationContext, Const.KC_BODY_OFF, data.getString("bodyoff"))
                             KeyChain.set(applicationContext, Const.KC_SENDER_OFF, data.getString("senderoff"))
+                            KeyChain.set(applicationContext, Const.KC_POPUP_OFF, data.getString("popupoff"))
                             KeyChain.set(applicationContext, Const.KC_TM_FR, data.getString("fr"))
                             KeyChain.set(applicationContext, Const.KC_TM_TO, data.getString("to"))
                             uInfo = UserInfo(applicationContext) //org.json not gson //KeyChain Get

@@ -24,6 +24,7 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
     var to: String
     var bodyoff: String
     var senderoff: String
+    var popupoff: String
 
     constructor(context: Context, json: JsonObject) { //gson (not org.json) => 키체인 설정(set) : 인증(login.js)시만 처리
         if (json.get(Const.KC_TOKEN) == null) {
@@ -93,6 +94,11 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         } else {
             this.senderoff = json.get(Const.KC_SENDER_OFF).asString
         }
+        if (json.get(Const.KC_POPUP_OFF) == null) {
+            this.popupoff = ""
+        } else {
+            this.popupoff = json.get(Const.KC_POPUP_OFF).asString
+        }
         if (json.get(Const.KC_TM_FR) == null) {
             this.fr = ""
         } else {
@@ -119,6 +125,7 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         KeyChain.set(context, Const.KC_TM_TO, this.to)
         KeyChain.set(context, Const.KC_BODY_OFF, this.bodyoff)
         KeyChain.set(context, Const.KC_SENDER_OFF, this.senderoff)
+        KeyChain.set(context, Const.KC_POPUP_OFF, this.popupoff)
     }
 
     constructor(context: Context) { //키체인 읽어오기(get)
@@ -138,6 +145,7 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         this.to = KeyChain.get(context, Const.KC_TM_TO) ?: ""
         this.bodyoff = KeyChain.get(context, Const.KC_BODY_OFF) ?: ""
         this.senderoff = KeyChain.get(context, Const.KC_SENDER_OFF) ?: ""
+        this.popupoff = KeyChain.get(context, Const.KC_POPUP_OFF) ?: ""
     }
 
 }

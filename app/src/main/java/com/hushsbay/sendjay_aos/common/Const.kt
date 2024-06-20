@@ -64,6 +64,7 @@ class Const {
         const val KC_VIB_OFF = "VIB_OFF"
         const val KC_BODY_OFF = "BODY_OFF"
         const val KC_SENDER_OFF = "SENDER_OFF"
+        const val KC_POPUP_OFF = "POPUP_OFF"
         const val KC_TM_FR = "TM_FR"
         const val KC_TM_TO = "TM_TO"
         const val KC_TOKEN = "token" //소문자

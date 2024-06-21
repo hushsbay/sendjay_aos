@@ -82,7 +82,6 @@ class ChatService : Service() {
             status_sock = Const.SockState.BEFORE_CONNECT
             state = Const.ServiceState.RUNNING
             logger = LogHelper.getLogger(applicationContext, this::class.simpleName)
-            NotiCenter(applicationContext, packageName) //NotiCenter.invoke() //see MainActivity.kt also
             connManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             pwrManager = getSystemService(Context.POWER_SERVICE) as PowerManager
             screenReceiver = object : BroadcastReceiver() {
@@ -103,6 +102,7 @@ class ChatService : Service() {
             }
             registerReceiver(screenReceiver, filter1)
             uInfo = UserInfo(applicationContext) //KeyChain Get
+            NotiCenter(applicationContext, packageName) //NotiCenter.invoke() //see MainActivity.kt also
             val winid = KeyChain.get(applicationContext, Const.KC_WINID)
             val userip = KeyChain.get(applicationContext, Const.KC_USERIP)
             SocketIO(applicationContext, uInfo, winid!!, userip!!) //kotlin invoke method : SocketIO.invoke()
@@ -530,7 +530,7 @@ class ChatService : Service() {
                             KeyChain.set(applicationContext, Const.KC_VIB_OFF, data.getString("viboff"))
                             KeyChain.set(applicationContext, Const.KC_BODY_OFF, data.getString("bodyoff"))
                             KeyChain.set(applicationContext, Const.KC_SENDER_OFF, data.getString("senderoff"))
-                            KeyChain.set(applicationContext, Const.KC_POPUP_OFF, data.getString("popupoff"))
+                            KeyChain.set(applicationContext, Const.KC_POPUP_OFF, data.getString("popupoff")) //NotiCenter.kt의 $$7 참조 (현재 미사용)
                             KeyChain.set(applicationContext, Const.KC_TM_FR, data.getString("fr"))
                             KeyChain.set(applicationContext, Const.KC_TM_TO, data.getString("to"))
                             uInfo = UserInfo(applicationContext) //org.json not gson //KeyChain Get

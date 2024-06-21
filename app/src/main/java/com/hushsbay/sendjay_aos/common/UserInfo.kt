@@ -24,7 +24,7 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
     var to: String
     var bodyoff: String
     var senderoff: String
-    var popupoff: String
+    var popupoff: String //NotiCenter.kt의 $$7 참조 (현재 미사용)
 
     constructor(context: Context, json: JsonObject) { //gson (not org.json) => 키체인 설정(set) : 인증(login.js)시만 처리
         if (json.get(Const.KC_TOKEN) == null) {

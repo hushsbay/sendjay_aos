@@ -38,7 +38,10 @@ object NotiCenter {
     operator fun invoke(context: Context, strPackageName: String) { //IMPORTANCE_MIN (no display on status bar) was not worked
         packageName = strPackageName
         if (channel == null) { //IMPORTANCE_LOW(no sound), IMPORTANCE_DEFAULT(sound ok), IMPORTANCE_HIGH(sound + headup(popup))
-            channel = NotificationChannel(Const.NOTICHANID_COMMON, Const.NOTICHANID_COMMON, NotificationManager.IMPORTANCE_HIGH)
+            //https://stackoverflow.com/questions/60820163/android-notification-importance-cannot-be-changed
+            //한번 설정된 Importance는 사용자에 의한 설정변경없이는 불가능하다고 안드로이드 사이트에 나옴
+            //따라서, 일단 IMPORTANCE_DEFAULT로 지정후 환경설정(모바일)에서 '팝업설정변경'을 눌러 변경하도록 가이드하기로 함. $$7
+            channel = NotificationChannel(Const.NOTICHANID_COMMON, Const.NOTICHANID_COMMON, NotificationManager.IMPORTANCE_DEFAULT)
             //val audioAttributes = AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).setUsage(AudioAttributes.USAGE_NOTIFICATION).build()
             //val uri = Uri.parse("android.resource://$packageName/${R.raw.sendjay}")
             //channel!!.setSound(uri, audioAttributes)
@@ -121,11 +124,6 @@ object NotiCenter {
             val m_cdt = mapRoomInfo[roomid]?.get("cdt") //각 메세지의 현재 시각을 체크해서 그 방의 해당 메시지보다 이전의 메시지면 굳이 노티할 이유가 없음
             if (m_cdt != null && cdt <= m_cdt.toString()) return@launch
             mapRoomInfo[roomid]?.put("cdt", cdt)
-            if (uInfo.popupoff == "Y") {
-                if (channel!!.importance == NotificationManager.IMPORTANCE_HIGH) channel!!.importance = NotificationManager.IMPORTANCE_DEFAULT
-            } else {
-                if (channel!!.importance == NotificationManager.IMPORTANCE_DEFAULT) channel!!.importance = NotificationManager.IMPORTANCE_HIGH
-            }
             if (uInfo.senderoff == "Y") title = "" //sender
             val realTitle = if (title == "") null else title
             val realBody = if (uInfo.bodyoff == "Y") null else body

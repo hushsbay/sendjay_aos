@@ -887,6 +887,16 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
+        fun setNotiPopup() {
+            var intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+            intent.putExtra(Settings.EXTRA_CHANNEL_ID, Const.NOTICHANID_COMMON)
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(intent)
+            }
+        }
+
+        @JavascriptInterface
         fun showLog(num: Int) { //logger.info("testest1111111111111")로 테스트 가능
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             CoroutineScope(Dispatchers.Main).launch {
@@ -917,23 +927,29 @@ class MainActivity : Activity() {
 
         @JavascriptInterface
         fun deleteLog() {
-            val logTitle = object{}.javaClass.enclosingMethod?.name!!
-            CoroutineScope(Dispatchers.Main).launch {
-                try {
-                    curContext.filesDir.let { it ->
-                        val listFile = Util.getFiles(it)
-                        if (listFile == null || listFile.size == 0) {
-                            Util.toast(curContext, "Log files not exists.")
-                            return@let
-                        }
-                        val path = curContext.filesDir.toString()
-                        for (i in listFile.indices) File(path + "/" + listFile[i]).delete()
-                        Util.toast(curContext, "deleteLog done.")
-                    }
-                } catch (e: Exception) {
-                    logger.error("$logTitle: ${e.toString()}")
-                    Util.procException(curContext, e, logTitle)
-                }
+//            val logTitle = object{}.javaClass.enclosingMethod?.name!!
+//            CoroutineScope(Dispatchers.Main).launch {
+//                try {
+//                    curContext.filesDir.let { it ->
+//                        val listFile = Util.getFiles(it)
+//                        if (listFile == null || listFile.size == 0) {
+//                            Util.toast(curContext, "Log files not exists.")
+//                            return@let
+//                        }
+//                        val path = curContext.filesDir.toString()
+//                        for (i in listFile.indices) File(path + "/" + listFile[i]).delete()
+//                        Util.toast(curContext, "deleteLog done.")
+//                    }
+//                } catch (e: Exception) {
+//                    logger.error("$logTitle: ${e.toString()}")
+//                    Util.procException(curContext, e, logTitle)
+//                }
+//            }
+            var intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
+            intent.putExtra(Settings.EXTRA_CHANNEL_ID, Const.NOTICHANID_COMMON)
+            if (intent.resolveActivity(packageManager) != null) {
+                startActivity(intent)
             }
         }
 

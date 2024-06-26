@@ -97,8 +97,7 @@ class Util {
 
         fun connectSockWithCallback(context: Context, connManager: ConnectivityManager, callback: (json: JsonObject) -> Unit = {}) {
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
-            //if (ChatService.isBeingSockChecked) return //다른 소켓통신이 여기서 막힐 수도 있으므로 사용하면 안됨
-            //ChatService.isBeingSockChecked = true
+            //if (ChatService.isBeingSockChecked) return; ChatService.isBeingSockChecked = true; //다른 소켓통신이 여기서 막힐 수도 있으므로 사용하면 안됨
             CoroutineScope(Dispatchers.Main).launch {
                 try {
                     var json = SocketIO.connect(context, connManager).await()
@@ -106,11 +105,11 @@ class Util {
                     if (code == Const.RESULT_OK) { //1) 미접속->접속일 경우 2) 접속된 상태가 계속되는 경우 2가지 모두 해당함
                         //1) 경우는 ChatService.kt에서 socket.io 고유 이벤트 잡아서 처리하고
                         //여기서는 2) 경우에 대해서만 처리. 2)는 계속 체크하는 의미로 1)과는 달리 SOCK_EV_MARK_AS_CONNECT로 처리함
-                        sendToDownWhenConnDisconn(context, Const.SOCK_EV_MARK_AS_CONNECT) //Util.log(logTitle, "SOCK_EV_MARK_AS_CONNECT..")
+                        sendToDownWhenConnDisconn(context, Const.SOCK_EV_MARK_AS_CONNECT)
                     } else {
-                        sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT) //Util.log(logTitle, "EVENT_DISCONNECT..")
+                        sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
+                        KeyChain.set(context, Const.KC_DT_DISCONNECT, getCurDateTimeStr(true))
                     }
-                    //ChatService.isBeingSockChecked = false
                     if (json.get("msg").asString == "connect") { //접속 로그를 위한 단순 구분 코드
                         val param = org.json.JSONObject()
                         param.put("device", Const.AOS)
@@ -136,7 +135,6 @@ class Util {
                     }
                     callback(json)
                 } catch (e: Exception) {
-                    //ChatService.isBeingSockChecked = false
                     sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
                     val jsonStr = """{ code : '${Const.RESULT_ERR}', msg : 'connectSockWithCallback\n${e.toString()}' }"""
                     callback(Gson().fromJson(jsonStr, JsonObject::class.java))

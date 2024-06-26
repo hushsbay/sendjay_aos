@@ -19,12 +19,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-<!--    <WebView-->
-<!--        android:id="@+id/wvLocal"-->
-<!--        android:visibility="gone"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="match_parent" />-->
-
     <TextView
         android:id="@+id/txtRmks"
         android:layout_width="wrap_content"
@@ -35,6 +29,7 @@
         android:gravity="center"
         android:layout_marginTop="130dp"
         android:textColor="@color/jayDarkRed"/><!--android:visibility="gone", android:text="Could not connect to sendjay Server."-->
+
     <TextView
         android:id="@+id/txtUrl"
         android:layout_width="wrap_content"

@@ -46,7 +46,6 @@ class ChatService : Service() {
         var serviceIntent: Intent? = null //See MainActivity.kt
         var status_sock = Const.SockState.BEFORE_CONNECT
         var curState_sock = false
-        //var isBeingSockChecked = false
         var gapScreenOffOnDualMode = "10000"
         var gapScreenOnOnDualMode = "3000"
     }
@@ -588,10 +587,7 @@ class ChatService : Service() {
                             val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
                             //Util.log(logTitle, "socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )
                             val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
-                            if (autoLogin == "Y") {
-                                //if (!isBeingSockChecked) Util.connectSockWithCallback(applicationContext, connManager!!)
-                                Util.connectSockWithCallback(applicationContext, connManager!!)
-                            }
+                            if (autoLogin == "Y") Util.connectSockWithCallback(applicationContext, connManager!!)
                         } catch (e: InterruptedException) {
                             logger.error("$logTitle: e ${e.toString()}")
                             Util.log(logTitle, "thread interrupted")

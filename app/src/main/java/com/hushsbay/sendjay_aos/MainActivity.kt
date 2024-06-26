@@ -73,9 +73,6 @@ class MainActivity : Activity() {
 
     private val MEMBER_RESULT = 300
     private val INVITE_RESULT = 400
-    //private val UNKNOWN_RESULT = 500
-    //private val SYSTEM_ALERT_WINDOW = 600
-    //private val SCHEDULE_EXACT_ALARM = 700
 
     private val RETRY_DELAY = 1000L //3000L
     private val RETRY_TIMEOUT = 10000L //30000L
@@ -103,8 +100,8 @@ class MainActivity : Activity() {
         //android.Manifest.permission.INTERNET, android.Manifest.permission.FOREGROUND_SERVICE,
         //android.Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC, android.Manifest.permission.ACCESS_NETWORK_STATE,
         //android.Manifest.permission.RECEIVE_BOOT_COMPLETED, android.Manifest.permission.VIBRATE,
-        android.Manifest.permission.POST_NOTIFICATIONS //권한##0 //, android.Manifest.permission.USE_EXACT_ALARM
         //android.Manifest.permission.SYSTEM_ALERT_WINDOW, android.Manifest.permission.SCHEDULE_EXACT_ALARM
+        android.Manifest.permission.POST_NOTIFICATIONS //권한##0
     )
 
     private fun checkPermission(permissionList: List<String>) {
@@ -131,44 +128,19 @@ class MainActivity : Activity() {
         }
     }
 
-//    private fun procPermission() {
-//        if (!packageManager.canRequestPackageInstalls()) {
-//            Util.alert(curContext, "이 앱은 플레이스토어에서 다운로드받지 않는 인하우스앱입니다. 출처를 알 수 없는 앱(${Const.TITLE}) 사용을 허용해 주시기 바랍니다.", Const.TITLE, {
-//                startActivityForResult(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")), UNKNOWN_RESULT)
-//            })
-//            return
-//        }
-//        //권한#1 SYSTEM_ALERT_WINDOW : https://greensky0026.tistory.com/222#google_vignette 백그라운드서비스와도 관련됨
-//        if (!Settings.canDrawOverlays(curContext)) { //hasPermission으로 보면 됨
-//            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
-//            startActivityForResult(intent, SYSTEM_ALERT_WINDOW)
-//            return
-//        }
-//        //권한#2 SCHEDULE_EXACT_ALARM
-//        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-//        if (!alarmManager.canScheduleExactAlarms()) { //hasPermission으로 보면 됨
-//            val appDetail = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName"))
-//            appDetail.addCategory(Intent.CATEGORY_DEFAULT)
-//            appDetail.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-//            startActivityForResult(appDetail, SCHEDULE_EXACT_ALARM)
-//            return
-//        }
-//        checkPermission(permissions)
-//    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
             curContext = this@MainActivity
             checkPermission(permissions)
             //권한#1 SYSTEM_ALERT_WINDOW : https://greensky0026.tistory.com/222#google_vignette 백그라운드서비스와도 관련됨
-            if (!Settings.canDrawOverlays(this)) { //hasPermission으로 보면 됨
+            if (!Settings.canDrawOverlays(this)) { //!hasPermission으로 보면 됨
                 val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
                 startActivity(intent)
             }
             //권한#2 SCHEDULE_EXACT_ALARM
             val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-            if (!alarmManager.canScheduleExactAlarms()) { //hasPermission으로 보면 됨
+            if (!alarmManager.canScheduleExactAlarms()) { //!hasPermission으로 보면 됨
                 val appDetail = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName"))
                 appDetail.addCategory(Intent.CATEGORY_DEFAULT)
                 appDetail.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -184,7 +156,6 @@ class MainActivity : Activity() {
             logger = LogHelper.getLogger(applicationContext, this::class.simpleName)
             binding.wvMain.setBackgroundColor(0) //make it transparent (if not, white background will be shown)
             WebView.setWebContentsDebuggingEnabled(true) //for debug
-            //curContext = this@MainActivity
             NotiCenter(curContext, packageName) //NotiCenter.invoke() //ChatService.kt onCreate()에서도 실행하고 있으나 여기서도 여러 메소드 사용중이므로 중복 호출
             isOnCreate = true
             stopServiceByLogout = false
@@ -195,7 +166,7 @@ class MainActivity : Activity() {
             connManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             imm = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             keyboardVisibilityChecker = KeyboardVisibilityChecker(window, onShowKeyboard = { keyboardHeight ->
-                if (roomidForChatService != "") Util.loadUrl(binding.wvRoom, "scrollToBottomFromWebView")
+                if (roomidForChatService != "") Util.loadUrl(binding.wvRoom, "scrollToBottomFromWebView") //키보드 올라 오면 웹뷰내 채팅창 맨 아래로 스크롤
             })
             keyboardVisibilityChecker = KeyboardVisibilityChecker(window, onHideKeyboard = { })
             binding.btnRetry.setOnClickListener {
@@ -204,7 +175,7 @@ class MainActivity : Activity() {
                     start()
                 } else {
                     CoroutineScope(Dispatchers.Main).launch {
-                        procLogin(true) { //related with Reset Authentication
+                        procLogin(true) {
                             Util.connectSockWithCallback(curContext, connManager) {
                                 if (it.get("code").asString != Const.RESULT_OK) {
                                     Util.toast(curContext, it.get("msg").asString)
@@ -227,9 +198,7 @@ class MainActivity : Activity() {
             }
             disposableMsg?.dispose()
             disposableMsg = Util.procRxMsg(curContext)
-            //Battery Optimization (with socket.io)의 경우, 절전모드나 대기모드에서 간헐적인 disconnection이 발생함.
-            //그럼에도 불구하고, FCM을 이용하면 instant messeging을 구현 가능함. 그러나, FCM은 100% 성공적이고 지연없는 배달을 보장해 주지 않음.
-            start() //with Battery Optimization
+            start()
         } catch (e: Exception) {
             logger.error("onCreate: ${e.toString()}")
             Util.procException(curContext, e, "onCreate")
@@ -426,8 +395,6 @@ class MainActivity : Activity() {
         stopServiceByLogout = true
         curContext.stopService(Intent(curContext, ChatService::class.java))
         curContext.finish()
-        //val pIntent = Intent(curContext, LocalHtmlActivity::class.java)
-        //startActivity(pIntent)
     }
 
     //채팅방(wvRoom)에서는 앱 업데이트 체크하지 않고 목록(wvMain) 화면에서만 하기 : onResume()에서 if (roomidForChatService == "") 일 때만
@@ -538,28 +505,21 @@ class MainActivity : Activity() {
         setupWebViewRoom(false) //Util.log("procOpenRoom", gType+"==="+gRoomid+"==="+gOrigin+"==="+gObjStr)
     }
 
-    //await() with Suspend function
-    private suspend fun procLogin(chkAuth: Boolean, callback: () -> Unit = {}) { //chkAuth=true : related with Reset Authentication
+    private suspend fun procLogin(chkAuth: Boolean, callback: () -> Unit = {}) { //await() with Suspend function
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
             var loginNeeded = false
-            //val pushtoken = KeyChain.get(curContext, Const.KC_PUSHTOKEN) ?: "" //from onNewToken() FcmService.kt
-            //if (pushtoken == "") {
-            //    Util.alert(curContext, "(구글) FCM Token값이 없습니다. 앱을 제거하고 다시 설치해 주시기 바랍니다.", logTitle)
-            //    return
-            //}
             val autoLogin = KeyChain.get(curContext, Const.KC_AUTOLOGIN) ?: ""
             if (autoLogin == "Y") {
                 val param = org.json.JSONObject()
                 param.put("uid", KeyChain.get(applicationContext, Const.KC_USERID))
                 param.put("pwd", KeyChain.get(applicationContext, Const.KC_PWD))
-                param.put("autologin", "Y") //자동로그인 여부는 이 파라미터 + 서버에서의 deviceFrom과의 조합으로 판단함
+                param.put("autologin", autoLogin) //자동로그인 여부는 이 파라미터 + 서버에서의 deviceFrom과의 조합으로 판단함
                 authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
                 if (HttpFuel.isNetworkUnstableMsg(authJson)) {
                     Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)
                     return
-                } else if (authJson.get("code").asString != Const.RESULT_OK) { //} else if (authJson.get("code").asString == Const.RESULT_ERR_HTTPFUEL) {
-                    //toggleDispRetry(true, "Main", logTitle, authJson.get("msg").asString, true)
+                } else if (authJson.get("code").asString != Const.RESULT_OK) {
                     Util.alert(curContext, authJson.get("msg").asString, logTitle)
                     return
                 } else if (authJson.get("code").asString == Const.RESULT_OK) {

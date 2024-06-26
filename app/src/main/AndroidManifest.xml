@@ -4,9 +4,7 @@
 
     <permission android:name="com.hushsbay.sendjay_aos.WRITE.PERMISSION"
         android:protectionLevel="signature">
-    </permission>
-    <!-- signature is for safe sharing of Content Provider data through same signature when compile
-    signature는 Content Provider 접근 정보를 알게 되어도 동일한 서명 값으로 컴파일된 앱이 아닐 경우 데이터 접근이 불가능 -->
+    </permission> <!-- signature는 Content Provider 접근 정보를 알게 되어도 동일한 서명 값으로 컴파일된 앱이 아닐 경우 데이터 접근이 불가능 -->
 
     <!-- 아래 권한은 MainActivity.kt에서 요청/허용하고 있는데 거기 주석 읽어보기 -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -17,21 +15,19 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
-<!--    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />-->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" /><!-- 다른 앱 위에 표시. AlarmReceiver.kt 오류해결내용 참조 -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" /><!--알람 및 리마인더 설정 허용. https://diordna91.medium.com/android-12-%EC%A0%95%ED%99%95%ED%95%9C-%EC%95%8C%EB%9E%8C-%EA%B6%8C%ED%95%9C-d92f878de695-->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" /><!-- 앱내에서 다른 앱 설치시. 출처를 알 수 없는 앱 허용시에도 필요 -->
     <!--<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" /> DOZE모드나 APP STANDBY안되게 해서 백그라운드서비스에서 네트워킹 가능하게 함 -->
 
-    <!-- allowBackup=false/android:fullBackupContent=false : App data is removed when uninstalled. 앱 제거시 데이터도 모두 제거됨 -->
     <application
         android:allowBackup="false"
         android:fullBackupContent="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity
             android:name=".SplashActivity"
             android:theme="@style/SplashTheme"
@@ -41,6 +37,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
@@ -49,16 +46,13 @@
             android:alwaysRetainTaskState="true"
             android:exported="true">
         </activity>
-        <!-- alwaysRetainTaskState=false : task stack will be initialized after some time except root activity. only to root activity
-             alwaysRetainTaskState=false : 일정 시간이 지나면 root activity를 제외한 task stack을 초기화. root activity에만 적용 -->
-        <!-- singleTop and standard does't support multi instances, and only singleTop uses onNewIntent() when activity on top of stack
-             singleTop과 standard는 다중 인스턴스를 지원하지 않고, singleTop만 지정 액티비티가 앱의 스택에 맨 위에 있을 경우에만 onNewIntent() 호출 -->
-        <!-- The core point is that Kotlin covers Socket and necessary REST and Webview does every other things for UI.
-             This is because reuse of Web modules developed on PC Web Browser in Mobile environment.
-             Specially, there are 2 Webview in MainActivity.kt which are Main Webview (chat room list) and Room Webview (sending chat).
-             핵심은 Socket 및 꼭 필요한 Rest만 Kotlin에서 담당하고 UI는 모두 Web에서 지원하는 것임.
+        <!-- allowBackup=false/android:fullBackupContent=false : 앱 제거시 데이터도 모두 제거됨 -->
+        <!-- alwaysRetainTaskState=false : 일정 시간이 지나면 root activity를 제외한 task stack을 초기화. root activity에만 적용 -->
+        <!-- singleTop과 standard는 다중 인스턴스를 지원하지 않고, singleTop만 지정 액티비티가 앱의 스택에 맨 위에 있을 경우에만 onNewIntent() 호출 -->
+        <!-- 핵심은 Socket 및 꼭 필요한 Rest만 Kotlin에서 담당하고 UI는 모두 Web에서 지원하는 것임.
              이는 PC Web Browser에서 쓰이는 Web 모듈들을 Mobile환경에서 재사용하고자 하는 것이 목적임.
              특히, MainActivity.kt에 Webview가 2개 있는데 각각 채팅방에 대한 Main Webview와 채팅을 전송하는 Room Webview가 있음 -->
+
         <activity
             android:name=".PopupActivity"
             android:windowSoftInputMode="stateAlwaysHidden"
@@ -66,17 +60,13 @@
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="true">
         </activity>
-        <!--        <activity-->
-        <!--            android:name=".LocalHtmlActivity"-->
-        <!--            android:windowSoftInputMode="stateAlwaysHidden"-->
-        <!--            android:launchMode="singleTop"-->
-        <!--            android:configChanges="keyboardHidden|orientation|screenSize">-->
-        <!--        </activity>-->
+
         <service
             android:name=".ChatService"
             android:foregroundServiceType="dataSync"
             android:stopWithTask="false">
         </service><!-- stopWithTask : see onTaskRemoved() in ChatService.kt -->
+
         <receiver android:name=".AlarmReceiver" android:exported="true" android:enabled="true">
             <intent-filter>
                 <category android:name="android.intent.category.DEFAULT" />
@@ -85,6 +75,7 @@
         </receiver>
         <!--Declaring a broadcastreceiver for android.net.conn.CONNECTIVITY_CHANGE is deprecated for apps targeting N and higher.
             In general, apps should not rely on this broadcast and use WorkManager instead.-->
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -94,6 +85,7 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_provider_paths" />
         </provider>
+
         <provider
             android:name=".common.KeyChainProvider"
             android:authorities="com.hushsbay.sendjay_aos.common.KeyChainProvider"
@@ -103,6 +95,7 @@
             android:readPermission="com.hushsbay.sendjay_aos.WRITE.PERMISSION"
             android:writePermission="com.hushsbay.sendjay_aos.WRITE.PERMISSION"
             /><!-- see android:protectionLevel="signature" -->
+
     </application>
 
 </manifest>

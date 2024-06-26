@@ -23,7 +23,7 @@ import com.hushsbay.sendjay_aos.common.RxToDown
 import com.hushsbay.sendjay_aos.common.UserInfo
 import com.hushsbay.sendjay_aos.common.Util
 import com.hushsbay.sendjay_aos.data.RxEvent
-import com.hushsbay.sendjay_aos.databinding.ActivityLocalhtmlBinding
+//import com.hushsbay.sendjay_aos.databinding.ActivityLocalhtmlBinding
 import com.hushsbay.sendjay_aos.databinding.ActivityPopupBinding
 import io.reactivex.disposables.Disposable
 //import kotlinx.android.synthetic.main.activity_main.*

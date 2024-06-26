@@ -402,9 +402,9 @@ class MainActivity : Activity() {
                             KeyChain.set(curContext, Const.KC_USERIP, json.get("userip").asString)
                             if (ChatService.serviceIntent == null) { //https://forest71.tistory.com/185
                                 val intentNew = Intent(curContext, ChatService::class.java)
-                                startForegroundService(intentNew)
-                            }
-                            setupWebViewMain() //setupWebViewLocal()
+                                startForegroundService(intentNew) //ChatService가 단독으로 이미 살아있는 상태로 있고 Activity만 추가로 실행하는 경우도 있음
+                            } //setupWebViewMain() 관련 : 웹뷰 열리자마자 chk_alive처럼 바로 소켓전송하는 이벤트가 있는데 ChatService.kt에서 소켓연결이 되고 나서 가능하므로
+                            setupWebViewMain() //웹뷰에서 chk_alive 같은 이벤트는 소켓연결을 보장받고 나서 실행되어야 함
                             intent?.let {
                                 //OnNewIntent()와는 달리 여기로 올 때는 사용자가 앱을 강제종료하고 나서 MainActivity 없이 ChatService만 살아있을 경우임
                                 //이 경우, 도착한 노티를 사용자가 클릭하면 MainActivity가 Create되고 여기서 챗방을 추가로 열게 됨

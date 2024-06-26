@@ -307,7 +307,11 @@ class ChatService : Service() {
                 json.putOpt("data", it.data)
                 json.put("returnTo", it.returnTo ?: "parent")
                 json.put("returnToAnother", it.returnToAnother)
-                if (evt != "chk_alive" && evt != "chk_typing") Util.log("$logTitle", it.toString())
+                if (evt == "chk_alive" || evt == "chk_typing" || evt == "chk_roomfocus") {
+                    //타이머로 돌아가는 이벤트들 로그 막음 (단순히 로그캣에서 보는데 복잡하기 때문임)
+                } else {
+                    Util.log("$logTitle", it.toString())
+                }
                 val procMsg = it.procMsg //모바일 전용 (웹에는 없음). 아래 buffering하고도 일부는 관련있는 파라미터임 (토스트 뿌리면 true 안뿌리게 하려면 false가 넘어와야 함)
                 //아래는 소켓 끊어질 때 버퍼링 관련임. common.js의 hush.sock.sendVolatile() 설명 참조
                 //socket.io의 기본 설정은 소켓이 끊어지더라도 버퍼에 두고 있다가 재연결시 내보내는 것인데 Android socket.io 라이브러리에서 volatile을 지원하는 것을 아직 찾지 못해, 사용하지 않으려 함

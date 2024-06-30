@@ -190,13 +190,14 @@ class Util {
             }
         }
 
-        fun setupWebView(context: Activity, connManager: ConnectivityManager, webview: WebView) { //https://www.blueswt.com/117
+        //fun setupWebView(context: Activity, connManager: ConnectivityManager, webview: WebView) { //https://www.blueswt.com/117
+        fun setupWebView(webview: WebView) { //https://www.blueswt.com/117
             webview.settings.javaScriptEnabled = true
             webview.settings.javaScriptCanOpenWindowsAutomatically = true
-            //webview.settings.cacheMode = WebSettings.LOAD_CACHE_ELSE_NETWORK //WebSettings.LOAD_DEFAULT, WebSettings.LOAD_NO_CACHE
-            webview.settings.cacheMode = WebSettings.LOAD_NO_CACHE
+            webview.settings.cacheMode = WebSettings.LOAD_NO_CACHE //LOAD_CACHE_ELSE_NETWORK, LOAD_DEFAULT,
             webview.settings.domStorageEnabled = true
-            webview.addJavascriptInterface(WebInterface(context, connManager), "AndroidCom")
+            //webview.addJavascriptInterface(WebInterface(context, connManager), "AndroidCom")
+            webview.addJavascriptInterface(WebInterface(), "AndroidCom")
         }
 
         //Use param with obj.toString() or Json-Type String (like """{ }"""). => Uncaught SyntaxError: Invalid or unexpected token

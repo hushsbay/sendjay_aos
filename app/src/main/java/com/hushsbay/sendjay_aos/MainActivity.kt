@@ -334,8 +334,6 @@ class MainActivity : Activity() {
             val roomid = notiIntent.getStringExtra("roomid") //roomid
             val origin = notiIntent.getStringExtra("origin") //noti
             val objStr = notiIntent.getStringExtra("objStr") //""
-            //Util.toast(curContext, "onNewIntent : " + isOnCreate + "," + type + "," + origin)
-            //Util.toast(curContext, "onNewIntent : " + objStr + "," + roomid)
             isFromNoti = true
             procOpenRoom(type, roomid!!, origin!!, objStr!!)
             return true
@@ -488,8 +486,7 @@ class MainActivity : Activity() {
     }
 
     private fun procOpenRoom(type: String, roomid: String, origin: String, objStr: String) {
-        //type = "newFromMain" or "open" from javascript and
-        //origin = "portal" or "" from javascript and
+        //type = "newFromMain" or "open" from javascript and origin = "portal" or "" from javascript
         gType = type
         gRoomid = roomid
         gOrigin = origin
@@ -618,16 +615,16 @@ class MainActivity : Activity() {
 
     private fun setupWebViewMain() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
-        Util.setupWebView(curContext, connManager, binding.wvMain) //Util.log("###", wvMain.settings.userAgentString)
+        Util.setupWebView(binding.wvMain) //Util.log("###", wvMain.settings.userAgentString)
         binding.wvMain.addJavascriptInterface(WebInterfaceMain(), "AndroidMain") //Util.log("@@@@@@@@@@", wvMain.settings.cacheMode.toString())
         toggleDispRetry(false, "Main")
         binding.wvMain.webChromeClient = object : WebChromeClient() {
-        //            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
-        //                consoleMessage?.apply {
-        //                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvMain")
-        //                }
-        //                return true
-        //            }
+            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
+                consoleMessage?.apply {
+                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvMain")
+                }
+                return true
+            }
             override fun onShowFileChooser(webView: WebView, filePathCallback: ValueCallback<Array<Uri?>>, fileChooserParams: FileChooserParams): Boolean {
                 filePathCallbackMain = filePathCallback
                 val intent = fileChooserParams.createIntent()
@@ -642,41 +639,38 @@ class MainActivity : Activity() {
         binding.wvMain.webViewClient = object : WebViewClient() {
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                 super.onReceivedError(view, request, error) //https://gist.github.com/seongchan/752db643377f823950648d0bc80599c1
-                //val urlStr = if (request != null) request.url.toString() else ""
-                val urlStr = request?.url?.toString() ?: "" //request?.url.toString() //Multiple request shown like jquery module.
+                val urlStr = request?.url?.toString() ?: "" //if (request != null) request.url.toString() else ""; //request?.url.toString() //Multiple request shown like jquery module.
                 if (error != null && error.description != "" && urlStr.contains(Const.URL_JAY) && urlStr.contains(Const.PAGE_MAIN)) {
-                    val errMsg = "${error.errorCode}/${error.description}"
-                    //val errMsg = "${error?.errorCode}/${error?.description}"
-                    Util.log("webview error", urlStr+"===="+errMsg)
+                    val errMsg = "${error.errorCode}/${error.description}" //val errMsg = "${error?.errorCode}/${error?.description}"
+                    Util.log("webviewMain error", urlStr+"===="+errMsg)
                     toggleDispRetry(true, "Main", urlStr, errMsg)
                 } else { //ajax : ex) -2/net::ERR_INTERNET_DISCONNECTED : Network not available
                     //Util.toast(curContext, "wvMain/${error?.errorCode}/${error?.description}/${urlStr}") //Multiple toast shown because of Multiple request
                 }
             }
         } //Util.log("@@@@@@@@@@@", KeyChain.get(curContext, Const.KC_MODE_PUBLIC) + "${Const.PAGE_MAIN}?webview=and")
-        //wvMain.loadUrl(KeyChain.get(curContext, Const.KC_MODE_PUBLIC) + "${Const.PAGE_MAIN}?webview=and&nocache=" + Util.getRnd()) //not ios
         binding.wvMain.loadUrl(Const.URL_PUBLIC + "${Const.PAGE_MAIN}?webview=and&nocache=" + Util.getRnd()) //not ios
         CoroutineScope(Dispatchers.Main).launch {
             mainLoaded = false
             retried = false
             delay(Const.RESTFUL_TIMEOUT.toLong())
-            if (!mainLoaded && !retried) toggleDispRetry(true, "Main", logTitle, "RESTFUL_TIMEOUT")
+            if (!mainLoaded && !retried) toggleDispRetry(true, "Main", logTitle, "RESTFUL_TIMEOUT") //webview내 javascript가 제대로 실행되지 않고 있을 경우임
         }
     }
 
     private fun setupWebViewRoom(refresh: Boolean) {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
-        Util.setupWebView(curContext, connManager, binding.wvRoom)
+        Util.setupWebView(binding.wvRoom)
         binding.wvRoom.addJavascriptInterface(WebInterfaceRoom(), "AndroidRoom")
         toggleDispRetry(false, "Room") //Util.log(refresh.toString()+"==="+gRoomid+"==="+roomidForChatService)
         if (!refresh && gRoomid != "" && gRoomid == roomidForChatService) return
         binding.wvRoom.webChromeClient = object : WebChromeClient() {
-        //            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
-        //                consoleMessage?.apply {
-        //                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvRoom")
-        //                }
-        //                return true
-        //            }
+            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
+                consoleMessage?.apply {
+                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvRoom")
+                }
+                return true
+            }
             override fun onShowFileChooser(webView: WebView, filePathCallback: ValueCallback<Array<Uri?>>, fileChooserParams: FileChooserParams): Boolean {
                 filePathCallbackRoom = filePathCallback
                 val intent = fileChooserParams.createIntent()
@@ -711,7 +705,6 @@ class MainActivity : Activity() {
             }
         }
         Util.setDownloadListener(curContext, binding.wvRoom)
-        //wvRoom.loadUrl(KeyChain.get(curContext, Const.KC_MODE_PUBLIC) + "${Const.PAGE_ROOM}?webview=and&type=$gType&roomid=$gRoomid&origin=$gOrigin&nocache=" + Util.getRnd())
         binding.wvRoom.loadUrl(Const.URL_PUBLIC + "${Const.PAGE_ROOM}?webview=and&type=$gType&roomid=$gRoomid&origin=$gOrigin&nocache=" + Util.getRnd())
         //CoroutineScope(Dispatchers.Main).launch {
         //    roomLoaded = false
@@ -721,16 +714,6 @@ class MainActivity : Activity() {
         //} //체크하려면 roomid도 비교해야 하는데, 이 부분은 사실 위 오류처리에서 먼저 처리해야 하는 것으로 보여 막아도 될 것임
     }
 
-    //    private fun setupWebViewLocal() {
-    //        val logTitle = object{}.javaClass.enclosingMethod?.name!!
-    //        Util.setupWebView(curContext, connManager, wvLocal) //Util.log("###", wvMain.settings.userAgentString)
-    //        //wvLocal.addJavascriptInterface(WebInterfaceMain(), "AndroidLocal") //Util.log("@@@@@@@@@@", wvMain.settings.cacheMode.toString())
-    //        val fin: InputStream = assets.open("local.html")
-    //        val buffer = ByteArray(fin.available())
-    //        fin.read(buffer)
-    //        fin.close()
-    //        wvLocal.loadData(String(buffer), "text/html", "UTF-8")
-    //    }
     private fun updateAllUnreads(init: Boolean, isFromNoti: Boolean) { //for room only
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
@@ -751,13 +734,11 @@ class MainActivity : Activity() {
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             CoroutineScope(Dispatchers.Main).launch {
                 try {
-                    //disposableMsg?.dispose()
-                    //disposableMsg = Util.procRxMsg(curContext)
                     disposableMain?.dispose()
                     disposableMain = RxToDown.subscribe<RxEvent>().subscribe { //RxToDown.subscribe<RxEvent>().observeOn(AndroidSchedulers.mainThread()) {//to receive the event on main thread
                         //코들린에서의 소켓이벤트시 데이터를 웹뷰로 전달함
                         //따라서, 웹뷰내 페이지가 소켓데이터를 받을 준비가 되어 있어야 하는데 그 준비가 된 상태에서 호출하는 함수가 getFromWebViewSocket()임
-                        //그 의미는, 여기 procAfterOpenMain()가 호출되기 전엔 아래처럼 RxToDown.post()하면 안된다는 것임 (챗방에서도 마찬가지)
+                        //그 의미는, 여기 procAfterOpenMain()가 호출되기 전엔 RxToDown.post()하면 안된다는 것임 (챗방에서도 마찬가지)
                         //한편, RxMsg를 구독하는 것은 웹뷰와는 별도로 onCreate()에서 처리해야 ChatService.kt에서 사용싯점을 신경쓰지 않아도 되므로 onCreate()으로 이동시킴
                         CoroutineScope(Dispatchers.Main).launch {
                             var param: JSONObject?= null

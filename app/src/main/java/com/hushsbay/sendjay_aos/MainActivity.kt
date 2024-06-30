@@ -243,7 +243,7 @@ class MainActivity : Activity() {
             isOnTop = true
             if (roomidForChatService != "") {
                 Util.loadUrl(binding.wvRoom, "setFocusFromWebView", isOnTop.toString())
-                updateAllUnreads(false, isFromNoti)
+                updateAllUnreads(isFromNoti)
                 if (isFromNoti) isFromNoti = false
                 Util.connectSockWithCallback(curContext, connManager)
             } else {
@@ -284,10 +284,10 @@ class MainActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
         //if (resultCode != RESULT_OK) return //Do not uncomment this line (eg : filePathCallbackMain?.onReceiveValue should be executed all the time)
         try {
-            if (requestCode == FILE_RESULT_MAIN) { //webview file chooser
+            if (requestCode == FILE_RESULT_MAIN) { //webviewMain의 file chooser
                 filePathCallbackMain?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data))
                 filePathCallbackMain = null
-            } else if (requestCode == FILE_RESULT_ROOM) { //webview file chooser
+            } else if (requestCode == FILE_RESULT_ROOM) { //webviewRoom의 file chooser
                 if (data != null) {
                     var list: Array<Uri?>? = null
                     if (data.clipData != null) { //handle multiple-selected files
@@ -317,8 +317,6 @@ class MainActivity : Activity() {
                         Util.loadUrl(binding.wvRoom, "invite", obj) //chat.html의 invite 함수 호출
                     }
                 }
-            //} else if (requestCode == UNKNOWN_RESULT || requestCode == SYSTEM_ALERT_WINDOW || requestCode == SCHEDULE_EXACT_ALARM) {
-            //    procPermission()
             } else {
                 Util.log("onActivityResult", "Wrong result.")
             }
@@ -578,10 +576,7 @@ class MainActivity : Activity() {
                                 var json = SocketIO.connect(curContext, connManager).await()
                                 if (json.get("code").asString == Const.RESULT_OK) {
                                     binding.btnRetry.performClick() //if (btnRetry.visibility == View.VISIBLE) btnRetry.performClick()
-                                    //Util.toast(curContext, "conn @@@@@")
                                     break
-                                //} else {
-                                    //Util.toast(curContext, "not conn !")
                                 }
                             } catch (e: Exception) {
                                 Util.toast(curContext, logTitle + ": " + e.toString())
@@ -593,23 +588,19 @@ class MainActivity : Activity() {
             binding.wvRoom.visibility = View.GONE //if (webview == "Room") wvRoom.visibility = View.GONE
             binding.wvMain.visibility = View.GONE
             binding.btnRetry.visibility = View.VISIBLE
-            //binding.txtRmks.visibility = View.VISIBLE
-            binding.txtUrl.visibility = View.VISIBLE
+            binding.txtUrl.visibility = View.VISIBLE //binding.txtRmks.visibility = View.VISIBLE
             if (urlStr == null) {
                 binding.txtUrl.text = ""
             } else {
                 binding.txtUrl.text = "위치 : $urlStr\n$errMsg" //container.background = null //container.setBackgroundColor(Color.WHITE)
             }
-            //wvLocal.visibility = View.VISIBLE
         } else {
             if (webview == "Room") binding.wvRoom.visibility = View.VISIBLE
             binding.wvMain.visibility = View.VISIBLE
             binding.btnRetry.visibility = View.GONE
-            //binding.txtRmks.visibility = View.GONE
-            binding.txtUrl.visibility = View.GONE
+            binding.txtUrl.visibility = View.GONE //binding.txtRmks.visibility = View.GONE
             binding.txtUrl.text = ""
             binding.txtAuto.visibility = View.GONE
-            //wvLocal.visibility = View.GONE
         }
     }
 
@@ -714,13 +705,15 @@ class MainActivity : Activity() {
         //} //체크하려면 roomid도 비교해야 하는데, 이 부분은 사실 위 오류처리에서 먼저 처리해야 하는 것으로 보여 막아도 될 것임
     }
 
-    private fun updateAllUnreads(init: Boolean, isFromNoti: Boolean) { //for room only
+    //private fun updateAllUnreads(init: Boolean, isFromNoti: Boolean) { //for room only
+    private fun updateAllUnreads(isFromNoti: Boolean) { //for room only
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
             NotiCenter.mapRoomid[gRoomid]?.let { NotiCenter.manager!!.cancel(it) }
             NotiCenter.mapRoomid.remove(gRoomid)
             if (NotiCenter.mapRoomid.isEmpty()) NotiCenter.manager!!.cancel(Const.NOTI_ID_SUMMARY)
-            if (!init) Util.loadUrl(binding.wvRoom, "updateAllUnreadsFromWebView", isFromNoti.toString())
+            //if (!init) Util.loadUrl(binding.wvRoom, "updateAllUnreadsFromWebView", isFromNoti.toString())
+            Util.loadUrl(binding.wvRoom, "updateAllUnreadsFromWebView", isFromNoti.toString())
         } catch (e: Exception) {
             logger.error("$logTitle: ${e.toString()}")
             Util.procException(curContext, e, logTitle)
@@ -830,7 +823,7 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
-        fun showLog(num: Int) { //logger.info("testest1111111111111")로 테스트 가능
+        fun showLog(num: Int) { //logger.info("test")로 테스트 가능
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             CoroutineScope(Dispatchers.Main).launch {
                 try { //File(path).walkTopDown().forEach { Util.log("=====", it.toString()) }
@@ -860,35 +853,29 @@ class MainActivity : Activity() {
 
         @JavascriptInterface
         fun deleteLog() {
-//            val logTitle = object{}.javaClass.enclosingMethod?.name!!
-//            CoroutineScope(Dispatchers.Main).launch {
-//                try {
-//                    curContext.filesDir.let { it ->
-//                        val listFile = Util.getFiles(it)
-//                        if (listFile == null || listFile.size == 0) {
-//                            Util.toast(curContext, "Log files not exists.")
-//                            return@let
-//                        }
-//                        val path = curContext.filesDir.toString()
-//                        for (i in listFile.indices) File(path + "/" + listFile[i]).delete()
-//                        Util.toast(curContext, "deleteLog done.")
-//                    }
-//                } catch (e: Exception) {
-//                    logger.error("$logTitle: ${e.toString()}")
-//                    Util.procException(curContext, e, logTitle)
-//                }
-//            }
-            var intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
-            intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
-            intent.putExtra(Settings.EXTRA_CHANNEL_ID, Const.NOTICHANID_COMMON)
-            if (intent.resolveActivity(packageManager) != null) {
-                startActivity(intent)
+            val logTitle = object{}.javaClass.enclosingMethod?.name!!
+            CoroutineScope(Dispatchers.Main).launch {
+                try {
+                    curContext.filesDir.let { it ->
+                        val listFile = Util.getFiles(it)
+                        if (listFile == null || listFile.size == 0) {
+                            Util.toast(curContext, "Log files not exists.")
+                            return@let
+                        }
+                        val path = curContext.filesDir.toString()
+                        for (i in listFile.indices) File(path + "/" + listFile[i]).delete()
+                        Util.toast(curContext, "deleteLog done.")
+                    }
+                } catch (e: Exception) {
+                    logger.error("$logTitle: ${e.toString()}")
+                    Util.procException(curContext, e, logTitle)
+                }
             }
         }
 
-        }
+    }
 
-        inner class WebInterfaceRoom {
+    inner class WebInterfaceRoom {
 
         @JavascriptInterface
         fun procAfterOpenRoom() {
@@ -919,7 +906,7 @@ class MainActivity : Activity() {
                     }
                     roomidForChatService = gRoomid
                     KeyChain.set(curContext, Const.KC_ROOMID_FOR_CHATSERVICE, gRoomid)
-                    //updateAllUnreads(true, false) //웹뷰에서 수행되므로 여기서 굳이 ??!!
+                    //updateAllUnreads(true, false) //웹뷰에서 수행되므로 여기서 굳이 수행하지 않아도 됨
                 } catch (e1: Exception) {
                     logger.error("$logTitle: ${e1.toString()}")
                     Util.procException(curContext, e1, logTitle)

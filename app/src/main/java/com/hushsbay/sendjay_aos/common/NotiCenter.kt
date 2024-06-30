@@ -49,7 +49,7 @@ object NotiCenter {
         }
         if (manager == null) {
             manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            manager!!.createNotificationChannel(NotiCenter.channel!!)
+            manager!!.createNotificationChannel(channel!!)
         }
         if (audio == null) audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (vib == null) {

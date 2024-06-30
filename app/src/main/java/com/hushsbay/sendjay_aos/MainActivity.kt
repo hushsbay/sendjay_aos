@@ -216,7 +216,7 @@ class MainActivity : Activity() {
                 intent?.let {
                     //MainActivity가 스택에 있을 때는 클릭시 챗방이 뜨는데, 강제종료후 서비스만 실행될 때는 MainActivity가 스택에 없어서 onNewIntent 이벤트가 발생되지 않는데
                     //그걸 openRoomWithNotiIntent()로 공통모듈화해서 onCreate()에서도 호출하게 함
-                    if (!openRoomWithNotiIntent(it, false)) return@connectSockWithCallback
+                    if (!openRoomWithNotiIntent(it)) return@connectSockWithCallback
                 }
             }
         } catch (e: Exception) {
@@ -328,7 +328,8 @@ class MainActivity : Activity() {
         }
     }
 
-    private fun openRoomWithNotiIntent(notiIntent: Intent, isOnCreate: Boolean) : Boolean {
+    //private fun openRoomWithNotiIntent(notiIntent: Intent, isOnCreate: Boolean) : Boolean {
+    private fun openRoomWithNotiIntent(notiIntent: Intent) : Boolean {
         val type = notiIntent.getStringExtra("type") ?: ""
         if (type != "") {
             val roomid = notiIntent.getStringExtra("roomid") //roomid
@@ -370,7 +371,7 @@ class MainActivity : Activity() {
                             intent?.let {
                                 //OnNewIntent()와는 달리 여기로 올 때는 사용자가 앱을 강제종료하고 나서 MainActivity 없이 ChatService만 살아있을 경우임
                                 //이 경우, 도착한 노티를 사용자가 클릭하면 MainActivity가 Create되고 여기서 챗방을 추가로 열게 됨
-                                openRoomWithNotiIntent(it, true)
+                                openRoomWithNotiIntent(it)
                             }
                         }
                     } catch (e: Exception) {
@@ -476,7 +477,6 @@ class MainActivity : Activity() {
             roomidForChatService = ""
             KeyChain.set(curContext, Const.KC_ROOMID_FOR_CHATSERVICE, "")
             binding.wvRoom.visibility = View.GONE
-            //wvRoom.loadUrl(KeyChain.get(curContext, Const.KC_MODE_PUBLIC) + Const.PAGE_DUMMY + "?nocache=" + Util.getRnd())
             binding.wvRoom.loadUrl(Const.URL_PUBLIC + Const.PAGE_DUMMY + "?nocache=" + Util.getRnd())
             cancelUnreadNoti()
         } catch (e: Exception) {

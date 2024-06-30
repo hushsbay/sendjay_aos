@@ -31,8 +31,6 @@ object NotiCenter {
     var mapRoomid: MutableMap<String, Int> = mutableMapOf<String, Int>() //See MainActivity.kt
     var mapRoomInfo: MutableMap<String, MutableMap<String, String>> = mutableMapOf<String, MutableMap<String, String>>() //See MainActivity.kt
 
-    //val gapScreenOffOnDualMode = "1000"
-
     private var packageName: String? = null
     private var idNotiMax = Const.NOTI_CNT_START
 
@@ -131,11 +129,8 @@ object NotiCenter {
             val noti = setupNoti(context, realTitle, realBody, intentNoti, mapRoomid[roomid]!!)
             val notiSummary = setupNotiSummmary(context)
             if (webConnectedAlso && msgid != "") { //["W__userid1","W__userid2"]
-                //val screenState = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
-                //if (screenState == "off") { //PC 브라우저가 이 챗방을 열어 놓고 있으면 여기서 delay만큼 늦게 읽으므로 이미 읽음처리되어 노티가 필요없음
-                    val delaySec: Long = ChatService.gapSecOnDualMode.toLong()
-                    delay(delaySec) //Handler().postDelayed({ ... }, delaySec)
-                //}
+                val delaySec: Long = ChatService.gapSecOnDualMode.toLong()
+                delay(delaySec) //Handler().postDelayed({ ... }, delaySec)
                 val param = org.json.JSONObject()
                 param.put("msgid", msgid)
                 param.put("roomid", roomid)

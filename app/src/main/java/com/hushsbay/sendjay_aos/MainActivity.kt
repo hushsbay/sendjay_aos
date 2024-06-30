@@ -412,8 +412,6 @@ class MainActivity : Activity() {
             val pInfo = packageManager.getPackageInfo(packageName, 0) //pInfo.versionName
             if (jsonApp.get("version").asString == pInfo.versionName) {
                 val jsonEtc = json.getAsJsonObject(Const.VERSIONCHK_ETC)
-                //ChatService.gapScreenOffOnDualMode = jsonEtc.get("screenoff").asString //Dual means socket on both PC Web and Mobile
-                //ChatService.gapScreenOnOnDualMode = jsonEtc.get("screenon").asString
                 ChatService.gapSecOnDualMode = jsonEtc.get("gapsec").asString
                 val main_version = json.get(Const.KC_WEBVIEW_MAIN_VERSION).asString
                 val chat_version = json.get(Const.KC_WEBVIEW_CHAT_VERSION).asString

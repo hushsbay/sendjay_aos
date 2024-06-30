@@ -46,8 +46,6 @@ class ChatService : Service() {
         var serviceIntent: Intent? = null //See MainActivity.kt
         var status_sock = Const.SockState.BEFORE_CONNECT
         var curState_sock = false
-        //var gapScreenOffOnDualMode = "10000"
-        //var gapScreenOnOnDualMode = "3000"
         var gapSecOnDualMode = "1000" //기본값이며 앱 구동시 서버에서의 설정값을 내려 받음
         //DualMode는 웹/모바일 모두 소켓연결일 때 이 갭(초)만큼 모바일에서 늦게 도착체크해서 한쪽에서 이미 읽었으면 다른 한쪽에서는 알림표시하지 않게 하기
     }

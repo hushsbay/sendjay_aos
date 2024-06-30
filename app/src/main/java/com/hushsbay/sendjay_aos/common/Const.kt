@@ -15,7 +15,7 @@ class Const {
         const val TITLE = "sendjay" //for AlertDialog Title and so on
         const val AOS = "aos"
         const val VERSIONCHK_APP = "${APP_NAME}_${AOS}"
-        const val VERSIONCHK_WEB = "webview"
+        //const val VERSIONCHK_WEB = "webview"
         const val VERSIONCHK_ETC = "etc"
         ////////////////////////////////////////////////for distinguishing dev and ops (through KeyChain when app starts)
 //        const val SUFFIX_DEV = "devx" //for developer to check by userid if he want to connect to dev mode not ops(production) mode

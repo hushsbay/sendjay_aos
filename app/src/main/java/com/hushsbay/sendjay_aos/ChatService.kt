@@ -46,8 +46,10 @@ class ChatService : Service() {
         var serviceIntent: Intent? = null //See MainActivity.kt
         var status_sock = Const.SockState.BEFORE_CONNECT
         var curState_sock = false
-        var gapScreenOffOnDualMode = "10000"
-        var gapScreenOnOnDualMode = "3000"
+        //var gapScreenOffOnDualMode = "10000"
+        //var gapScreenOnOnDualMode = "3000"
+        var gapSecOnDualMode = "1000" //기본값이며 앱 구동시 서버에서의 설정값을 내려 받음
+        //DualMode는 웹/모바일 모두 소켓연결일 때 이 갭(초)만큼 모바일에서 늦게 도착체크해서 한쪽에서 이미 읽었으면 다른 한쪽에서는 알림표시하지 않게 하기
     }
 
     private var SEC_DURING_DAEMON: Long = 3000 //try connecting every 3 second in case of disconnection
@@ -372,7 +374,6 @@ class ChatService : Service() {
                                 val type = arr[2]
                                 val body = arr[3]
                                 val body1 = "안읽은톡) " + Util.getTalkBodyCustom(type, body)
-                                //NotiCenter.notiByRoom(applicationContext, uInfo, roomid, body1, false, msgid, cdt)
                                 val param = org.json.JSONObject()
                                 param.put("msgid", msgid)
                                 param.put("body", body1)
@@ -384,17 +385,14 @@ class ChatService : Service() {
                                 NotiCenter.notiToRoom(applicationContext, uInfo, roomid, param,false)
                             }
                         } else if (HttpFuel.isNetworkUnstableMsg(json)) {
-                            //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", Const.NETWORK_UNSTABLE)))
                             Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE)
                         } else {
-                            //RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:qry_unread: ${json.get("msg").asString}")))
                             Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${json.get("msg").asString}")
                         }
                     } catch (e: Exception) {
                         logger.error("$logTitle: EVENT_CONNECT ${e.toString()}")
                         Util.log(logTitle, e.toString())
                         e.printStackTrace()
-                        //RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:qry_unread: ${e.toString()}")))
                         Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle:qry_unread: ${e.toString()}")
                     }
                 }
@@ -402,7 +400,6 @@ class ChatService : Service() {
                 logger.error("$logTitle: EVENT_CONNECT1 ${e1.toString()}")
                 Util.log(logTitle, e1.toString())
                 e1.printStackTrace()
-                //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e1.toString()}")))
                 Util.showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${e1.toString()}")
             }
         }.off(Socket.EVENT_DISCONNECT).on(Socket.EVENT_DISCONNECT) {
@@ -416,7 +413,6 @@ class ChatService : Service() {
                 logger.error("$logTitle: EVENT_DISCONNECT ${e.toString()}")
                 Util.log(logTitle, e.toString())
                 e.printStackTrace()
-                //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
                 Util.showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${e.toString()}")
             }
         }.off(Const.SOCK_EV_ALERT).on(Const.SOCK_EV_ALERT) {
@@ -455,55 +451,21 @@ class ChatService : Service() {
                 val returnTo = gson.get("returnTo").asString
                 val returnToAnother = gson.get("returnToAnother")?.asString
                 if (ev != "chk_alive" && ev != "chk_typing") Util.log("$logTitle", jsonStr, it[0].javaClass.kotlin.qualifiedName!!)
-                /*var needNoti = true
-                val noti_off = KeyChain.get(applicationContext, Const.KC_NOTI_OFF) ?: ""
-                if (noti_off == "Y") needNoti = false*/
                 //아래 returnToAnother는 org.json.JSONObject로 가져오면 try catch 필요하게 되어 번거로움 (gson으로 가져옴)
                 //json.get("data")가 아닌 넘어온 객체 전체인 json임을 유의. json으로 넘기지 않고 gson.toString()에서 변환한 json시 처리가 더 불편함
                 RxToDown.post(RxEvent(ev, json, returnTo, returnToAnother))
                 val roomidForService = KeyChain.get(applicationContext, Const.KC_ROOMID_FOR_CHATSERVICE)!!
                 if (returnTo != "" && returnTo == roomidForService) {
                     RxToRoom.post(RxEvent(ev, json, returnTo, returnToAnother))
-                    /*val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
-                    if (screenState == "on" && MainActivity.isOnTop) needNoti = false*/
                 } else if (returnTo == "all") {
                     RxToRoom.post(RxEvent(ev, json, returnTo, returnToAnother))
                 } //아래 몇가지는 모바일에서 필요한 처리이므로 구현해야 함
                 if (ev == Const.SOCK_EV_SEND_MSG) {
-//                    var needNoti = true
-//                    if (KeyChain.get(applicationContext, Const.KC_NOTI_OFF) == "Y") {
-//                        needNoti = false
-//                    } else {
-//                        var dt = Util.getCurDateTimeStr() //20240512130549
-//                        val tm = dt.substring(8, 12) //1305 //Util.log("@@@@", tm)
-//                        val tm_fr = KeyChain.get(applicationContext, Const.KC_TM_FR) ?: "0000"
-//                        val tm_to = KeyChain.get(applicationContext, Const.KC_TM_TO) ?: "2400"
-//                        if (tm < tm_fr && tm > tm_to) {
-//                            needNoti = false
-//                        } else {
-//                            if (returnTo != "" && returnTo == roomidForService && KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) == "on" && MainActivity.isOnTop) {
-//                                needNoti = false
-//                            }
-//                        }
-//                    }
                     CoroutineScope(Dispatchers.IO).launch {
-                        try { //Util.showRxMsgInApp(Const.SOCK_EV_TOAST, "하하하하")
+                        try {
                             val data = json.getJSONObject("data")
                             var needNoti = NotiCenter.needNoti(applicationContext, uInfo, returnTo, roomidForService, data)
                             if (!needNoti) return@launch
-                            //if (needNoti) {
-                                //val data = json.getJSONObject("data")
-                                //val senderid = data.getString("senderid")
-                                //if (senderid == uInfo.userid) return@on //Util.log("@@@@@@@@@@", senderid + "====" + uInfo.userid + "====" + uInfo.userkey)
-                            /*val msgid = data.getString("msgid")
-                            val body = data.getString("body")
-                            val type = data.getString("type")
-                            val userkeyArr = data.getJSONArray("userkeyArr")
-                            val cdt = data.getString("cdt") //서버의 send_msg.js에서 현재일시를 가져옴
-                            val webConnectedAlso = userkeyArr.toString().contains(Const.W_KEY + uInfo.userid + "\"") //["W__userid1","W__userid2"]
-                            val body1 = Util.getTalkBodyCustom(type, body)
-                            NotiCenter.notiByRoom(applicationContext, uInfo, returnTo, body1, webConnectedAlso, msgid, cdt)*/
-                            //}
                             NotiCenter.notiToRoom(applicationContext, uInfo, returnTo, data, true)
                         } catch (e: Exception) {
                             //do nothing
@@ -543,17 +505,7 @@ class ChatService : Service() {
                     }
                 } else if (ev == Const.SOCK_EV_RENAME_ROOM) {
                     setRoomInfo(json, ev) //ChatService내 ajax (서버다운시) 테스트가 쉽지 않음. 소켓통신이 되고 ajax가 안되는 상황을 만들어야 하는데 어려워 그냥 MainActivity.kt에서만 테스트 수행
-//               else if (ev == Const.SOCK_EV_CUT_MOBILE) {
-//                    val data = json.getJSONObject("data")
-//                    val userid = data.getString("userid")
-//                    if (userid == uInfo.userid) { //Util.log(userid, uInfo.userid)
-//                        KeyChain.set(applicationContext, Const.KC_AUTOLOGIN, "")
-//                        cut_mobile = true
-//                        stopSelf()
-//                        logger.debug("stopSelf..SOCK_EV_CUT_MOBILE")
-//                    }
                 } else if (ev == Const.SOCK_EV_CHK_ROOMFOCUS) {
-                    Util.log("@@@@@", "+++++++++++++++")
                     val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
                     val focusedRoomid = if (screenState == "on" && MainActivity.isOnTop && roomidForService != "") {
                         roomidForService
@@ -567,7 +519,6 @@ class ChatService : Service() {
                 logger.error("$logTitle: SOCK_EV_COMMON ${e.toString()}")
                 Util.log(logTitle + ": " + Const.SOCK_EV_COMMON, e.toString())
                 e.printStackTrace()
-                //RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
                 Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${e.toString()}")
             }
         }

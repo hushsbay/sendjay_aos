@@ -42,10 +42,10 @@ class ChatService : Service() {
     //https://www.spiria.com/en/blog/mobile-development/hiding-foreground-services-notifications-in-android/
 
     companion object {
-        var state = Const.ServiceState.STOPPED //See FcmReceiver.kt
+        var state = Const.ServiceState.STOPPED
         var serviceIntent: Intent? = null //See MainActivity.kt
         var status_sock = Const.SockState.BEFORE_CONNECT
-        var curState_sock = false
+        //var curState_sock = false
         var gapSecOnDualMode = "1000" //기본값이며 앱 구동시 서버에서의 설정값을 내려 받음
         //DualMode는 웹/모바일 모두 소켓연결일 때 이 갭(초)만큼 모바일에서 늦게 도착체크해서 한쪽에서 이미 읽었으면 다른 한쪽에서는 알림표시하지 않게 하기
     }
@@ -64,7 +64,7 @@ class ChatService : Service() {
     private lateinit var uInfo: UserInfo
 
     private var shouldThreadStop = false
-    private var cut_mobile = false
+    //private var cut_mobile = false
 
     private inner class mainTask : TimerTask() {
         override fun run() { //Timer().schedule(mainTask(), 1000)과 연계되는데 아래 오류로 막음
@@ -147,11 +147,9 @@ class ChatService : Service() {
         try {
             Util.log("startForegroundWithNotification")
             shouldThreadStop = false
-            //var manager: NotificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             manager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            //var channel: NotificationChannel = NotificationChannel(Const.NOTICHANID_FOREGROUND, Const.NOTICHANID_FOREGROUND, NotificationManager.IMPORTANCE_LOW)
             channel = NotificationChannel(Const.NOTICHANID_FOREGROUND, Const.NOTICHANID_FOREGROUND, NotificationManager.IMPORTANCE_LOW)
-            channel!!.setShowBadge(false) //앱을 완전히 제거후 새로 시작하면 적용됨
+            channel!!.setShowBadge(false) //앱을 완전히 제거후 새로 시작해야 적용됨
             manager!!.createNotificationChannel(channel!!) //여기 Noti는 진짜 알림을 위한 것이 아니고 foreground service 구동을 위한 것임
             val builder = NotificationCompat.Builder(this, Const.NOTICHANID_FOREGROUND)
             builder.setSmallIcon(R.drawable.notiforservice) //If not, 2 lines of verbose explanation shows.
@@ -178,7 +176,6 @@ class ChatService : Service() {
             logger.error("$logTitle: ${e.toString()}")
             Util.log(logTitle, e.toString())
             e.printStackTrace()
-            //RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
             Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${e.toString()}")
         }
     }
@@ -186,21 +183,18 @@ class ChatService : Service() {
     @SuppressLint("ScheduleExactAlarm")
     private fun initDeamon() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
-        try {
-            //SimpleWorker 작동 결과
+        try { //SimpleWorker 작동 결과
             //1. 스크린오프 상태로 간 경우 서비스가 제한되는데 이 경우도 서비스를 재시작해야 함. SimpleWorker가 주기적으로 실행되어 서비스가 살아나 그동안 밀렸던 톡 도착 노티가 표시됨
             //2. ChatService를 강제로 죽이고 스크린오프 상태로 하고 배터리 설정도 기본으로 한 경우도 노티 문제없음
-            //** 문제는 SimpleWorker가 최소 주기가 15분이라서 너무 길다는 것임. 그렇다고, FCM을 적용하는 것은 노력이 많이 드는 이슈임
-            //** SimpleWorker를 여러개 운영해서 1분에 하나씩 실행시키는 것은 더욱 힘들어 보임
-            /* 아래 AlarmManager 사용으로 막음
+            //문제는 SimpleWorker가 최소 주기가 15분이라서 너무 길다는 것임. 그렇다고, FCM을 적용하는 것은 노력이 많이 드는 이슈임. SimpleWorker를 여러개 운영해 1분에 하나씩 실행시키는 것은 힘들어 보임
+            /*따라서, SimpleWorker를 막고 아래 AlarmManager를 사용해 처리함
             val workManager = WorkManager.getInstance(applicationContext) //https://tristan91.tistory.com/480
             workManager.cancelAllWork()
             val periodicRequest = PeriodicWorkRequest.Builder(SimpleWorker::class.java, 15, TimeUnit.MINUTES).build() //minimum 15 minutes
             workManager.enqueue(periodicRequest)*/
-            //따라서, 아래와 같이 AlarmManager의 setExactAndAllowWhileIdle()를 사용함 (최소 1분 간격으로 Doze(Idle)모드에서도 정확도를 보임)
+            //아래와 같이 AlarmManager의 setExactAndAllowWhileIdle()를 사용함 (최소 1분 간격으로 Doze(Idle)모드에서도 정확도를 보임)
             //https://velog.io/@thevlakk/Android-AlarmManager-%ED%8C%8C%ED%97%A4%EC%B9%98%EA%B8%B0-1
             //권한 허용 필요 : https://diordna91.medium.com/android-12-%EC%A0%95%ED%99%95%ED%95%9C-%EC%95%8C%EB%9E%8C-%EA%B6%8C%ED%95%9C-d92f878de695
-            //일단, 수동으로 권한 주고 위 SimpleWorker와 동일한 동작을 하는지 SimpleWorker를 막고 해보니 문제없이 잘됨 (SimpleWorker를 굳이 수행할 이유가 없어 보여 막음)
             val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val nextIntent = Intent(applicationContext, AlarmReceiver::class.java)
             nextIntent.action = "one_minute_check"
@@ -210,7 +204,7 @@ class ChatService : Service() {
             calendar.add(Calendar.SECOND, 60)
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent) //권한 설정 필요
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            val r: Runnable = Daemon()
+            val r: Runnable = Daemon() //데몬만으로도 불안해서 위 AlarmReceiver를 추가로 사용하는 것임
             thread = Thread(r)
             thread!!.setDaemon(true)
             thread!!.start()
@@ -220,7 +214,6 @@ class ChatService : Service() {
             logger.error("$logTitle: ${e.toString()}")
             Util.log(logTitle, e.toString())
             e.printStackTrace()
-            //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
             Util.showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${e.toString()}")
         }
      }
@@ -240,15 +233,15 @@ class ChatService : Service() {
                 KeyChain.set(applicationContext, Const.KC_DT_DISCONNECT, Util.getCurDateTimeStr(true)) //Util.connectSockWithCallback() 참조
             }
             Util.log(logTitle, "restartChatService01")
-            if (MainActivity.stopServiceByLogout || cut_mobile) {
+            if (MainActivity.stopServiceByLogout) { //if (MainActivity.stopServiceByLogout || cut_mobile) {
                 serviceIntent = null
                 state = Const.ServiceState.LOGOUTED
-                cut_mobile = false
+                //cut_mobile = false
                 Util.log(logTitle, "restartChatService02")
                 return
             }
             Util.log(logTitle, "restartChatService03")
-            curState_sock = false
+            //curState_sock = false
             val calendar = Calendar.getInstance()
             calendar.timeInMillis = System.currentTimeMillis()
             calendar.add(Calendar.SECOND, SEC_DURING_RESTART)
@@ -278,17 +271,14 @@ class ChatService : Service() {
                 if (jsonRI.get("code").asString == Const.RESULT_OK) {
                     NotiCenter.getRoomInfo(jsonRI, roomid)
                 } else if (HttpFuel.isNetworkUnstableMsg(jsonRI)) {
-                    //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", Const.NETWORK_UNSTABLE)))
                     Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE)
                 } else {
-                    //RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:setRoomInfo: ${jsonRI.get("msg").asString}")))
                     Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${jsonRI.get("msg").asString}")
                 }
             } catch (e: Exception) {
                 logger.error("$logTitle: ${e.toString()}")
                 Util.log(logTitle, e.toString())
                 e.printStackTrace()
-                //RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, JSONObject().put("msg", "$logTitle:setRoomInfo: ${e.toString()}")))
                 Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${e.toString()}")
             }
         }
@@ -337,7 +327,6 @@ class ChatService : Service() {
                 logger.error("$logTitle: ${e.toString()}")
                 Util.log(logTitle, e.toString())
                 e.printStackTrace()
-                //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
                 Util.showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${e.toString()}")
             }
         }
@@ -348,9 +337,9 @@ class ChatService : Service() {
         SocketIO.sock!!.off(Socket.EVENT_CONNECT).on(Socket.EVENT_CONNECT) {
             try {
                 Util.log(logTitle, Socket.EVENT_CONNECT)
-                curState_sock = true
-                if (status_sock == Const.SockState.FIRST_DISCONNECTED) {
-                    status_sock = Const.SockState.RECONNECTED
+                //curState_sock = true
+                if (status_sock == Const.SockState.FIRST_DISCONNECTED) { //html에서 [hush.cons.sock_ev_connect] 참조 요망
+                    status_sock = Const.SockState.RECONNECTED //Be careful that Socket.EVENT_CONNECT occurred many times at a moment. (socket.io 초기버전 이야기?!)
                     Util.sendToDownWhenConnDisconn(applicationContext, Socket.EVENT_CONNECT)
                 }
                 CoroutineScope(Dispatchers.IO).launch {
@@ -403,7 +392,7 @@ class ChatService : Service() {
         }.off(Socket.EVENT_DISCONNECT).on(Socket.EVENT_DISCONNECT) {
             try { //설명은 class Daemon의 ###10 참조
                 Util.log(logTitle, Socket.EVENT_DISCONNECT)
-                curState_sock = false
+                //curState_sock = false
                 if (status_sock == Const.SockState.BEFORE_CONNECT) status_sock = Const.SockState.FIRST_DISCONNECTED
                 Util.sendToDownWhenConnDisconn(applicationContext, Socket.EVENT_DISCONNECT)
                 KeyChain.set(applicationContext, Const.KC_DT_DISCONNECT, Util.getCurDateTimeStr(true)) //Util.connectSockWithCallback() 참조
@@ -441,7 +430,7 @@ class ChatService : Service() {
                 e.printStackTrace()
             }
         }.off(Const.SOCK_EV_COMMON).on(Const.SOCK_EV_COMMON) { it ->
-            try {
+            try { //대부분의 소켓 이벤트는 여기로 옴
                 val json = it[0] as JSONObject
                 val jsonStr = it[0].toString() //it.get(0).toString()
                 val gson = Gson().fromJson(jsonStr, JsonObject::class.java)
@@ -502,15 +491,14 @@ class ChatService : Service() {
                         setRoomInfo(json, ev)
                     }
                 } else if (ev == Const.SOCK_EV_RENAME_ROOM) {
-                    setRoomInfo(json, ev) //ChatService내 ajax (서버다운시) 테스트가 쉽지 않음. 소켓통신이 되고 ajax가 안되는 상황을 만들어야 하는데 어려워 그냥 MainActivity.kt에서만 테스트 수행
+                    setRoomInfo(json, ev)
                 } else if (ev == Const.SOCK_EV_CHK_ROOMFOCUS) {
                     val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
                     val focusedRoomid = if (screenState == "on" && MainActivity.isOnTop && roomidForService != "") {
                         roomidForService
                     } else {
                         ""
-                    }
-                    Util.log("focusedRoomid", focusedRoomid)
+                    } //Util.log("focusedRoomid", focusedRoomid)
                     RxToUp.post(RxEvent(Const.SOCK_EV_CHK_ROOMFOCUS, JSONObject().put("focusedRoomid", focusedRoomid), "parent"))
                 }
             } catch (e: Exception) {
@@ -533,8 +521,8 @@ class ChatService : Service() {
                             //거기서는 단지, 연결이 끊어진 걸 앱과 웹뷰에 전달하는 정도가 전부임. 다시 재연결하는 노력은 여기서 진행됨
                             //소켓연결이 끊어지는 건 1) ChatService가 살아 있으면서 단순히 통신 이상이거나 2) ChatService가 살아 있으면서 서버가 다운되거나
                             //3) ChatService가 (사용자에 의해) 강제 종료되면서 끊어지는 경우가 있는데 이 모든 경우에 대해 다시 원상복구해야 함
-                            val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
-                            //Util.log(logTitle, "socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )
+                            /*val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
+                            Util.log(logTitle, "socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )*/
                             val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
                             if (autoLogin == "Y") Util.connectSockWithCallback(applicationContext, connManager!!)
                         } catch (e: InterruptedException) {

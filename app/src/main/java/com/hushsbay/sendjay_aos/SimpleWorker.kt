@@ -11,10 +11,12 @@ import com.hushsbay.sendjay_aos.common.LogHelper
 import com.hushsbay.sendjay_aos.common.Util
 import org.apache.log4j.Logger
 
+//현재 미사용중이나 버리기 아까운 내용이라 제거하지 않고 소스 참고용으로 보관하는 것임
+
 class SimpleWorker(context: Context, workerParameters: WorkerParameters) : Worker(context, workerParameters) {
 
     private val logger: Logger = LogHelper.getLogger(context, this::class.simpleName)
-    private val connManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    //private val connManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     private var context = context
 
     override fun doWork(): Result {

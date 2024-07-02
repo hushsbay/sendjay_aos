@@ -229,8 +229,8 @@ class Util {
                         filename = Const.APP_NAME + "_" + sanitizer.getValue("suffix") + ".png"
                         request.setTitle(filename)
                     } else { //proc_file //url => https://hushsbay.net:444/proc_file/20201223140444716000807636A1TPgWSYaA%2F1%2Flogo$$20210107232606745891.png?msgid=2021010808..
-                        filename = Util.getFilenameFromTalkBody(fileUrlArr[0]) //last dir => ~A%2F1%2F(~A/1/), file => logo$$xxxxx.png
-                        request.setTitle(Util.decodeUrl(filename)) //request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimeType))
+                        filename = getFilenameFromTalkBody(fileUrlArr[0]) //last dir => ~A%2F1%2F(~A/1/), file => logo$$xxxxx.png
+                        request.setTitle(decodeUrl(filename)) //request.setTitle(URLUtil.guessFileName(url, contentDisposition, mimeType))
                     } //request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, filename) //download ok! inside app (/Android/data/com.~)
                     request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, filename) //public external dir
                     val dm = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager

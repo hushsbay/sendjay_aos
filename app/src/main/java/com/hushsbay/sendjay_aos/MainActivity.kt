@@ -797,7 +797,7 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
-        fun openPopup(origin: String, objStr: String) {
+        fun openPopup(origin: String, objStr: String) { //origin=urlStr
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             CoroutineScope(Dispatchers.Main).launch {
                 try {
@@ -942,7 +942,7 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
-        fun openPopup(origin: String, objStr: String) { //origin = popup.html or index.html
+        fun openPopup(origin: String, objStr: String) { //origin = popup.html or main.html
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             CoroutineScope(Dispatchers.Main).launch {
                 try {

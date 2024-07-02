@@ -1,42 +1,29 @@
 package com.hushsbay.sendjay_aos
 
 import android.app.Activity
-import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
-import android.net.Uri
-import android.net.UrlQuerySanitizer
 import android.os.Bundle
-import android.os.Environment
 import android.view.*
 import android.webkit.*
 import android.widget.FrameLayout
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.gson.JsonObject
 import com.hushsbay.sendjay_aos.common.Const
-import com.hushsbay.sendjay_aos.common.HttpFuel
 import com.hushsbay.sendjay_aos.common.KeyChain
 import com.hushsbay.sendjay_aos.common.LogHelper
 import com.hushsbay.sendjay_aos.common.RxToDown
 import com.hushsbay.sendjay_aos.common.UserInfo
 import com.hushsbay.sendjay_aos.common.Util
 import com.hushsbay.sendjay_aos.data.RxEvent
-//import com.hushsbay.sendjay_aos.databinding.ActivityLocalhtmlBinding
 import com.hushsbay.sendjay_aos.databinding.ActivityPopupBinding
 import io.reactivex.disposables.Disposable
-//import kotlinx.android.synthetic.main.activity_main.*
-//import kotlinx.android.synthetic.main.activity_popup.*
-//import kotlinx.android.synthetic.main.activity_popup.btnRetry
-//import kotlinx.android.synthetic.main.activity_popup.txtRmks
-//import kotlinx.android.synthetic.main.activity_popup.txtUrl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.apache.log4j.Logger
 import org.json.JSONObject
-import java.net.URLDecoder
 
 class PopupActivity : Activity() {
 
@@ -110,19 +97,19 @@ class PopupActivity : Activity() {
     }
 
     private fun setupWebViewPopup(urlStr: String?=null) {
-        Util.setupWebView(curContext, connManager, binding.wvPopup)
+        Util.setupWebView(binding.wvPopup)
         toggleDispRetry(false)
         binding.wvPopup.settings.supportZoom() //meta name="viewport" content=~ setting needed
         binding.wvPopup.settings.builtInZoomControls = true
         binding.wvPopup.addJavascriptInterface(WebInterfacePopup(), "AndroidPopup")
         if (urlStr == null) return
         binding.wvPopup.webChromeClient = object: WebChromeClient() {
-//            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
-//                consoleMessage?.apply {
-//                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvPopup")
-//                }
-//                return true
-//            }
+            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
+                consoleMessage?.apply {
+                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvPopup")
+                }
+                return true
+            }
             //Belows are settings for fullscreen video in webview.
             //android:configChanges="keyboardHidden|orientation|screenSize" needed in AndroidManifest.xml
             //https://kutar37.tistory.com/entry/Android-webview%EC%97%90%EC%84%9C-HTML-video-%EC%A0%84%EC%B2%B4%ED%99%94%EB%A9%B4-%EC%9E%AC%EC%83%9D
@@ -188,11 +175,9 @@ class PopupActivity : Activity() {
             }
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                 super.onReceivedError(view, request, error) //https://gist.github.com/seongchan/752db643377f823950648d0bc80599c1
-                //val urlStr = if (request != null) request.url.toString() else ""
                 val urlStr = request?.url?.toString() ?: "" //request?.url.toString() //Multiple request shown like jquery module.
                 if (error != null && error.description != "" && urlStr.contains(Const.URL_JAY) && urlStr.contains(Const.PAGE_MAIN)) {
                     val errMsg = "${error.errorCode}/${error.description}"
-                    //val errMsg = "${error?.errorCode}/${error?.description}"
                     Util.log("webview error", urlStr+"===="+errMsg)
                     toggleDispRetry(true)
                 } else { //ajax : ex) -2/net::ERR_INTERNET_DISCONNECTED : Network not available
@@ -202,7 +187,6 @@ class PopupActivity : Activity() {
         }
         Util.setDownloadListener(curContext, binding.wvPopup)
         val urlStr1 = if (urlStr.startsWith(Const.DIR_PUBLIC)) urlStr.substring(Const.DIR_PUBLIC.length) else urlStr
-        //wvPopup.loadUrl(KeyChain.get(curContext, Const.KC_MODE_PUBLIC) + urlStr1)
         binding.wvPopup.loadUrl(Const.URL_PUBLIC + urlStr1)
     }
 
@@ -213,8 +197,6 @@ class PopupActivity : Activity() {
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             CoroutineScope(Dispatchers.Main).launch {
                 try {
-                    //disposableMsg?.dispose()
-                    //disposableMsg = Util.procRxMsg(curContext)
                     disposableMain?.dispose()
                     disposableMain = RxToDown.subscribe<RxEvent>().subscribe { //disposable = RxBus.subscribe<RxEvent>().observeOn(AndroidSchedulers.mainThread()) //to receive the event on main thread
                         CoroutineScope(Dispatchers.Main).launch {

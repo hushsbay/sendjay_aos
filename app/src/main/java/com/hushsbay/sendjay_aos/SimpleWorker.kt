@@ -2,7 +2,6 @@ package com.hushsbay.sendjay_aos
 
 import android.content.Context
 import android.content.Intent
-import android.net.ConnectivityManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.hushsbay.sendjay_aos.common.Const
@@ -16,7 +15,6 @@ import org.apache.log4j.Logger
 class SimpleWorker(context: Context, workerParameters: WorkerParameters) : Worker(context, workerParameters) {
 
     private val logger: Logger = LogHelper.getLogger(context, this::class.simpleName)
-    //private val connManager = applicationContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
     private var context = context
 
     override fun doWork(): Result {

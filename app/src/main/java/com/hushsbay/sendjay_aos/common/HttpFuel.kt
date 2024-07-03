@@ -1,17 +1,13 @@
 package com.hushsbay.sendjay_aos.common
 
 import android.content.Context
-import android.util.Log
 import com.github.kittinunf.fuel.Fuel
 import com.github.kittinunf.fuel.core.Headers
-import com.github.kittinunf.fuel.core.await
-import com.github.kittinunf.fuel.coroutines.awaitObjectResponse
 import com.github.kittinunf.fuel.coroutines.awaitString
 import com.github.kittinunf.fuel.coroutines.awaitStringResponseResult
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import kotlinx.coroutines.*
-import java.net.HttpCookie
 
 object HttpFuel { //single instance, gson(com.google.gson.JsonObject)
 
@@ -24,7 +20,6 @@ object HttpFuel { //single instance, gson(com.google.gson.JsonObject)
                 var url = if (url.startsWith("http")) url else Const.URL_SERVER + url
                 val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
                 val uid = KeyChain.get(context, Const.KC_USERID) ?: ""
-                //val userkey = KeyChain.get(context, Const.KC_USERKEY) ?: ""
                 val cookieStr = "userid=$uid; token=$token"
                 val paramAuth = arrayOf(Headers.CONTENT_TYPE to "application/json", Headers.COOKIE to cookieStr) //application/x-www-form-urlencoded (when CORS needed)
                 val noCache = listOf("noCache" to Util.getRnd().toString())
@@ -47,7 +42,6 @@ object HttpFuel { //single instance, gson(com.google.gson.JsonObject)
                 var url = if (url.startsWith("http")) url else Const.URL_SERVER + url
                 val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
                 val uid = KeyChain.get(context, Const.KC_USERID) ?: ""
-                //val userkey = KeyChain.get(context, Const.KC_USERKEY) ?: ""
                 val cookieStr = "userid=$uid; token=$token"
                 val paramAuth = arrayOf(Headers.CONTENT_TYPE to "application/json", Headers.COOKIE to cookieStr) //application/x-www-form-urlencoded (when CORS needed)
                 var paramReal = if (param == null) {

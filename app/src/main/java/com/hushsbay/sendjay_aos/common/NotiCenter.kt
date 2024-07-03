@@ -14,7 +14,6 @@ import androidx.core.app.NotificationCompat
 import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.hushsbay.sendjay_aos.ChatService
-//import com.hushsbay.sendjay.common.*
 import com.hushsbay.sendjay_aos.MainActivity
 import com.hushsbay.sendjay_aos.R
 import kotlinx.coroutines.CoroutineScope

@@ -15,24 +15,15 @@ class Const {
         const val TITLE = "sendjay" //for AlertDialog Title and so on
         const val AOS = "aos"
         const val VERSIONCHK_APP = "${APP_NAME}_${AOS}"
-        //const val VERSIONCHK_WEB = "webview"
         const val VERSIONCHK_ETC = "etc"
         ////////////////////////////////////////////////for distinguishing dev and ops (through KeyChain when app starts)
-//        const val SUFFIX_DEV = "devx" //for developer to check by userid if he want to connect to dev mode not ops(production) mode
         const val URL_HOST = "https://hushsbay.com"
         const val DIR_PUBLIC = "/app/msngr"
-        //const val DIR_ROUTE = "/msngr"
         ////////////////////////////////////////////////
         const val URL_SERVER = "$URL_HOST:444" //444(https) -> 81(http) on AWS
         const val URL_SOCK = "$URL_HOST:3051/jay" //3051(https) -> 3051(http) on AWS
-        //const val URL_SERVER = "$URL_HOST:443" //444(https) -> 81(http) on AWS
-        //const val URL_SOCK = "$URL_HOST:3050/jay" //3051(https) -> 3051(http) on AWS
         const val URL_PUBLIC = URL_SERVER + DIR_PUBLIC
-        //3050(web ops),3051(mobile ops) and 3060(web dev),3061(mobile dev)
-        //서버 1대로 개발과 운영을 나누어 관리하기 위한 포트이며 정상적인 로드밸런싱이 필요한 실제 기업 환경에서는 사내 담당자와의 협의가 필요할 것임.
-        ////////////////////////////////////////////////
         const val URL_JAY = "${DIR_PUBLIC}/" //means public page load
-        //const val URL_ROUTE = "${DIR_ROUTE}/" //means restful(=ajax)
         ////////////////////////////////////////////////
         const val PAGE_MAIN = "/main.html"
         const val PAGE_ROOM = "/chat.html"
@@ -86,7 +77,6 @@ class Const {
         const val SOCK_EV_SEND_MSG = "send_msg"
         const val SOCK_EV_READ_MSG = "read_msg"
         const val SOCK_EV_RENAME_ROOM = "rename_room"
-        //const val SOCK_EV_CUT_MOBILE = "cut_mobile"
         const val SOCK_EV_MARK_AS_CONNECT = "mark_as_connect"
         const val SOCK_EV_CHK_ROOMFOCUS = "chk_roomfocus"
         /////////////////////////////////////////////////////////////////////////
@@ -97,7 +87,6 @@ class Const {
         const val CELL_REVOKED = "message cancelled"
         const val NETWORK_UNAVAILABLE = "네트워크가 연결되어 있지 않습니다."
         const val NETWORK_UNSTABLE = "네트워크가 원할하지 않거나 서버 작업중입니다."
-        //const val WAIT_FOR_RECONNECT = "Please wait until network reconnected."
     }
 
 }

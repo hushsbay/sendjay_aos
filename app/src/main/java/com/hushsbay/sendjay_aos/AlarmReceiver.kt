@@ -16,21 +16,18 @@ class AlarmReceiver : BroadcastReceiver() {
     @SuppressLint("ScheduleExactAlarm")
     override fun onReceive(context: Context, intent: Intent) {
         val act = intent.action.toString()
+        Util.log("AlarmReceiver", act) //act = restart_service or one_minute_check
         if (act == Intent.ACTION_BOOT_COMPLETED) {
-            Util.log("AlarmReceiver", act)
             Toast.makeText(context, act, Toast.LENGTH_SHORT).show()
-        } else {
-            Util.log("AlarmReceiver", act) //act = restart_service or one_minute_check
-            if (act == "one_minute_check") { //Toast.makeText(context, "AlarmReceiver, $act", Toast.LENGTH_SHORT).show()
-                val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                val nextIntent = Intent(context, AlarmReceiver::class.java)
-                nextIntent.action = "one_minute_check"
-                val pendingIntent = PendingIntent.getBroadcast(context,1, nextIntent, PendingIntent.FLAG_IMMUTABLE) // or PendingIntent.FLAG_UPDATE_CURRENT)
-                val calendar = Calendar.getInstance()
-                calendar.timeInMillis = System.currentTimeMillis()
-                calendar.add(Calendar.SECOND, 60)
-                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent) //권한 설정 필요
-            }
+        } else if (act == "one_minute_check") { //Toast.makeText(context, "AlarmReceiver, $act", Toast.LENGTH_SHORT).show()
+            val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            val nextIntent = Intent(context, AlarmReceiver::class.java)
+            nextIntent.action = "one_minute_check"
+            val pendingIntent = PendingIntent.getBroadcast(context,1, nextIntent, PendingIntent.FLAG_IMMUTABLE) // or PendingIntent.FLAG_UPDATE_CURRENT)
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = System.currentTimeMillis()
+            calendar.add(Calendar.SECOND, 60)
+            alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent) //권한 설정 필요
         }
         if (ChatService.state == Const.ServiceState.STOPPED) {
             val intentNew = Intent(context, ChatService::class.java)

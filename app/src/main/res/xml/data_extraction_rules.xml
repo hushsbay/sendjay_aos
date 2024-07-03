@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?><!--
+   일부 기기 제조업체의 기기에서 android:allowBackup="false"를 지정하면 Google Drive 백업이 사용 중지되지만
+   앱의 D2D 전송은 사용 중지되지 않습니다. 라고 되어 있는데 d2d도 사용하지 않음
    Sample data extraction rules file; uncomment and customize as necessary.
    See https://developer.android.com/about/versions/12/backup-restore#xml-changes
    for details.

@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?><!--
+   android:allowBackup="true" in AndroidManifest.xml과 관련
+   이 앱에서는 android:allowBackup="false"로 설정됨
    Sample backup rules file; uncomment and customize as necessary.
    See https://developer.android.com/guide/topics/data/autobackup
    for details.

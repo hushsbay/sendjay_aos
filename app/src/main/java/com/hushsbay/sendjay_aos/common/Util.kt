@@ -20,7 +20,6 @@ import com.hushsbay.sendjay_aos.data.RxEvent
 import com.hushsbay.sendjay_aos.data.RxMsg
 import io.reactivex.disposables.Disposable
 import io.socket.client.Socket
-//import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -56,8 +55,7 @@ class Util {
         }
 
         fun log(title: String?=null, vararg exStr: String) {
-            var titleDisp = title ?: Const.TITLE
-            //if (!titleDisp.startsWith(Const.TITLE)) titleDisp = Const.TITLE + "|" + titleDisp
+            var titleDisp = title ?: Const.TITLE //if (!titleDisp.startsWith(Const.TITLE)) titleDisp = Const.TITLE + "|" + titleDisp
             var str = ""
             for ((idx, item) in exStr.withIndex()) {
                 if (idx == 0) {
@@ -190,8 +188,7 @@ class Util {
             }
         }
 
-        //fun setupWebView(context: Activity, connManager: ConnectivityManager, webview: WebView) { //https://www.blueswt.com/117
-        fun setupWebView(webview: WebView) { //https://www.blueswt.com/117
+        fun setupWebView(webview: WebView) { //fun setupWebView(context: Activity, connManager: ConnectivityManager, webview: WebView) { //https://www.blueswt.com/117
             webview.settings.javaScriptEnabled = true
             webview.settings.javaScriptCanOpenWindowsAutomatically = true
             webview.settings.cacheMode = WebSettings.LOAD_NO_CACHE //LOAD_CACHE_ELSE_NETWORK, LOAD_DEFAULT,

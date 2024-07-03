@@ -45,7 +45,6 @@ class ChatService : Service() {
         var state = Const.ServiceState.STOPPED
         var serviceIntent: Intent? = null //See MainActivity.kt
         var status_sock = Const.SockState.BEFORE_CONNECT
-        //var curState_sock = false
         var gapSecOnDualMode = "1000" //기본값이며 앱 구동시 서버에서의 설정값을 내려 받음
         //DualMode는 웹/모바일 모두 소켓연결일 때 이 갭(초)만큼 모바일에서 늦게 도착체크해서 한쪽에서 이미 읽었으면 다른 한쪽에서는 알림표시하지 않게 하기
     }
@@ -64,7 +63,6 @@ class ChatService : Service() {
     private lateinit var uInfo: UserInfo
 
     private var shouldThreadStop = false
-    //private var cut_mobile = false
 
     private inner class mainTask : TimerTask() {
         override fun run() { //Timer().schedule(mainTask(), 1000)과 연계되는데 아래 오류로 막음
@@ -125,8 +123,6 @@ class ChatService : Service() {
 
     override fun onTaskRemoved(rootIntent: Intent?) { //See android:stopWithTask="false" in AndroidManifest.xml
         super.onTaskRemoved(rootIntent)
-        Util.log("@@@@@", "restartChatServiceAAA")
-        //stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf() //and restartChatService()
     }
 
@@ -134,9 +130,6 @@ class ChatService : Service() {
     //To explicitly stop a service, call stopService from any Context, or stopSelf from the Service.
     override fun onDestroy() {
         super.onDestroy()
-        //Toast .makeText(applicationContext, Const.TITLE + ": Service is destrying..restarting..", Toast.LENGTH_LONG).show()
-        Util.log("$$$$$$$$", "restartChatServiceBBB")
-        //if (!thread!!.isInterrupted || thread!!.isAlive) thread!!.interrupt()
         state = Const.ServiceState.STOPPED
         restartChatService()
         unregisterReceiver(screenReceiver)
@@ -168,7 +161,7 @@ class ChatService : Service() {
             val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
             builder.setContentIntent(pendingIntent)
             val notification = builder.build()
-            //startForegroundService() 호출 이후 대략 5초안에 startForeground() 호출하지 않으면 오류 발생. id should not be zero
+            //서비스 호출 이후 대략 5초안에 startForeground() 호출하지 않으면 오류 발생. id should not be zero
             //3번째 인자는 AndroidManifest.xml의 user-permission과 service태그내 type 설정이 없으면 오류 발생
             startForeground(Const.NOTI_ID_FOREGROUND_SERVICE, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
             //Timer().schedule(mainTask(), 10000) //or postDelayed
@@ -203,7 +196,7 @@ class ChatService : Service() {
             calendar.timeInMillis = System.currentTimeMillis()
             calendar.add(Calendar.SECOND, 60)
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.timeInMillis, pendingIntent) //권한 설정 필요
-            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            ///////////////////////////////////////////////////////////////////////////////////
             val r: Runnable = Daemon() //데몬만으로도 불안해서 위 AlarmReceiver를 추가로 사용하는 것임
             thread = Thread(r)
             thread!!.setDaemon(true)
@@ -221,7 +214,6 @@ class ChatService : Service() {
     private fun restartChatService() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
-            Util.log(logTitle, "restartChatService0")
             if (!thread!!.isInterrupted || thread!!.isAlive) {
                 thread!!.interrupt()
                 thread = null
@@ -232,16 +224,11 @@ class ChatService : Service() {
                 SocketIO.sock!!.disconnect()
                 KeyChain.set(applicationContext, Const.KC_DT_DISCONNECT, Util.getCurDateTimeStr(true)) //Util.connectSockWithCallback() 참조
             }
-            Util.log(logTitle, "restartChatService01")
             if (MainActivity.stopServiceByLogout) { //if (MainActivity.stopServiceByLogout || cut_mobile) {
                 serviceIntent = null
                 state = Const.ServiceState.LOGOUTED
-                //cut_mobile = false
-                Util.log(logTitle, "restartChatService02")
                 return
             }
-            Util.log(logTitle, "restartChatService03")
-            //curState_sock = false
             val calendar = Calendar.getInstance()
             calendar.timeInMillis = System.currentTimeMillis()
             calendar.add(Calendar.SECOND, SEC_DURING_RESTART)
@@ -250,12 +237,10 @@ class ChatService : Service() {
             val sender = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
             val alarmManager = getSystemService(Context.ALARM_SERVICE) as AlarmManager
             alarmManager[AlarmManager.RTC_WAKEUP, calendar.timeInMillis] = sender
-            Util.log(logTitle, "restartChatService04")
         } catch (e: Exception) {
             logger.error("$logTitle: ${e.toString()}")
             Util.log(logTitle, e.toString())
             e.printStackTrace()
-            //RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, JSONObject().put("msg", "$logTitle: ${e.toString()}")))
             Util.showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${e.toString()}")
         }
     }
@@ -337,7 +322,6 @@ class ChatService : Service() {
         SocketIO.sock!!.off(Socket.EVENT_CONNECT).on(Socket.EVENT_CONNECT) {
             try {
                 Util.log(logTitle, Socket.EVENT_CONNECT)
-                //curState_sock = true
                 if (status_sock == Const.SockState.FIRST_DISCONNECTED) { //html에서 [hush.cons.sock_ev_connect] 참조 요망
                     status_sock = Const.SockState.RECONNECTED //Be careful that Socket.EVENT_CONNECT occurred many times at a moment. (socket.io 초기버전 이야기?!)
                     Util.sendToDownWhenConnDisconn(applicationContext, Socket.EVENT_CONNECT)
@@ -392,7 +376,6 @@ class ChatService : Service() {
         }.off(Socket.EVENT_DISCONNECT).on(Socket.EVENT_DISCONNECT) {
             try { //설명은 class Daemon의 ###10 참조
                 Util.log(logTitle, Socket.EVENT_DISCONNECT)
-                //curState_sock = false
                 if (status_sock == Const.SockState.BEFORE_CONNECT) status_sock = Const.SockState.FIRST_DISCONNECTED
                 Util.sendToDownWhenConnDisconn(applicationContext, Socket.EVENT_DISCONNECT)
                 KeyChain.set(applicationContext, Const.KC_DT_DISCONNECT, Util.getCurDateTimeStr(true)) //Util.connectSockWithCallback() 참조
@@ -498,7 +481,7 @@ class ChatService : Service() {
                         roomidForService
                     } else {
                         ""
-                    } //Util.log("focusedRoomid", focusedRoomid)
+                    }
                     RxToUp.post(RxEvent(Const.SOCK_EV_CHK_ROOMFOCUS, JSONObject().put("focusedRoomid", focusedRoomid), "parent"))
                 }
             } catch (e: Exception) {

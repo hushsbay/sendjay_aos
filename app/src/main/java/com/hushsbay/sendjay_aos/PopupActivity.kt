@@ -36,8 +36,6 @@ class PopupActivity : Activity() {
 
     private lateinit var binding: ActivityPopupBinding
 
-    private lateinit var authJson: JsonObject //Gson
-
     var gOrigin = ""
     var gObjStr = ""
 

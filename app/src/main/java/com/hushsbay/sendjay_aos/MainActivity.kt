@@ -326,8 +326,7 @@ class MainActivity : Activity() {
         }
     }
 
-    //private fun openRoomWithNotiIntent(notiIntent: Intent, isOnCreate: Boolean) : Boolean {
-    private fun openRoomWithNotiIntent(notiIntent: Intent) : Boolean {
+    private fun openRoomWithNotiIntent(notiIntent: Intent) : Boolean { //private fun openRoomWithNotiIntent(notiIntent: Intent, isOnCreate: Boolean) : Boolean {
         val type = notiIntent.getStringExtra("type") ?: ""
         if (type != "") {
             val roomid = notiIntent.getStringExtra("roomid") //roomid
@@ -705,8 +704,7 @@ class MainActivity : Activity() {
         //} //체크하려면 roomid도 비교해야 하는데, 이 부분은 사실 위 오류처리에서 먼저 처리해야 하는 것으로 보여 막아도 될 것임
     }
 
-    //private fun updateAllUnreads(init: Boolean, isFromNoti: Boolean) { //for room only
-    private fun updateAllUnreads(isFromNoti: Boolean) { //for room only
+    private fun updateAllUnreads(isFromNoti: Boolean) { //private fun updateAllUnreads(init: Boolean, isFromNoti: Boolean) { //for room only
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         try {
             NotiCenter.mapRoomid[gRoomid]?.let { NotiCenter.manager!!.cancel(it) }

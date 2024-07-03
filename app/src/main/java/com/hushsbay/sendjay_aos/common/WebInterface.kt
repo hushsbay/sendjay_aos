@@ -1,13 +1,10 @@
 package com.hushsbay.sendjay_aos.common
 
-import android.app.Activity
-import android.net.ConnectivityManager
 import android.webkit.JavascriptInterface
 import com.hushsbay.sendjay_aos.ChatService
 import com.hushsbay.sendjay_aos.data.RxEvent
 import org.json.JSONObject
 
-//class WebInterface(private val curContext: Activity, private val connManager: ConnectivityManager) { //curContext, connManager가 필요한지 다시 체크
 class WebInterface() { //When you call these functions from javascript, you should be careful with argument's match for calling function.
 
     //data: JSONObject, Gson not worked => Java exception was raised during method invocation

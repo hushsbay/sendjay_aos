@@ -306,10 +306,8 @@ class Util {
                 See https://www.chromestatus.com/feature/5527160148197376 for more details. */
             } else if (msg.contains("getFromWebViewSocket is not defined")) {
                 //see procAfterOpenMain() in MainActivity.kt and PopupActivity.kt
-            } else if (msg.contains("disconnected")) {
+            } else if (msg.contains("disconnected") || msg.contains("timeout")) { //ex) procSocketOn:qry_unread:HttpFuel:get: timeout
                 //연결이 끊어질 때마다 웹뷰에서 토스트나 경고가 뜨면 사용자 불편 : 현재 상단 아이콘으로 표시되는 것으로 처리하고 있음
-            } else if (msg.contains("timeout")) { //ex) procSocketOn:qry_unread:HttpFuel:get: timeout
-                toast(context, logTitle + ":" + msg)
             } else {
                 alert(context, msg, logTitle + ":" + title)
             }

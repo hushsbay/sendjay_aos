@@ -811,7 +811,7 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
-        fun setNotiPopup() {
+        fun setNotiMobile() {
             var intent = Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
             intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
             intent.putExtra(Settings.EXTRA_CHANNEL_ID, Const.NOTICHANID_COMMON)

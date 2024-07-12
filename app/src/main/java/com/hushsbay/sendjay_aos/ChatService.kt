@@ -461,8 +461,8 @@ class ChatService : Service() {
                         val userid = data.getString("userid")
                         if (userid == uInfo.userid) {
                             KeyChain.set(applicationContext, Const.KC_NOTI_OFF, data.getString("notioff"))
-                            KeyChain.set(applicationContext, Const.KC_SOUND_OFF, data.getString("soundoff"))
-                            KeyChain.set(applicationContext, Const.KC_VIB_OFF, data.getString("viboff"))
+                            //KeyChain.set(applicationContext, Const.KC_SOUND_OFF, data.getString("soundoff")) //NotiCenter.kt ##55 참조
+                            //KeyChain.set(applicationContext, Const.KC_VIB_OFF, data.getString("viboff")) //NotiCenter.kt ##55 참조
                             KeyChain.set(applicationContext, Const.KC_BODY_OFF, data.getString("bodyoff"))
                             KeyChain.set(applicationContext, Const.KC_SENDER_OFF, data.getString("senderoff"))
                             KeyChain.set(applicationContext, Const.KC_POPUP_OFF, data.getString("popupoff")) //NotiCenter.kt의 $$7 참조 (현재 미사용)

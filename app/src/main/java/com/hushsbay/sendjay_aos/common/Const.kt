@@ -51,8 +51,8 @@ class Const {
         const val KC_TOPORGCD = "TOP_ORG_CD" // ""
         const val KC_TOPORGNM = "TOP_ORG_NM" // ""
         const val KC_NOTI_OFF = "NOTI_OFF"
-        const val KC_SOUND_OFF = "SOUND_OFF"
-        const val KC_VIB_OFF = "VIB_OFF"
+        //const val KC_SOUND_OFF = "SOUND_OFF" //NotiCenter.kt ##55 참조 (코딩 제거하지는 말고 참고로 둘 것)
+        //const val KC_VIB_OFF = "VIB_OFF" //NotiCenter.kt ##55 참조 (코딩 제거하지는 말고 참고로 둘 것)
         const val KC_BODY_OFF = "BODY_OFF"
         const val KC_SENDER_OFF = "SENDER_OFF"
         const val KC_POPUP_OFF = "POPUP_OFF"

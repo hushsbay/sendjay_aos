@@ -6,6 +6,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.media.AudioAttributes
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Vibrator
@@ -36,15 +37,16 @@ object NotiCenter {
     operator fun invoke(context: Context, strPackageName: String) { //IMPORTANCE_MIN (no display on status bar) was not worked
         packageName = strPackageName
         if (channel == null) { //IMPORTANCE_LOW(no sound), IMPORTANCE_DEFAULT(sound ok), IMPORTANCE_HIGH(sound + headup(popup))
-            //https://stackoverflow.com/questions/60820163/android-notification-importance-cannot-be-changed
-            //한번 설정된 Importance는 사용자에 의한 설정변경없이는 불가능하다고 안드로이드 사이트에 나옴
-            //따라서, 일단 IMPORTANCE_DEFAULT로 지정후 환경설정(모바일)에서 '팝업설정변경'을 눌러 변경하도록 가이드하기로 함. $$7
             channel = NotificationChannel(Const.NOTICHANID_COMMON, Const.NOTICHANID_COMMON, NotificationManager.IMPORTANCE_DEFAULT)
-            //val audioAttributes = AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).setUsage(AudioAttributes.USAGE_NOTIFICATION).build()
-            //val uri = Uri.parse("android.resource://$packageName/${R.raw.sendjay}")
-            //channel!!.setSound(uri, audioAttributes)
-            //channel!!.vibrationPattern = longArrayOf(0, 900, 0, 0)
+            val audioAttributes = AudioAttributes.Builder().setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION).setUsage(AudioAttributes.USAGE_NOTIFICATION).build()
+            val uri = Uri.parse("android.resource://$packageName/${R.raw.sendjay}")
+            channel!!.setSound(uri, audioAttributes) //이 설정도 설치제거후 다시 실행한 경우에만 제대로 적용되었음
+            channel!!.vibrationPattern = longArrayOf(0, 900, 0, 0) //이 설정도 설치제거후 다시 실행한 경우에만 제대로 적용되었음
             //channel!!.enableVibration(true)
+            //1. 한번 설정된 Importance는 사용자에 의한 설정변경없이는 불가능하다고 안드로이드 개발자 사이트에 나옴
+            //   https://stackoverflow.com/questions/60820163/android-notification-importance-cannot-be-changed
+            //2. 아래(setupNoti)에서 1) 진동모드에서도 무진동처리 2) 소리모드에서 무음처리 하는 코딩 필요한데 코딩에서 방법 못찾음
+            //##55 위 1.2.항목 때문에, 안드로이드 에니티브 설정을 인텐트로 불러 사용자로 하여금 옵션 설정하는 것으로 구현함 (여기에 팝업설정도 있음)
         }
         if (manager == null) {
             manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
@@ -53,7 +55,7 @@ object NotiCenter {
         if (audio == null) audio = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (vib == null) {
             val vibratorManager = context.getSystemService(Context.VIBRATOR_MANAGER_SERVICE) as VibratorManager
-            vib = vibratorManager.defaultVibrator
+            vib = vibratorManager.defaultVibrator //vib = vibratorManager.getVibrator()
         }
     }
 
@@ -198,18 +200,17 @@ object NotiCenter {
         builder.setContentText(body ?: "New message arrived.")
         builder.setContentTitle(title)
         builder.setAutoCancel(true) //builder.setOngoing(true)
+        /* 위 ##55 참조 (코딩 제거하지는 말고 참고로 둘 것)
         if (audio!!.ringerMode == AudioManager.RINGER_MODE_NORMAL) {
             if (KeyChain.get(context, Const.KC_SOUND_OFF) != "Y") {
-                val uri = Uri.parse("android.resource://$packageName/${R.raw.sendjay}")
-                builder.setSound(uri) //소리만 나야 하는데 왜 진동가지 울리는지 파악안되고 있음 (권한허용시 소리+진동이라도 되어 있는데 그때문일 수도 있음)
-            } //소리 On
+            } else {
+            }
         } else if (audio!!.ringerMode == AudioManager.RINGER_MODE_VIBRATE) {
             if (KeyChain.get(context, Const.KC_VIB_OFF) != "Y") {
-                val timings = longArrayOf(0, 900, 0, 0)
-                builder.setVibrate(timings)
-            } //진동 On
-        }
-        val pendingIntent = PendingIntent.getActivity(context, requestCode, intentNoti, PendingIntent.FLAG_IMMUTABLE)
+            } else {
+            }
+        }*/
+        val pendingIntent = PendingIntent.getActivity(context, requestCode, intentNoti, PendingIntent.FLAG_IMMUTABLE) //FLAG_UPDATE_CURRENT시 오류 : 로그캣보면 사용불가라고 나옴
         builder.setContentIntent(pendingIntent)
         return builder.build()
     }
@@ -252,16 +253,15 @@ object NotiCenter {
         }
     }
 
-    //private fun procSound(context: Context) { //Notification에 통합된 방법이 아님. 기존 사운드와 혼재되어 발생함
-        //val ringtone = RingtoneManager.getRingtone(context, Uri.parse("android.resource://$packageName/${R.raw.sendjay}"))
-        //ringtone.play()
-    //}
-
-    //private fun procVibrate() { //Notification에 통합된 방법이 아님. 기존 진동과 혼재되어 발생함
-        //val timings = longArrayOf(0, 900, 0, 0) //val timings = longArrayOf(0, 300, 200, 300)
-        //val amp = intArrayOf(0, 60, 0, 0) //val amp = intArrayOf(0, 50, 0, 50)
-        //vib!!.vibrate(VibrationEffect.createWaveform(timings, amp, -1))
+    /*private fun procSound(context: Context) { //Notification에 통합된 방법이 아님. 기존 사운드와 혼재되어 발생함
+        val ringtone = RingtoneManager.getRingtone(context, Uri.parse("android.resource://$packageName/${R.raw.sendjay}"))
+        ringtone.play()
+    }
+    private fun procVibrate() { //Notification에 통합된 방법이 아님. 기존 진동과 혼재되어 발생함
+        val timings = longArrayOf(0, 900, 0, 0) //val timings = longArrayOf(0, 300, 200, 300)
+        val amp = intArrayOf(0, 60, 0, 0) //val amp = intArrayOf(0, 50, 0, 50)
+        vib!!.vibrate(VibrationEffect.createWaveform(timings, amp, -1))
         /*vib!!.vibrate(VibrationEffect.createOneShot(900, VibrationEffect.DEFAULT_AMPLITUDE))*/
-    //}
+    }*/
 
 }

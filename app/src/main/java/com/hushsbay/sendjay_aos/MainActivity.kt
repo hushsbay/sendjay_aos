@@ -87,7 +87,7 @@ class MainActivity : Activity() {
     private var gOrigin = "" //for wvRoom
     private var gObjStr = "" //for wvRoom
     private var roomidForChatService = "" //for wvRoom
-    private var msgidCopied = ""
+    //private var msgidCopied = "" //$$66 참조
 
     //권한 허용 : https://velog.io/@alsgus92/Android-Runtime-%EA%B6%8C%ED%95%9CPermission-%EC%9A%94%EC%B2%AD-Flow-%EB%B0%8F-Tutorial
     //런타임권한(protectionlevel = "dangerous")에 관한 것이며 일반권한이나 서명권한이 아닌 경우이며 사용자에게 권한부여 요청을 필요로 함
@@ -880,12 +880,13 @@ class MainActivity : Activity() {
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             CoroutineScope(Dispatchers.Main).launch {
                 try {
+                    /* $$66 참조
                     if (gObjStr == "") {
                         gObjStr = """{ 'msgidCopied' : '${msgidCopied}' }"""
                     } else {
                         gObjStr = gObjStr.replace("}", "")
                         gObjStr += """, 'msgidCopied' : '${msgidCopied}' }"""
-                    }
+                    }*/
                     val obj = Util.getStrObjFromUserInfo(uInfo)
                     Util.loadUrl(binding.wvRoom, "startFromWebView", obj, gObjStr)
                     disposableRoom?.dispose()
@@ -966,11 +967,14 @@ class MainActivity : Activity() {
             }
         }
 
+
+        /* $$66 복사(파일링크, 이미지, 텍스트)를 웹뷰에서만 구현하지 않고 굳이 안드로이드까지 넘어와 저장하게 한 것은
+        안드로이드에서 방A에서 복사해 방B로 붙이기 할 때 msgidCopied가 없어지지 않고 가지고 있기 위해서 그랬는데
+        그냥 웹뷰에서만 localStorage를 사용해 처리하면 되므로 아래 막음 (코딩은 나중에 참고하기 위해 지우지 않음)
         @JavascriptInterface
-        fun copy(msgid: String) {
+        fun copy(msgid: String) { 
             msgidCopied = msgid
         }
-
         @JavascriptInterface
         fun paste() {
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
@@ -984,7 +988,7 @@ class MainActivity : Activity() {
                     Util.procException(curContext, e, logTitle)
                 }
             }
-        }
+        }*/
 
     }
 

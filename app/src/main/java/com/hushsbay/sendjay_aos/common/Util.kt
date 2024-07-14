@@ -260,9 +260,11 @@ class Util {
             } else if (type == "invite") {
                 val arr = body.split(Const.DELI)
                 if (arr.size >= 3) {
-                    "${arr[0]} invited by ${arr[2]}"
+                    //"${arr[0]} invited by ${arr[2]}"
+                    "초대 : ${arr[0]}"
                 } else {
-                    "${arr[0]} invited"
+                    //"${arr[0]} invited"
+                    "초대 : ${arr[0]}"
                 }
             } else if (type == "image") {
                 type

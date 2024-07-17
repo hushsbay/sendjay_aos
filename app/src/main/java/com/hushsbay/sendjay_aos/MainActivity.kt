@@ -609,12 +609,12 @@ class MainActivity : Activity() {
         binding.wvMain.addJavascriptInterface(WebInterfaceMain(), "AndroidMain") //Util.log("@@@@@@@@@@", wvMain.settings.cacheMode.toString())
         toggleDispRetry(false, "Main")
         binding.wvMain.webChromeClient = object : WebChromeClient() {
-            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
-                consoleMessage?.apply {
-                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvMain")
-                }
-                return true
-            }
+//            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
+//                consoleMessage?.apply {
+//                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvMain")
+//                }
+//                return true
+//            }
             override fun onShowFileChooser(webView: WebView, filePathCallback: ValueCallback<Array<Uri?>>, fileChooserParams: FileChooserParams): Boolean {
                 filePathCallbackMain = filePathCallback
                 val intent = fileChooserParams.createIntent()
@@ -655,12 +655,12 @@ class MainActivity : Activity() {
         toggleDispRetry(false, "Room") //Util.log(refresh.toString()+"==="+gRoomid+"==="+roomidForChatService)
         if (!refresh && gRoomid != "" && gRoomid == roomidForChatService) return
         binding.wvRoom.webChromeClient = object : WebChromeClient() {
-            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
-                consoleMessage?.apply {
-                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvRoom")
-                }
-                return true
-            }
+//            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
+//                consoleMessage?.apply {
+//                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvRoom")
+//                }
+//                return true
+//            }
             override fun onShowFileChooser(webView: WebView, filePathCallback: ValueCallback<Array<Uri?>>, fileChooserParams: FileChooserParams): Boolean {
                 filePathCallbackRoom = filePathCallback
                 val intent = fileChooserParams.createIntent()

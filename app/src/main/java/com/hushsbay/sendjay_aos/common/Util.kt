@@ -188,12 +188,11 @@ class Util {
             }
         }
 
-        fun setupWebView(webview: WebView) { //fun setupWebView(context: Activity, connManager: ConnectivityManager, webview: WebView) { //https://www.blueswt.com/117
+        fun setupWebView(webview: WebView) {
             webview.settings.javaScriptEnabled = true
             webview.settings.javaScriptCanOpenWindowsAutomatically = true
             webview.settings.cacheMode = WebSettings.LOAD_NO_CACHE //LOAD_CACHE_ELSE_NETWORK, LOAD_DEFAULT,
             webview.settings.domStorageEnabled = true
-            //webview.addJavascriptInterface(WebInterface(context, connManager), "AndroidCom")
             webview.addJavascriptInterface(WebInterface(), "AndroidCom")
         }
 
@@ -260,11 +259,9 @@ class Util {
             } else if (type == "invite") {
                 val arr = body.split(Const.DELI)
                 if (arr.size >= 3) {
-                    //"${arr[0]} invited by ${arr[2]}"
-                    "초대 : ${arr[0]}"
+                    "초대 : ${arr[0]}" //"${arr[0]} invited by ${arr[2]}"
                 } else {
-                    //"${arr[0]} invited"
-                    "초대 : ${arr[0]}"
+                    "초대 : ${arr[0]}" //"${arr[0]} invited"
                 }
             } else if (type == "image") {
                 type

@@ -42,7 +42,6 @@ object NotiCenter {
             val uri = Uri.parse("android.resource://$packageName/${R.raw.sendjay}")
             channel!!.setSound(uri, audioAttributes) //이 설정도 설치제거후 다시 실행한 경우에만 제대로 적용되었음
             channel!!.vibrationPattern = longArrayOf(0, 900, 0, 0) //이 설정도 설치제거후 다시 실행한 경우에만 제대로 적용되었음
-            //channel!!.enableVibration(true)
             //1. 한번 설정된 Importance는 사용자에 의한 설정변경없이는 불가능하다고 안드로이드 개발자 사이트에 나옴
             //   https://stackoverflow.com/questions/60820163/android-notification-importance-cannot-be-changed
             //2. 아래(setupNoti)에서 1) 진동모드에서도 무진동처리 2) 소리모드에서 무음처리 하는 코딩 필요한데 코딩에서 방법 못찾음

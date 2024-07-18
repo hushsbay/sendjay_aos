@@ -531,10 +531,8 @@ class MainActivity : Activity() {
                             val inUserid = mDialogView.findViewById<EditText>(R.id.userid)
                             val inPwd = mDialogView.findViewById<EditText>(R.id.pwd)
                             val param = org.json.JSONObject()
-//                            param.put("uid", inUserid.text.toString().trim())
-//                            param.put("pwd", inPwd.text.toString().trim())
-                            param.put("uid", "oldclock")
-                            param.put("pwd", "newclock")
+                            param.put("uid", inUserid.text.toString().trim())
+                            param.put("pwd", inPwd.text.toString().trim())
                             authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
                             if (HttpFuel.isNetworkUnstableMsg(authJson)) {
                                 Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)

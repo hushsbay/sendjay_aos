@@ -508,6 +508,24 @@ class ChatService : Service() {
                             Util.log(logTitle, "socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )*/
                             val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
                             if (autoLogin == "Y") Util.connectSockWithCallback(applicationContext, connManager!!)
+
+                            CoroutineScope(Dispatchers.IO).launch {
+                                try {
+                                    val param = org.json.JSONObject()
+                                    param.put("token", uInfo.token)
+                                    val json = HttpFuel.post(applicationContext, "/auth/refresh_token", param.toString()).await()
+                                    if (json.get("code").asString == Const.RESULT_OK) {
+                                        uInfo.token = json.get("token").asString
+                                        KeyChain.set(applicationContext, Const.KC_TOKEN, uInfo.token)
+                                        Util.log("refresh_token", "######"+uInfo.token)
+                                    } else {
+                                        Util.log("refresh_token", json.get("msg").asString) //no alert
+                                    }
+                                } catch (e: Exception) {
+                                    Util.log("refresh_token", e.toString())
+                                }
+                            }
+
                         } catch (e: InterruptedException) {
                             logger.error("$logTitle: e ${e.toString()}")
                             Util.log(logTitle, "thread interrupted")

@@ -246,6 +246,8 @@ class MainActivity : Activity() {
                 updateAllUnreads(isFromNoti)
                 if (isFromNoti) isFromNoti = false
                 Util.connectSockWithCallback(curContext, connManager)
+                val obj = Util.getStrObjFromUserInfo(uInfo)
+                Util.loadUrl(binding.wvMain, "resumeWebView", obj, authJson.toString()) //main_common.js 참조
             } else {
                 cancelUnreadNoti()
                 if (!isOnCreate) {
@@ -253,6 +255,11 @@ class MainActivity : Activity() {
                         if (!chkUpdate(false)) return@launch
                         procLogin(true) { //related with Reset Authentication
                             Util.connectSockWithCallback(curContext, connManager)
+                            //아래 2행은 단지 토큰을 웹뷰로 전달하기 위해 추가한 루틴임. onResume
+                            //onResume에서 여기만 적용한 것은 onCreate에서 시작하는 onResume에는 웹페이지가 셋팅되기 전이고
+                            //wvRoom에서는 안해도 되는게 wvMain에만 token을 전달하면 쿠키셋팅이 되기 때문임
+                            val obj = Util.getStrObjFromUserInfo(uInfo)
+                            Util.loadUrl(binding.wvMain, "resumeWebView", obj, authJson.toString()) //main_common.js 참조
                         }
                     }
                 }

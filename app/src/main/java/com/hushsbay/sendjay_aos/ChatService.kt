@@ -50,6 +50,8 @@ class ChatService : Service() {
     }
 
     private var SEC_DURING_DAEMON: Long = 3000 //try connecting every 3 second in case of disconnection
+    private var MAX_DURING_DAEMON: Long = 600000 //10분되면 주기적으로 실행 (토큰 갱신 주기 = 웹과 동일하게 잡음)
+    private var cnt_for_daemon: Long = 0
     private var SEC_DURING_RESTART = 3 //try restarting after 3 seconds (just once) when service killed (see another periodic trying with SimpleWorker.kt)
 
     private lateinit var logger: Logger
@@ -508,24 +510,27 @@ class ChatService : Service() {
                             Util.log(logTitle, "socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )*/
                             val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
                             if (autoLogin == "Y") Util.connectSockWithCallback(applicationContext, connManager!!)
-
-                            CoroutineScope(Dispatchers.IO).launch {
-                                try {
-                                    val param = org.json.JSONObject()
-                                    param.put("token", uInfo.token)
-                                    val json = HttpFuel.post(applicationContext, "/auth/refresh_token", param.toString()).await()
-                                    if (json.get("code").asString == Const.RESULT_OK) {
-                                        uInfo.token = json.get("token").asString
-                                        KeyChain.set(applicationContext, Const.KC_TOKEN, uInfo.token)
-                                        Util.log("refresh_token", "######"+uInfo.token)
-                                    } else {
-                                        Util.log("refresh_token", json.get("msg").asString) //no alert
+                            //서버의 refresh_token.js내 설명 참조 (실행 주기 : 상단 변수 설명 참조)
+                            if (cnt_for_daemon >= MAX_DURING_DAEMON) {
+                                cnt_for_daemon = 0
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    try {
+                                        val param = org.json.JSONObject()
+                                        param.put("token", uInfo.token)
+                                        val json = HttpFuel.post(applicationContext,"/auth/refresh_token", param.toString()).await()
+                                        if (json.get("code").asString == Const.RESULT_OK) {
+                                            uInfo.token = json.get("token").asString
+                                            KeyChain.set(applicationContext, Const.KC_TOKEN, uInfo.token)
+                                        } else {
+                                            Util.log("refresh_token", json.get("msg").asString) //no alert
+                                        }
+                                    } catch (e: Exception) {
+                                        Util.log("refresh_token", e.toString())
                                     }
-                                } catch (e: Exception) {
-                                    Util.log("refresh_token", e.toString())
                                 }
+                            } else {
+                                cnt_for_daemon += SEC_DURING_DAEMON
                             }
-
                         } catch (e: InterruptedException) {
                             logger.error("$logTitle: e ${e.toString()}")
                             Util.log(logTitle, "thread interrupted")

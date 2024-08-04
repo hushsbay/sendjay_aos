@@ -65,6 +65,7 @@ class ChatService : Service() {
     private lateinit var uInfo: UserInfo
 
     private var shouldThreadStop = false
+    private var stop_mobile = false
 
     private inner class mainTask : TimerTask() {
         override fun run() { //Timer().schedule(mainTask(), 1000)과 연계되는데 아래 오류로 막음
@@ -226,9 +227,10 @@ class ChatService : Service() {
                 SocketIO.sock!!.disconnect()
                 KeyChain.set(applicationContext, Const.KC_DT_DISCONNECT, Util.getCurDateTimeStr(true)) //Util.connectSockWithCallback() 참조
             }
-            if (MainActivity.stopServiceByLogout) { //if (MainActivity.stopServiceByLogout || cut_mobile) {
+            if (MainActivity.stopServiceByLogout || stop_mobile) {
                 serviceIntent = null
                 state = Const.ServiceState.LOGOUTED
+                stop_mobile = false
                 return
             }
             val calendar = Calendar.getInstance()
@@ -485,6 +487,14 @@ class ChatService : Service() {
                         ""
                     }
                     RxToUp.post(RxEvent(Const.SOCK_EV_CHK_ROOMFOCUS, JSONObject().put("focusedRoomid", focusedRoomid), "parent"))
+                } else if (ev == Const.SOCK_EV_STOP_MOBILE) {
+                    val data = json.getJSONObject("data")
+                    val userid = data.getString("userid")
+                    if (userid == uInfo.userid) { //Util.log(userid, uInfo.userid)
+                        KeyChain.set(applicationContext, Const.KC_AUTOLOGIN, "")
+                        stop_mobile = true
+                        stopSelf()
+                    }
                 }
             } catch (e: Exception) {
                 logger.error("$logTitle: SOCK_EV_COMMON ${e.toString()}")

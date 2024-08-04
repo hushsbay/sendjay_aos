@@ -515,6 +515,7 @@ class MainActivity : Activity() {
                     Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)
                     return
                 } else if (authJson.get("code").asString != Const.RESULT_OK) {
+                    KeyChain.set(curContext, Const.KC_AUTOLOGIN, "")
                     Util.alert(curContext, authJson.get("msg").asString, logTitle)
                     return
                 } else if (authJson.get("code").asString == Const.RESULT_OK) {

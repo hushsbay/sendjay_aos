@@ -490,6 +490,7 @@ class ChatService : Service() {
                 } else if (ev == Const.SOCK_EV_STOP_MOBILE) {
                     val data = json.getJSONObject("data")
                     val userid = data.getString("userid")
+                    Util.log(userid + "::" + uInfo.userid)
                     if (userid == uInfo.userid) { //Util.log(userid, uInfo.userid)
                         KeyChain.set(applicationContext, Const.KC_AUTOLOGIN, "")
                         stop_mobile = true

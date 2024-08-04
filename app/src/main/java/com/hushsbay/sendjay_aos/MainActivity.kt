@@ -389,6 +389,8 @@ class MainActivity : Activity() {
 
     private fun logoutApp() {
         KeyChain.set(curContext, Const.KC_AUTOLOGIN, "")
+        KeyChain.set(curContext, Const.KC_USERID, "")
+        KeyChain.set(curContext, Const.KC_TOKEN, "")
         stopServiceByLogout = true
         curContext.stopService(Intent(curContext, ChatService::class.java))
         curContext.finish()

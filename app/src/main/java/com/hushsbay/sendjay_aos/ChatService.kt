@@ -104,7 +104,7 @@ class ChatService : Service() {
             NotiCenter(applicationContext, packageName) //NotiCenter.invoke() //see MainActivity.kt also
             val winid = KeyChain.get(applicationContext, Const.KC_WINID)
             val userip = KeyChain.get(applicationContext, Const.KC_USERIP)
-            SocketIO(applicationContext, uInfo, winid!!, userip!!) //kotlin invoke method : SocketIO.invoke()
+            SocketIO(uInfo, winid!!, userip!!) //kotlin invoke method : SocketIO.invoke()
             startForegroundWithNotification()
             initDeamon()
         } catch (e: Exception) {

@@ -579,7 +579,8 @@ class MainActivity : Activity() {
                         while (true) {
                             delay(RETRY_DELAY)
                             try {
-                                var json = SocketIO.connect(curContext, connManager).await()
+                                val token = KeyChain.get(curContext, Const.KC_TOKEN) ?: ""
+                                var json = SocketIO.connect(curContext, connManager, token).await()
                                 if (json.get("code").asString == Const.RESULT_OK) {
                                     binding.btnRetry.performClick() //if (btnRetry.visibility == View.VISIBLE) btnRetry.performClick()
                                     break

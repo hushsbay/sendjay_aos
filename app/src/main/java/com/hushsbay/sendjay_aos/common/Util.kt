@@ -98,7 +98,8 @@ class Util {
             //if (ChatService.isBeingSockChecked) return; ChatService.isBeingSockChecked = true; //다른 소켓통신이 여기서 막힐 수도 있으므로 사용하면 안됨
             CoroutineScope(Dispatchers.Main).launch {
                 try {
-                    var json = SocketIO.connect(context, connManager).await()
+                    val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
+                    var json = SocketIO.connect(context, connManager, token).await()
                     val code = json.get("code").asString
                     if (code == Const.RESULT_OK) { //1) 미접속->접속일 경우 2) 접속된 상태가 계속되는 경우 2가지 모두 해당함
                         //1) 경우는 ChatService.kt에서 socket.io 고유 이벤트 잡아서 처리하고

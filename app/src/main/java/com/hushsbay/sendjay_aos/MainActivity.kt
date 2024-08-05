@@ -546,7 +546,7 @@ class MainActivity : Activity() {
 //                            param.put("uid", inUserid.text.toString().trim())
 //                            param.put("pwd", inPwd.text.toString().trim())
                             param.put("uid", "oldclock")
-                            param.put("pwd", "newclock")
+                            param.put("pwd", "1111")
                             val autokey_app = Util.getRnd().toString()
                             param.put("autokey_app", autokey_app)
                             authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()

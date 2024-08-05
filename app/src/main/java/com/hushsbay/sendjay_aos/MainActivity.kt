@@ -509,7 +509,7 @@ class MainActivity : Activity() {
                 val param = org.json.JSONObject()
                 param.put("uid", KeyChain.get(applicationContext, Const.KC_USERID))
                 param.put("pwd", KeyChain.get(applicationContext, Const.KC_PWD))
-                param.put("autokey", KeyChain.get(applicationContext, Const.KC_AUTOKEY_APP))
+                param.put("autokey_app", KeyChain.get(applicationContext, Const.KC_AUTOKEY_APP))
                 param.put("autologin", autoLogin) //자동로그인 여부는 이 파라미터 + 서버에서의 deviceFrom과의 조합으로 판단함
                 authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
                 if (HttpFuel.isNetworkUnstableMsg(authJson)) {
@@ -547,8 +547,8 @@ class MainActivity : Activity() {
 //                            param.put("pwd", inPwd.text.toString().trim())
                             param.put("uid", "oldclock")
                             param.put("pwd", "newclock")
-                            val autokey = Util.getRnd().toString()
-                            param.put("autokey", autokey)
+                            val autokey_app = Util.getRnd().toString()
+                            param.put("autokey_app", autokey_app)
                             authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
                             if (HttpFuel.isNetworkUnstableMsg(authJson)) {
                                 Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)

@@ -7,21 +7,21 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
 
     //키체인 연동 (set/get)
 
-    var token: String
-    var userid: String
+    var token: String //Util.getStrObjFromUserInfo() 멤버
+    var userid: String //Util.getStrObjFromUserInfo() 멤버
+    var userkey: String //Util.getStrObjFromUserInfo() 멤버
+    var usernm: String //Util.getStrObjFromUserInfo() 멤버
+    var autokey_app: String //Util.getStrObjFromUserInfo() 멤버
+    var orgcd: String //Util.getStrObjFromUserInfo() 멤버
+    var orgnm: String //Util.getStrObjFromUserInfo() 멤버
+    var toporgcd: String //Util.getStrObjFromUserInfo() 멤버
+    var toporgnm: String //Util.getStrObjFromUserInfo() 멤버
     var pwd: String
-    var userkey: String
-    var usernm: String
-    var orgcd: String
-    var orgnm: String
-    var toporgcd: String
-    var toporgnm: String
     var notioff: String
     var fr: String
     var to: String
     var bodyoff: String
     var senderoff: String
-    var autokey_app: String
 
     constructor(context: Context, json: JsonObject) { //gson (not org.json) => 키체인 설정(set) : 인증(login.js)시만 처리
         if (json.get(Const.KC_TOKEN) == null) {

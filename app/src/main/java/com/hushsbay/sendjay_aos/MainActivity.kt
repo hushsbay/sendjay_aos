@@ -557,6 +557,7 @@ class MainActivity : Activity() {
                             } else {
                                 KeyChain.set(curContext, Const.KC_AUTOLOGIN, "Y")
                                 uInfo = UserInfo(curContext, authJson)
+                                Util.log(logTitle, uInfo.autokey_app+"!!!!!!!!")
                                 mAlertDialog.dismiss()
                                 callback()
                             }
@@ -764,8 +765,11 @@ class MainActivity : Activity() {
                             }
                         }
                     }
+                    Util.log("@@@@@@@@@@@", uInfo.autokey_app+"===")
                     val obj = Util.getStrObjFromUserInfo(uInfo) //Util.log("@@@@@@@@@@@", obj.toString()+"==="+authJson.toString())
                     Util.loadUrl(binding.wvMain, "startFromWebView", obj, authJson.toString())
+                    Util.log(logTitle, authJson.toString()+"@@@")
+                    Util.log(logTitle, obj+"###")
                 } catch (e1: Exception) {
                     logger.error("$logTitle: e1 ${e1.toString()}")
                     Util.procException(curContext, e1, logTitle)

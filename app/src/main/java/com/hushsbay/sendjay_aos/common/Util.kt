@@ -241,7 +241,8 @@ class Util {
         fun getStrObjFromUserInfo(uInfo: UserInfo): String {
             return """{
                 'token' : '${uInfo.token}', 'userid' : '${uInfo.userid}', 'userkey' : '${uInfo.userkey}', 'usernm' : '${uInfo.usernm}',
-                'orgcd' : '${uInfo.orgcd}', 'orgnm' : '${uInfo.orgnm}', 'toporgcd' : '${uInfo.toporgcd}', 'toporgnm' : '${uInfo.toporgnm}'
+                'orgcd' : '${uInfo.orgcd}', 'orgnm' : '${uInfo.orgnm}', 'toporgcd' : '${uInfo.toporgcd}', 'toporgnm' : '${uInfo.toporgnm}',
+                'autokey_app' : '${uInfo.autokey_app}'
             }"""
         }
 

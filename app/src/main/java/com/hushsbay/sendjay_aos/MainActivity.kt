@@ -510,7 +510,8 @@ class MainActivity : Activity() {
                 param.put("uid", KeyChain.get(applicationContext, Const.KC_USERID))
                 param.put("pwd", KeyChain.get(applicationContext, Const.KC_PWD))
                 param.put("autokey_app", KeyChain.get(applicationContext, Const.KC_AUTOKEY_APP))
-                param.put("autologin", autoLogin) //자동로그인 여부는 이 파라미터 + 서버에서의 deviceFrom과의 조합으로 판단함
+                param.put("autologin", autoLogin)
+                param.put("kind", "app") //login.js호출시만 구분이 필요함
                 authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
                 if (HttpFuel.isNetworkUnstableMsg(authJson)) {
                     Util.toast(curContext, Const.NETWORK_UNSTABLE) //Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)
@@ -549,6 +550,7 @@ class MainActivity : Activity() {
                             param.put("pwd", "1111")
                             val autokey_app = Util.getRnd().toString()
                             param.put("autokey_app", autokey_app)
+                            param.put("kind", "app") //login.js호출시만 구분이 필요함
                             authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
                             if (HttpFuel.isNetworkUnstableMsg(authJson)) {
                                 Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)
@@ -765,11 +767,8 @@ class MainActivity : Activity() {
                             }
                         }
                     }
-                    Util.log("@@@@@@@@@@@", uInfo.autokey_app+"===")
                     val obj = Util.getStrObjFromUserInfo(uInfo) //Util.log("@@@@@@@@@@@", obj.toString()+"==="+authJson.toString())
                     Util.loadUrl(binding.wvMain, "startFromWebView", obj, authJson.toString())
-                    Util.log(logTitle, authJson.toString()+"@@@")
-                    Util.log(logTitle, obj+"###")
                 } catch (e1: Exception) {
                     logger.error("$logTitle: e1 ${e1.toString()}")
                     Util.procException(curContext, e1, logTitle)

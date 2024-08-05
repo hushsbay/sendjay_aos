@@ -64,6 +64,7 @@ class Const {
         const val KC_SCREEN_STATE = "screen_state"
         const val KC_WINID = "winid"
         const val KC_USERIP = "userip"
+        const val KC_AUTOKEY = "autokey"
         const val KC_ROOMID_FOR_CHATSERVICE = "roomid_for_chatservice"
         const val KC_WEBVIEW_MAIN_VERSION = "webview_main_version"
         const val KC_WEBVIEW_CHAT_VERSION = "webview_chat_version"

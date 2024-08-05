@@ -21,6 +21,7 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
     var to: String
     var bodyoff: String
     var senderoff: String
+    var authkey: String
 
     constructor(context: Context, json: JsonObject) { //gson (not org.json) => 키체인 설정(set) : 인증(login.js)시만 처리
         if (json.get(Const.KC_TOKEN) == null) {
@@ -80,7 +81,6 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         } else {
             this.senderoff = json.get(Const.KC_SENDER_OFF).asString
         }
-
         if (json.get(Const.KC_TM_FR) == null) {
             this.fr = ""
         } else {
@@ -90,6 +90,11 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
             this.to = ""
         } else {
             this.to = json.get(Const.KC_TM_TO).asString
+        }
+        if (json.get(Const.KC_AUTOKEY) == null) {
+            this.authkey = ""
+        } else {
+            this.authkey = json.get(Const.KC_AUTOKEY).asString
         }
         if (this.token != "") KeyChain.set(context, Const.KC_TOKEN, this.token) //token이 빈값으로 내려오는 경우 KeyChain 건들지 말기
         KeyChain.set(context, Const.KC_USERID, this.userid)
@@ -105,6 +110,7 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         KeyChain.set(context, Const.KC_TM_TO, this.to)
         KeyChain.set(context, Const.KC_BODY_OFF, this.bodyoff)
         KeyChain.set(context, Const.KC_SENDER_OFF, this.senderoff)
+        KeyChain.set(context, Const.KC_AUTOKEY, this.authkey)
     }
 
     constructor(context: Context) { //키체인 읽어오기(get)
@@ -122,6 +128,7 @@ class UserInfo { //See Util.getStrObjFromUserInfo() also.
         this.to = KeyChain.get(context, Const.KC_TM_TO) ?: ""
         this.bodyoff = KeyChain.get(context, Const.KC_BODY_OFF) ?: ""
         this.senderoff = KeyChain.get(context, Const.KC_SENDER_OFF) ?: ""
+        this.authkey = KeyChain.get(context, Const.KC_AUTOKEY) ?: ""
     }
 
 }

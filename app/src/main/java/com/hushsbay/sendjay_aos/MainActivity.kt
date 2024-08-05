@@ -513,12 +513,13 @@ class MainActivity : Activity() {
                 param.put("autologin", autoLogin) //자동로그인 여부는 이 파라미터 + 서버에서의 deviceFrom과의 조합으로 판단함
                 authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
                 if (HttpFuel.isNetworkUnstableMsg(authJson)) {
-                    Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)
+                    Util.toast(curContext, Const.NETWORK_UNSTABLE) //Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)
+                    curContext.finish()
                     return
                 } else if (authJson.get("code").asString != Const.RESULT_OK) {
                     KeyChain.set(curContext, Const.KC_AUTOLOGIN, "")
-                    Util.alert(curContext, authJson.get("msg").asString, logTitle)
-                    return
+                    Util.toast(curContext, authJson.get("msg").asString) //Util.alert(curContext, authJson.get("msg").asString, logTitle)
+                    loginNeeded = true
                 } else if (authJson.get("code").asString == Const.RESULT_OK) {
                     uInfo = UserInfo(curContext, authJson)
                 } else {
@@ -542,8 +543,10 @@ class MainActivity : Activity() {
                             val inUserid = mDialogView.findViewById<EditText>(R.id.userid)
                             val inPwd = mDialogView.findViewById<EditText>(R.id.pwd)
                             val param = org.json.JSONObject()
-                            param.put("uid", inUserid.text.toString().trim())
-                            param.put("pwd", inPwd.text.toString().trim())
+//                            param.put("uid", inUserid.text.toString().trim())
+//                            param.put("pwd", inPwd.text.toString().trim())
+                            param.put("uid", "oldclock")
+                            param.put("pwd", "newclock")
                             val autokey = Util.getRnd().toString()
                             param.put("autokey", autokey)
                             authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()

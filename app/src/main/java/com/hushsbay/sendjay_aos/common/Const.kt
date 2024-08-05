@@ -55,7 +55,7 @@ class Const {
         //const val KC_VIB_OFF = "VIB_OFF" //NotiCenter.kt ##55 참조 (코딩 제거하지는 말고 참고로 둘 것)
         const val KC_BODY_OFF = "BODY_OFF"
         const val KC_SENDER_OFF = "SENDER_OFF"
-        const val KC_POPUP_OFF = "POPUP_OFF"
+        //const val KC_POPUP_OFF = "POPUP_OFF"
         const val KC_TM_FR = "TM_FR"
         const val KC_TM_TO = "TM_TO"
         const val KC_AUTOKEY_APP = "AUTOKEY_APP"

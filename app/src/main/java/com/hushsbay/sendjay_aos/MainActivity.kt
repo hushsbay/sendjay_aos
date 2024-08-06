@@ -255,9 +255,9 @@ class MainActivity : Activity() {
                         if (!chkUpdate(false)) return@launch
                         procLogin(true) { //related with Reset Authentication
                             Util.connectSockWithCallback(curContext, connManager)
-                            //아래 2행은 단지 토큰을 웹뷰로 전달하기 위해 추가한 루틴임. onResume
-                            //onResume에서 여기만 적용한 것은 onCreate에서 시작하는 onResume에는 웹페이지가 셋팅되기 전이고
-                            //wvRoom에서는 안해도 되는게 wvMain에만 token을 전달하면 쿠키셋팅이 되기 때문임
+                            //아래 2행은 단지 토큰을 웹뷰로 전달하기 위해 추가한 루틴임.
+                            //onResume에서도 여기만 적용한 것은 onCreate에서 시작하는 onResume에는 웹페이지가 셋팅되기 전이고
+                            //wvRoom말고 wvMain에만 token을 전달하면 될 것임
                             val obj = Util.getStrObjFromUserInfo(uInfo)
                             Util.loadUrl(binding.wvMain, "resumeWebView", obj, authJson.toString()) //main_common.js 참조
                         }
@@ -544,10 +544,8 @@ class MainActivity : Activity() {
                             val inUserid = mDialogView.findViewById<EditText>(R.id.userid)
                             val inPwd = mDialogView.findViewById<EditText>(R.id.pwd)
                             val param = org.json.JSONObject()
-//                            param.put("uid", inUserid.text.toString().trim())
-//                            param.put("pwd", inPwd.text.toString().trim())
-                            param.put("uid", "oldclock")
-                            param.put("pwd", "1111")
+                            param.put("uid", inUserid.text.toString().trim())
+                            param.put("pwd", inPwd.text.toString().trim())
                             val autokey_app = Util.getRnd().toString()
                             param.put("autokey_app", autokey_app)
                             param.put("kind", "app") //login.js호출시만 구분이 필요함
@@ -559,7 +557,6 @@ class MainActivity : Activity() {
                             } else {
                                 KeyChain.set(curContext, Const.KC_AUTOLOGIN, "Y")
                                 uInfo = UserInfo(curContext, authJson)
-                                Util.log(logTitle, uInfo.autokey_app+"!!!!!!!!")
                                 mAlertDialog.dismiss()
                                 callback()
                             }

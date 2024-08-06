@@ -48,7 +48,7 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                 if (nwCapa != null && nwCapa.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
                     if (ChatService.state == Const.ServiceState.LOGOUTED) {
                         code = Const.RESULT_ERR
-                        msg = "App logout."
+                        msg = "로그아웃 상태입니다."
                     } else if (ChatService.state == Const.ServiceState.STOPPED) {
                         val intentNew = Intent(context, ChatService::class.java)
                         context.startForegroundService(intentNew)

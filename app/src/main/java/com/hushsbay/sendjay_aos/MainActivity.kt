@@ -259,7 +259,7 @@ class MainActivity : Activity() {
                             //onResume에서도 여기만 적용한 것은 onCreate에서 시작하는 onResume에는 웹페이지가 셋팅되기 전이고
                             //wvRoom말고 wvMain에만 token을 전달하면 될 것임
                             val obj = Util.getStrObjFromUserInfo(uInfo)
-                            Util.loadUrl(binding.wvMain, "resumeWebView", obj, authJson.toString()) //main_common.js 참조
+//                            Util.loadUrl(binding.wvMain, "resumeWebView", obj, authJson.toString()) //main_common.js 참조
                         }
                     }
                 }

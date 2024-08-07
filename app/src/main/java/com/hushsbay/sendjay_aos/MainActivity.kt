@@ -79,8 +79,7 @@ class MainActivity : Activity() {
 
     private var isFromNoti = false
     private var isOnCreate = true
-    private var mainLoaded = false
-    private var roomLoaded = false
+    //private var roomLoaded = false
     private var retried = false
     private var gType = "" //for wvRoom
     private var gRoomid = "" //for wvRoom
@@ -185,11 +184,11 @@ class MainActivity : Activity() {
                                 if (roomidForChatService != "") { //When wvRoom shown
                                     setupWebViewRoom(true)
                                 } else {
-                                    if (mainLoaded) {
-                                        toggleDispRetry(false, "Main")
-                                    } else {
+                                    //if (roomLoaded) {
+                                    //    toggleDispRetry(false, "Main")
+                                    //} else {
                                         setupWebViewMain()
-                                    }
+                                    //}
                                 }
                             }
                         }
@@ -689,12 +688,12 @@ class MainActivity : Activity() {
             }
         } //Util.log("@@@@@@@@@@@", KeyChain.get(curContext, Const.KC_MODE_PUBLIC) + "${Const.PAGE_MAIN}?webview=and")
         binding.wvMain.loadUrl(Const.URL_PUBLIC + "${Const.PAGE_MAIN}?webview=and&nocache=" + Util.getRnd()) //not ios
-        CoroutineScope(Dispatchers.Main).launch {
-            mainLoaded = false
-            retried = false
-            delay(Const.RESTFUL_TIMEOUT.toLong())
-            if (!mainLoaded && !retried) toggleDispRetry(true, "Main", logTitle, "RESTFUL_TIMEOUT") //webview내 javascript가 제대로 실행되지 않고 있을 경우임
-        }
+//        CoroutineScope(Dispatchers.Main).launch {
+//            roomLoaded = false
+//            retried = false
+//            delay(Const.RESTFUL_TIMEOUT.toLong())
+//            if (!roomLoaded && !retried) toggleDispRetry(true, "Main", logTitle, "RESTFUL_TIMEOUT") //webview내 javascript가 제대로 실행되지 않고 있을 경우임
+//        }
     }
 
     private fun setupWebViewRoom(refresh: Boolean) {
@@ -805,10 +804,10 @@ class MainActivity : Activity() {
             }
         }
 
-        @JavascriptInterface
-        fun doneLoad() {
-            mainLoaded = true
-        }
+//        @JavascriptInterface
+//        fun doneLoad() {
+//            roomLoaded = true
+//        }
 
         @JavascriptInterface
         fun reload() {
@@ -962,10 +961,10 @@ class MainActivity : Activity() {
             }
         }
 
-        @JavascriptInterface
-        fun doneLoad() {
-            roomLoaded = true
-        }
+//        @JavascriptInterface
+//        fun doneLoad() {
+//            roomLoaded = true
+//        }
 
         @JavascriptInterface
         fun putData(data: String) {

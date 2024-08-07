@@ -237,34 +237,64 @@ class MainActivity : Activity() {
         }
     }
 
+//    override fun onResume() { //onCreate -> onResume
+//        super.onResume()
+//        try {
+//            isOnTop = true
+//            if (roomidForChatService != "") {
+//                Util.loadUrl(binding.wvRoom, "setFocusFromWebView", isOnTop.toString())
+//                updateAllUnreads(isFromNoti)
+//                if (isFromNoti) isFromNoti = false
+//                Util.connectSockWithCallback(curContext, connManager)
+//                val obj = Util.getStrObjFromUserInfo(uInfo)
+//                Util.loadUrl(binding.wvRoom, "resumeWebView", obj, authJson.toString()) //main_common.js 참조
+//            } else {
+//                cancelUnreadNoti()
+//                if (!isOnCreate) {
+//                    CoroutineScope(Dispatchers.Main).launch {
+//                        if (!chkUpdate(false)) return@launch
+//                        procLogin(true) { //related with Reset Authentication
+//                            Util.connectSockWithCallback(curContext, connManager)
+//                            //아래 2행은 단지 토큰을 웹뷰로 전달하기 위해 추가한 루틴임. (전달하지 않으면 웹뷰에서 refreshToken()이 주기적으로 돌아도 그전에 만기되버릴 것임)
+//                            //onResume에서도 여기만 적용한 것은 onCreate에서 시작하는 onResume에는 웹페이지가 셋팅되기 전이고
+//                            //wvRoom말고 wvMain에만 token을 전달하면 될 것임
+//                            val obj = Util.getStrObjFromUserInfo(uInfo)
+//                            Util.loadUrl(binding.wvMain, "resumeWebView", obj, authJson.toString()) //main_common.js 참조
+//                        }
+//                    }
+//                }
+//            }
+//            if (isOnCreate) isOnCreate = false
+//        } catch (e: Exception) {
+//            logger.error("onResume: ${e.toString()}")
+//            Util.procException(curContext, e, "onResume")
+//        }
+//    }
+
     override fun onResume() { //onCreate -> onResume
         super.onResume()
         try {
             isOnTop = true
-            if (roomidForChatService != "") {
-                Util.loadUrl(binding.wvRoom, "setFocusFromWebView", isOnTop.toString())
-                updateAllUnreads(isFromNoti)
-                if (isFromNoti) isFromNoti = false
-                Util.connectSockWithCallback(curContext, connManager)
-                val obj = Util.getStrObjFromUserInfo(uInfo)
-                Util.loadUrl(binding.wvMain, "resumeWebView", obj, authJson.toString()) //main_common.js 참조
-            } else {
-                cancelUnreadNoti()
-                if (!isOnCreate) {
-                    CoroutineScope(Dispatchers.Main).launch {
-                        if (!chkUpdate(false)) return@launch
-                        procLogin(true) { //related with Reset Authentication
-                            Util.connectSockWithCallback(curContext, connManager)
-                            //아래 2행은 단지 토큰을 웹뷰로 전달하기 위해 추가한 루틴임.
-                            //onResume에서도 여기만 적용한 것은 onCreate에서 시작하는 onResume에는 웹페이지가 셋팅되기 전이고
-                            //wvRoom말고 wvMain에만 token을 전달하면 될 것임
-                            val obj = Util.getStrObjFromUserInfo(uInfo)
+            if (roomidForChatService == "") cancelUnreadNoti()
+            if (!isOnCreate) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    if (!chkUpdate(false)) return@launch
+                    procLogin(true) { //related with Reset Authentication
+                        Util.connectSockWithCallback(curContext, connManager)
+                        val obj = Util.getStrObjFromUserInfo(uInfo)
+                        if (roomidForChatService != "") {
+                            Util.loadUrl(binding.wvRoom, "resumeWebView", obj, authJson.toString()) //main_common.js 참조
+                            updateAllUnreads(isFromNoti)
+                            if (isFromNoti) isFromNoti = false
+                            Util.loadUrl(binding.wvRoom, "setFocusFromWebView", isOnTop.toString())
+                        } else { //위 아래 resumeWebView는 토큰을 웹뷰로 전달하기 위해 추가한 루틴임. (전달하지 않으면 웹뷰에서 refreshToken()이 주기적으로 돌아도 그전에 만기되버릴 것임)
                             Util.loadUrl(binding.wvMain, "resumeWebView", obj, authJson.toString()) //main_common.js 참조
                         }
                     }
                 }
+            } else { //앱이 최초 실행되는 것이므로 onResume()에서 챗방이 열려 있지 않음 (roomidForChatService = "")
+                isOnCreate = false
             }
-            if (isOnCreate) isOnCreate = false
         } catch (e: Exception) {
             logger.error("onResume: ${e.toString()}")
             Util.procException(curContext, e, "onResume")

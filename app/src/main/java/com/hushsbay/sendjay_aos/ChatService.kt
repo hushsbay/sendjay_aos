@@ -362,13 +362,12 @@ class ChatService : Service() {
                         } else if (HttpFuel.isNetworkUnstableMsg(json)) {
                             Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE)
                         } else {
-                            Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${json.get("msg").asString}")
+                            Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${json.get("msg").asString}") //크리티컬하지 않으므로 막아도 무방
                         }
                     } catch (e: Exception) {
                         logger.error("$logTitle: EVENT_CONNECT ${e.toString()}")
-                        Util.log(logTitle, e.toString())
                         e.printStackTrace()
-                        Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle:qry_unread: ${e.toString()}")
+                        Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle:qry_unread: ${e.toString()}") //크리티컬하지 않으므로 막아도 무방
                     }
                 }
             } catch (e1: Exception) {

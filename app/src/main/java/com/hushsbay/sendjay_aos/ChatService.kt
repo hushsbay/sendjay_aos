@@ -50,7 +50,7 @@ class ChatService : Service() {
     }
 
     private var SEC_DURING_DAEMON: Long = 3000 //try connecting every 3 second in case of disconnection
-    private var MAX_DURING_DAEMON: Long = 600000 //10분되면 주기적으로 실행 (토큰 갱신 주기 = 웹과 동일하게 잡음)
+    private var MAX_DURING_DAEMON: Long = 10000 //600000 //10분되면 주기적으로 실행 (토큰 갱신 주기 = 웹과 동일하게 잡음)
     private var cnt_for_daemon: Long = 0
     private var SEC_DURING_RESTART = 3 //try restarting after 3 seconds (just once) when service killed (see another periodic trying with SimpleWorker.kt)
 

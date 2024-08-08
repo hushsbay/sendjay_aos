@@ -50,8 +50,8 @@ class ChatService : Service() {
     }
 
     private var SEC_DURING_DAEMON: Long = 3000 //try connecting every 3 second in case of disconnection
-    private var MAX_DURING_DAEMON: Long = 10000 //600000 //10분되면 주기적으로 실행 (토큰 갱신 주기 = 웹과 동일하게 잡음)
-    private var cnt_for_daemon: Long = 0
+    //private var MAX_DURING_DAEMON: Long = 10000 //600000 //10분되면 주기적으로 실행 (토큰 갱신 주기 = 웹과 동일하게 잡음)
+    //private var cnt_for_daemon: Long = 0
     private var SEC_DURING_RESTART = 3 //try restarting after 3 seconds (just once) when service killed (see another periodic trying with SimpleWorker.kt)
 
     private lateinit var logger: Logger
@@ -249,6 +249,30 @@ class ChatService : Service() {
         }
     }
 
+//    private fun setRoomInfo(json: JSONObject, logTitle:  String) {
+//        CoroutineScope(Dispatchers.IO).launch {
+//            try {
+//                val data = json.getJSONObject("data")
+//                val roomid = data.getString("roomid")
+//                val param = org.json.JSONObject()
+//                param.put("roomid", roomid)
+//                val jsonRI = HttpFuel.post(applicationContext, "/msngr/get_roominfo", param.toString()).await()
+//                if (jsonRI.get("code").asString == Const.RESULT_OK) {
+//                    NotiCenter.getRoomInfo(jsonRI, roomid)
+//                } else if (HttpFuel.isNetworkUnstableMsg(jsonRI)) {
+//                    Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE)
+//                } else {
+//                    Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${jsonRI.get("msg").asString}")
+//                }
+//            } catch (e: Exception) {
+//                logger.error("$logTitle: ${e.toString()}")
+//                Util.log(logTitle, e.toString())
+//                e.printStackTrace()
+//                Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${e.toString()}")
+//            }
+//        }
+//    }
+
     private fun setRoomInfo(json: JSONObject, logTitle:  String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
@@ -256,14 +280,8 @@ class ChatService : Service() {
                 val roomid = data.getString("roomid")
                 val param = org.json.JSONObject()
                 param.put("roomid", roomid)
-                val jsonRI = HttpFuel.post(applicationContext, "/msngr/get_roominfo", param.toString()).await()
-                if (jsonRI.get("code").asString == Const.RESULT_OK) {
-                    NotiCenter.getRoomInfo(jsonRI, roomid)
-                } else if (HttpFuel.isNetworkUnstableMsg(jsonRI)) {
-                    Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE)
-                } else {
-                    Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${jsonRI.get("msg").asString}")
-                }
+                RxToUp.post(RxEvent(Const.SOCK_EV_GET_ROOMINFO, param)) //, returnTo, returnToAnother))
+                Util.log(logTitle + ": " + Const.SOCK_EV_GET_ROOMINFO, "old==" + roomid)
             } catch (e: Exception) {
                 logger.error("$logTitle: ${e.toString()}")
                 Util.log(logTitle, e.toString())
@@ -496,11 +514,10 @@ class ChatService : Service() {
                         stop_mobile = true
                         stopSelf()
                     }
-                } else if (ev == Const.SOCK_EV_REFRESH_TOKEN) {
-                    val data = json.getJSONObject("data")
-                    uInfo.token = data.getString("newToken")
-                    KeyChain.set(applicationContext, Const.KC_TOKEN, uInfo.token)
-                    Util.log(logTitle + ": " + Const.SOCK_EV_REFRESH_TOKEN, uInfo.token)
+                } else if (ev == Const.SOCK_EV_GET_ROOMINFO) {
+                    val jsonRI = json.getJSONObject("data")
+                    Util.log(logTitle + ": " + Const.SOCK_EV_GET_ROOMINFO, jsonRI.toString())
+                    //NotiCenter.getRoomInfo(jsonRI, roomid)
                 }
             } catch (e: Exception) {
                 logger.error("$logTitle: SOCK_EV_COMMON ${e.toString()}")
@@ -527,7 +544,7 @@ class ChatService : Service() {
                             val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
                             if (autoLogin == "Y") Util.connectSockWithCallback(applicationContext, connManager!!)
                             //서버의 refresh_token.js내 설명 참조 (실행 주기 : 상단 변수 설명 참조)
-                            if (cnt_for_daemon >= MAX_DURING_DAEMON) {
+                            /*if (cnt_for_daemon >= MAX_DURING_DAEMON) {
                                 cnt_for_daemon = 0
                                 CoroutineScope(Dispatchers.IO).launch {
                                     try {
@@ -543,13 +560,14 @@ class ChatService : Service() {
                                         val param = org.json.JSONObject()
                                         param.put("token", uInfo.token)
                                         RxToUp.post(RxEvent(Const.SOCK_EV_REFRESH_TOKEN, param)) //, returnTo, returnToAnother))
+                                        Util.log(logTitle + ": " + Const.SOCK_EV_REFRESH_TOKEN, "old==" + uInfo.token)
                                     } catch (e: Exception) {
                                         Util.log("refresh_token", e.toString())
                                     }
                                 }
                             } else {
                                 cnt_for_daemon += SEC_DURING_DAEMON
-                            }
+                            }*/
                         } catch (e: InterruptedException) {
                             logger.error("$logTitle: e ${e.toString()}")
                             Util.log(logTitle, "thread interrupted")

@@ -78,6 +78,16 @@ class Util {
             log(title, msg)
         }
 
+        fun setParamForAutoLogin(context: Context): org.json.JSONObject {
+            val param = org.json.JSONObject()
+            param.put("uid", KeyChain.get(context, Const.KC_USERID))
+            param.put("pwd", KeyChain.get(context, Const.KC_PWD))
+            param.put("autokey_app", KeyChain.get(context, Const.KC_AUTOKEY_APP))
+            param.put("autologin", "Y")
+            param.put("kind", "app") //login.js호출시만 구분이 필요함
+            return param
+        }
+
         fun chkIfNetworkAvailable(context: Activity, connManager: ConnectivityManager, type: String): Boolean {
             val nwCapa = connManager.getNetworkCapabilities(connManager.activeNetwork)
             return if (nwCapa != null && nwCapa.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {

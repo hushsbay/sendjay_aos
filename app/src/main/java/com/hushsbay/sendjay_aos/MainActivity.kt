@@ -535,12 +535,13 @@ class MainActivity : Activity() {
             var loginNeeded = false
             val autoLogin = KeyChain.get(curContext, Const.KC_AUTOLOGIN) ?: ""
             if (autoLogin == "Y") {
-                val param = org.json.JSONObject()
-                param.put("uid", KeyChain.get(applicationContext, Const.KC_USERID))
-                param.put("pwd", KeyChain.get(applicationContext, Const.KC_PWD))
-                param.put("autokey_app", KeyChain.get(applicationContext, Const.KC_AUTOKEY_APP))
-                param.put("autologin", autoLogin)
-                param.put("kind", "app") //login.js호출시만 구분이 필요함
+//                val param = org.json.JSONObject()
+//                param.put("uid", KeyChain.get(applicationContext, Const.KC_USERID))
+//                param.put("pwd", KeyChain.get(applicationContext, Const.KC_PWD))
+//                param.put("autokey_app", KeyChain.get(applicationContext, Const.KC_AUTOKEY_APP))
+//                param.put("autologin", autoLogin)
+//                param.put("kind", "app") //login.js호출시만 구분이 필요함
+                val param = Util.setParamForAutoLogin(applicationContext)
                 authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
                 if (HttpFuel.isNetworkUnstableMsg(authJson)) {
                     Util.toast(curContext, Const.NETWORK_UNSTABLE) //Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)

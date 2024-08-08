@@ -81,6 +81,7 @@ class Const {
         const val SOCK_EV_MARK_AS_CONNECT = "mark_as_connect"
         const val SOCK_EV_CHK_ROOMFOCUS = "chk_roomfocus"
         const val SOCK_EV_STOP_MOBILE = "stop_mobile"
+        const val SOCK_EV_REFRESH_TOKEN = "refresh_token"
         /////////////////////////////////////////////////////////////////////////
         const val RESTFUL_TIMEOUT = 5000 //same as web client
         const val RESULT_OK = "0"

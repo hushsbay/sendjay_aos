@@ -496,6 +496,11 @@ class ChatService : Service() {
                         stop_mobile = true
                         stopSelf()
                     }
+                } else if (ev == Const.SOCK_EV_REFRESH_TOKEN) {
+                    val data = json.getJSONObject("data")
+                    uInfo.token = data.getString("newToken")
+                    KeyChain.set(applicationContext, Const.KC_TOKEN, uInfo.token)
+                    Util.log(logTitle + ": " + Const.SOCK_EV_REFRESH_TOKEN, uInfo.token)
                 }
             } catch (e: Exception) {
                 logger.error("$logTitle: SOCK_EV_COMMON ${e.toString()}")
@@ -522,10 +527,10 @@ class ChatService : Service() {
                             val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
                             if (autoLogin == "Y") Util.connectSockWithCallback(applicationContext, connManager!!)
                             //서버의 refresh_token.js내 설명 참조 (실행 주기 : 상단 변수 설명 참조)
-//                            if (cnt_for_daemon >= MAX_DURING_DAEMON) {
-//                                cnt_for_daemon = 0
-//                                CoroutineScope(Dispatchers.IO).launch {
-//                                    try {
+                            if (cnt_for_daemon >= MAX_DURING_DAEMON) {
+                                cnt_for_daemon = 0
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    try {
 //                                        val param = org.json.JSONObject()
 //                                        param.put("token", uInfo.token)
 //                                        val json = HttpFuel.post(applicationContext,"/auth/refresh_token", param.toString()).await()
@@ -535,13 +540,16 @@ class ChatService : Service() {
 //                                        } else {
 //                                            Util.log("refresh_token", json.get("msg").asString) //no alert
 //                                        }
-//                                    } catch (e: Exception) {
-//                                        Util.log("refresh_token", e.toString())
-//                                    }
-//                                }
-//                            } else {
-//                                cnt_for_daemon += SEC_DURING_DAEMON
-//                            }
+                                        val param = org.json.JSONObject()
+                                        param.put("token", uInfo.token)
+                                        RxToUp.post(RxEvent(Const.SOCK_EV_REFRESH_TOKEN, param)) //, returnTo, returnToAnother))
+                                    } catch (e: Exception) {
+                                        Util.log("refresh_token", e.toString())
+                                    }
+                                }
+                            } else {
+                                cnt_for_daemon += SEC_DURING_DAEMON
+                            }
                         } catch (e: InterruptedException) {
                             logger.error("$logTitle: e ${e.toString()}")
                             Util.log(logTitle, "thread interrupted")

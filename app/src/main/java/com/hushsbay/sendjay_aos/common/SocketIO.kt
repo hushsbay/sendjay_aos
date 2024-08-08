@@ -71,7 +71,7 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
 //                            } else {
 //                                msg = "connect" //접속 로그를 위한 구분 코드임을 유의
 //                            }
-                            val param = Util.setParamForAutoLogin(context) //순전히 토큰을 새로 얻으려고 자동로그인 하는 것임
+                            val param = Util.setParamForAutoLogin(context) //순전히 토큰을 새로 얻으려고 자동로그인 하는 것임 (액티비티 없이 서비스만 실행되는 경우도 있음)
                             val authJson: JsonObject = HttpFuel.post(context, "/auth/login", param.toString()).await()
                             if (HttpFuel.isNetworkUnstableMsg(authJson)) {
                                 code = Const.RESULT_ERR

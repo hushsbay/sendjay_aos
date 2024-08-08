@@ -516,8 +516,9 @@ class ChatService : Service() {
                     }
                 } else if (ev == Const.SOCK_EV_GET_ROOMINFO) {
                     val jsonRI = json.getJSONObject("data")
+                    val gsonRI = Gson().fromJson(jsonRI.toString(), JsonObject::class.java)
+                    NotiCenter.getRoomInfo(gsonRI, jsonRI.getString("roomid"))
                     Util.log(logTitle + ": " + Const.SOCK_EV_GET_ROOMINFO, jsonRI.toString())
-                    //NotiCenter.getRoomInfo(jsonRI, roomid)
                 }
             } catch (e: Exception) {
                 logger.error("$logTitle: SOCK_EV_COMMON ${e.toString()}")

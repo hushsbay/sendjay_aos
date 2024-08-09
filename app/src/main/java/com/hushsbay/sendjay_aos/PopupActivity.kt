@@ -11,6 +11,7 @@ import android.widget.FrameLayout
 import androidx.core.content.ContextCompat
 import com.google.gson.JsonObject
 import com.hushsbay.sendjay_aos.common.Const
+import com.hushsbay.sendjay_aos.common.HttpFuel
 import com.hushsbay.sendjay_aos.common.KeyChain
 import com.hushsbay.sendjay_aos.common.LogHelper
 import com.hushsbay.sendjay_aos.common.RxToDown
@@ -35,6 +36,8 @@ class PopupActivity : Activity() {
     private var disposableMain: Disposable? = null
 
     private lateinit var binding: ActivityPopupBinding
+    private var isOnCreate = true
+    private lateinit var authJson: JsonObject //Gson
 
     var gOrigin = ""
     var gObjStr = ""
@@ -42,13 +45,13 @@ class PopupActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         try {
+            curContext = this@PopupActivity
             binding = ActivityPopupBinding.inflate(layoutInflater)
             setContentView(binding.root) //setContentView(R.layout.activity_popup)
             logger = LogHelper.getLogger(applicationContext, this::class.simpleName)
             WebView.setWebContentsDebuggingEnabled(true)
-            curContext = this@PopupActivity
             connManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-            uInfo = UserInfo(curContext) //KeyChain Get
+            isOnCreate = true
             gOrigin = intent.getStringExtra("origin")!!
             gObjStr = intent.getStringExtra("objStr")!!
             var popup_version = KeyChain.get(curContext, Const.KC_WEBVIEW_POPUP_VERSION) ?: ""
@@ -67,10 +70,29 @@ class PopupActivity : Activity() {
             }
             disposableMsg?.dispose()
             disposableMsg = Util.procRxMsg(curContext)
-            setupWebViewPopup(gOrigin)
+            start()
         } catch (e: Exception) {
             logger.error("onCreate: ${e.toString()}")
             Util.procException(curContext, e, "onCreate")
+        }
+    }
+
+    override fun onResume() { //onCreate -> onResume
+        super.onResume()
+        try {
+            if (!isOnCreate) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    procLogin() {
+                        val obj = Util.getStrObjFromUserInfo(uInfo)
+                        Util.loadUrl(binding.wvPopup, "resumeWebView", obj, authJson.toString()) //main_common.js 참조
+                    }
+                }
+            } else {
+                isOnCreate = false
+            }
+        } catch (e: Exception) {
+            logger.error("onResume: ${e.toString()}")
+            Util.procException(curContext, e, "onResume")
         }
     }
 
@@ -78,6 +100,50 @@ class PopupActivity : Activity() {
         super.onDestroy()
         disposableMsg?.dispose()
         disposableMain?.dispose()
+    }
+
+    private fun start() {
+        val logTitle = object{}.javaClass.enclosingMethod?.name!!
+        CoroutineScope(Dispatchers.Main).launch {
+            procLogin() {
+                CoroutineScope(Dispatchers.Main).launch {
+                    try {
+                        setupWebViewPopup(gOrigin)
+                    } catch (e: Exception) {
+                        logger.error("$logTitle: ${e.toString()}")
+                        Util.procException(curContext, e, logTitle)
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun procLogin(callback: () -> Unit = {}) { //await() with Suspend function
+        val logTitle = object{}.javaClass.enclosingMethod?.name!!
+        try {
+            val autoLogin = KeyChain.get(curContext, Const.KC_AUTOLOGIN) ?: ""
+            if (autoLogin != "Y") {
+                Util.alert(curContext, "자동로그인 상태가 아닙니다.", logTitle)
+                return
+            }
+            val param = Util.setParamForAutoLogin(applicationContext)
+            authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
+            if (HttpFuel.isNetworkUnstableMsg(authJson)) {
+                Util.toast(curContext, Const.NETWORK_UNSTABLE) //Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)
+                curContext.finish()
+                return
+            } else if (authJson.get("code").asString != Const.RESULT_OK) {
+                KeyChain.set(curContext, Const.KC_AUTOLOGIN, "")
+                Util.toast(curContext, authJson.get("msg").asString) //Util.alert(curContext, authJson.get("msg").asString, logTitle)
+                curContext.finish()
+            } else if (authJson.get("code").asString == Const.RESULT_OK) {
+                uInfo = UserInfo(curContext, authJson)
+                callback()
+            }
+        } catch (e: Exception) {
+            logger.error("$logTitle: ${e.toString()}")
+            Util.procException(curContext, e, logTitle)
+        }
     }
 
     private fun toggleDispRetry(show: Boolean) {

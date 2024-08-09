@@ -278,7 +278,7 @@ class MainActivity : Activity() {
             if (!isOnCreate) {
                 CoroutineScope(Dispatchers.Main).launch {
                     if (!chkUpdate(false)) return@launch
-                    procLogin(true) { //related with Reset Authentication
+                    procLogin(true) {
                         Util.connectSockWithCallback(curContext, connManager)
                         val obj = Util.getStrObjFromUserInfo(uInfo)
                         if (roomidForChatService != "") {
@@ -997,7 +997,7 @@ class MainActivity : Activity() {
                     val pIntent = Intent(curContext, PopupActivity::class.java)
                     pIntent.putExtra("origin", origin)
                     pIntent.putExtra("objStr", objStr)
-                    if (origin.contains(Const.PAGE_MAIN)) { //index.html
+                    if (origin.contains(Const.PAGE_MAIN)) { //main.html
                         startActivityForResult(pIntent, INVITE_RESULT)
                     } else { //popup.html
                         startActivity(pIntent)

@@ -50,8 +50,8 @@ class ChatService : Service() {
     }
 
     private var SEC_DURING_DAEMON: Long = 3000 //try connecting every 3 second in case of disconnection
-    //private var MAX_DURING_DAEMON: Long = 10000 //600000 //10분되면 주기적으로 실행 (토큰 갱신 주기 = 웹과 동일하게 잡음)
-    //private var cnt_for_daemon: Long = 0
+    private var MAX_DURING_DAEMON: Long = 600000 //10분되면 주기적으로 실행 (토큰 갱신 주기 => 웹만 사용하고 여기서는 사용하지 않음)
+    private var cnt_for_daemon: Long = 0
     private var SEC_DURING_RESTART = 3 //try restarting after 3 seconds (just once) when service killed (see another periodic trying with SimpleWorker.kt)
 
     private lateinit var logger: Logger
@@ -249,31 +249,7 @@ class ChatService : Service() {
         }
     }
 
-//    private fun setRoomInfo(json: JSONObject, logTitle:  String) {
-//        CoroutineScope(Dispatchers.IO).launch {
-//            try {
-//                val data = json.getJSONObject("data")
-//                val roomid = data.getString("roomid")
-//                val param = org.json.JSONObject()
-//                param.put("roomid", roomid)
-//                val jsonRI = HttpFuel.post(applicationContext, "/msngr/get_roominfo", param.toString()).await()
-//                if (jsonRI.get("code").asString == Const.RESULT_OK) {
-//                    NotiCenter.getRoomInfo(jsonRI, roomid)
-//                } else if (HttpFuel.isNetworkUnstableMsg(jsonRI)) {
-//                    Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE)
-//                } else {
-//                    Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${jsonRI.get("msg").asString}")
-//                }
-//            } catch (e: Exception) {
-//                logger.error("$logTitle: ${e.toString()}")
-//                Util.log(logTitle, e.toString())
-//                e.printStackTrace()
-//                Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${e.toString()}")
-//            }
-//        }
-//    }
-
-    private fun setRoomInfo(json: JSONObject, logTitle:  String) {
+    private fun setRoomInfo(json: JSONObject, logTitle:  String) { //rest->socket 방식으로 변경. socket/get_roominfo.js 설명 참조
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val data = json.getJSONObject("data")
@@ -482,11 +458,8 @@ class ChatService : Service() {
                         val userid = data.getString("userid")
                         if (userid == uInfo.userid) {
                             KeyChain.set(applicationContext, Const.KC_NOTI_OFF, data.getString("notioff"))
-                            //KeyChain.set(applicationContext, Const.KC_SOUND_OFF, data.getString("soundoff")) //NotiCenter.kt ##55 참조
-                            //KeyChain.set(applicationContext, Const.KC_VIB_OFF, data.getString("viboff")) //NotiCenter.kt ##55 참조
                             KeyChain.set(applicationContext, Const.KC_BODY_OFF, data.getString("bodyoff"))
                             KeyChain.set(applicationContext, Const.KC_SENDER_OFF, data.getString("senderoff"))
-                            //KeyChain.set(applicationContext, Const.KC_POPUP_OFF, data.getString("popupoff")) //NotiCenter.kt의 $$7 참조 (현재 미사용)
                             KeyChain.set(applicationContext, Const.KC_TM_FR, data.getString("fr"))
                             KeyChain.set(applicationContext, Const.KC_TM_TO, data.getString("to"))
                             uInfo = UserInfo(applicationContext) //org.json not gson //KeyChain Get
@@ -544,31 +517,19 @@ class ChatService : Service() {
                             Util.log(logTitle, "socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )*/
                             val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
                             if (autoLogin == "Y") Util.connectSockWithCallback(applicationContext, connManager!!)
-                            //서버의 refresh_token.js내 설명 참조 (실행 주기 : 상단 변수 설명 참조)
-                            /*if (cnt_for_daemon >= MAX_DURING_DAEMON) {
+                            if (cnt_for_daemon >= MAX_DURING_DAEMON) {
                                 cnt_for_daemon = 0
                                 CoroutineScope(Dispatchers.IO).launch {
                                     try {
-//                                        val param = org.json.JSONObject()
-//                                        param.put("token", uInfo.token)
-//                                        val json = HttpFuel.post(applicationContext,"/auth/refresh_token", param.toString()).await()
-//                                        if (json.get("code").asString == Const.RESULT_OK) {
-//                                            uInfo.token = json.get("token").asString
-//                                            KeyChain.set(applicationContext, Const.KC_TOKEN, uInfo.token)
-//                                        } else {
-//                                            Util.log("refresh_token", json.get("msg").asString) //no alert
-//                                        }
-                                        val param = org.json.JSONObject()
-                                        param.put("token", uInfo.token)
-                                        RxToUp.post(RxEvent(Const.SOCK_EV_REFRESH_TOKEN, param)) //, returnTo, returnToAnother))
-                                        Util.log(logTitle + ": " + Const.SOCK_EV_REFRESH_TOKEN, "old==" + uInfo.token)
+                                        //val json = HttpFuel.post(applicationContext,"/auth/refresh_token", param.toString()).await()
+                                        //여기서 rest 호출시 대기모드나 수면모드에서 호출이 block되므로 의미없게 됨. 나중에 cnt_for_daemon값으로 쓸 일이 있을지 몰라 그냥 두기로 함
                                     } catch (e: Exception) {
-                                        Util.log("refresh_token", e.toString())
+                                        //Util.log("refresh_token", e.toString())
                                     }
                                 }
                             } else {
                                 cnt_for_daemon += SEC_DURING_DAEMON
-                            }*/
+                            }
                         } catch (e: InterruptedException) {
                             logger.error("$logTitle: e ${e.toString()}")
                             Util.log(logTitle, "thread interrupted")

@@ -62,16 +62,7 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                             code = Const.RESULT_ERR
                             msg = "Socket not ready yet." //원래 사용자 입장에서는 이 msg가 표시되면 안됨
                         } else if (!sock!!.connected()) {
-//                            refreshToken(token) //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
-//                            sock!!.connect()
-//                            val result = chkConnected().await()
-//                            if (result == null) {
-//                                code = Const.RESULT_ERR
-//                                msg = "Unable to connect to socket server."
-//                            } else {
-//                                msg = "connect" //접속 로그를 위한 구분 코드임을 유의
-//                            }
-                            val param = Util.setParamForAutoLogin(context) //순전히 토큰을 새로 얻으려고 자동로그인 하는 것임 (액티비티 없이 서비스만 실행되는 경우도 있음)
+                            val param = Util.setParamForAutoLogin(context) //토큰을 새로 얻으려고 자동로그인 하는 것임 (액티비티 없이 서비스만 실행되는 경우도 있음)
                             val authJson: JsonObject = HttpFuel.post(context, "/auth/login", param.toString()).await()
                             if (HttpFuel.isNetworkUnstableMsg(authJson)) {
                                 code = Const.RESULT_ERR

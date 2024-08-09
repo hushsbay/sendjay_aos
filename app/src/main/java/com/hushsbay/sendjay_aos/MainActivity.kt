@@ -79,7 +79,6 @@ class MainActivity : Activity() {
 
     private var isFromNoti = false
     private var isOnCreate = true
-    //private var roomLoaded = false
     private var retried = false
     private var gType = "" //for wvRoom
     private var gRoomid = "" //for wvRoom
@@ -184,11 +183,7 @@ class MainActivity : Activity() {
                                 if (roomidForChatService != "") { //When wvRoom shown
                                     setupWebViewRoom(true)
                                 } else {
-                                    //if (roomLoaded) {
-                                    //    toggleDispRetry(false, "Main")
-                                    //} else {
-                                        setupWebViewMain()
-                                    //}
+                                    setupWebViewMain()
                                 }
                             }
                         }
@@ -235,40 +230,6 @@ class MainActivity : Activity() {
             }
         }
     }
-
-//    override fun onResume() { //onCreate -> onResume
-//        super.onResume()
-//        try {
-//            isOnTop = true
-//            if (roomidForChatService != "") {
-//                Util.loadUrl(binding.wvRoom, "setFocusFromWebView", isOnTop.toString())
-//                updateAllUnreads(isFromNoti)
-//                if (isFromNoti) isFromNoti = false
-//                Util.connectSockWithCallback(curContext, connManager)
-//                val obj = Util.getStrObjFromUserInfo(uInfo)
-//                Util.loadUrl(binding.wvRoom, "resumeWebView", obj, authJson.toString()) //main_common.js 참조
-//            } else {
-//                cancelUnreadNoti()
-//                if (!isOnCreate) {
-//                    CoroutineScope(Dispatchers.Main).launch {
-//                        if (!chkUpdate(false)) return@launch
-//                        procLogin(true) { //related with Reset Authentication
-//                            Util.connectSockWithCallback(curContext, connManager)
-//                            //아래 2행은 단지 토큰을 웹뷰로 전달하기 위해 추가한 루틴임. (전달하지 않으면 웹뷰에서 refreshToken()이 주기적으로 돌아도 그전에 만기되버릴 것임)
-//                            //onResume에서도 여기만 적용한 것은 onCreate에서 시작하는 onResume에는 웹페이지가 셋팅되기 전이고
-//                            //wvRoom말고 wvMain에만 token을 전달하면 될 것임
-//                            val obj = Util.getStrObjFromUserInfo(uInfo)
-//                            Util.loadUrl(binding.wvMain, "resumeWebView", obj, authJson.toString()) //main_common.js 참조
-//                        }
-//                    }
-//                }
-//            }
-//            if (isOnCreate) isOnCreate = false
-//        } catch (e: Exception) {
-//            logger.error("onResume: ${e.toString()}")
-//            Util.procException(curContext, e, "onResume")
-//        }
-//    }
 
     override fun onResume() { //onCreate -> onResume
         super.onResume()
@@ -535,12 +496,6 @@ class MainActivity : Activity() {
             var loginNeeded = false
             val autoLogin = KeyChain.get(curContext, Const.KC_AUTOLOGIN) ?: ""
             if (autoLogin == "Y") {
-//                val param = org.json.JSONObject()
-//                param.put("uid", KeyChain.get(applicationContext, Const.KC_USERID))
-//                param.put("pwd", KeyChain.get(applicationContext, Const.KC_PWD))
-//                param.put("autokey_app", KeyChain.get(applicationContext, Const.KC_AUTOKEY_APP))
-//                param.put("autologin", autoLogin)
-//                param.put("kind", "app") //login.js호출시만 구분이 필요함
                 val param = Util.setParamForAutoLogin(applicationContext)
                 authJson = HttpFuel.post(curContext, "/auth/login", param.toString()).await()
                 if (HttpFuel.isNetworkUnstableMsg(authJson)) {
@@ -576,8 +531,6 @@ class MainActivity : Activity() {
                             val param = org.json.JSONObject()
                             param.put("uid", inUserid.text.toString().trim())
                             param.put("pwd", inPwd.text.toString().trim())
-                            param.put("uid", "oldclock")
-                            param.put("pwd", "1111")
                             val autokey_app = Util.getRnd().toString()
                             param.put("autokey_app", autokey_app)
                             param.put("kind", "app") //login.js호출시만 구분이 필요함
@@ -689,12 +642,6 @@ class MainActivity : Activity() {
             }
         } //Util.log("@@@@@@@@@@@", KeyChain.get(curContext, Const.KC_MODE_PUBLIC) + "${Const.PAGE_MAIN}?webview=and")
         binding.wvMain.loadUrl(Const.URL_PUBLIC + "${Const.PAGE_MAIN}?webview=and&nocache=" + Util.getRnd()) //not ios
-//        CoroutineScope(Dispatchers.Main).launch {
-//            roomLoaded = false
-//            retried = false
-//            delay(Const.RESTFUL_TIMEOUT.toLong())
-//            if (!roomLoaded && !retried) toggleDispRetry(true, "Main", logTitle, "RESTFUL_TIMEOUT") //webview내 javascript가 제대로 실행되지 않고 있을 경우임
-//        }
     }
 
     private fun setupWebViewRoom(refresh: Boolean) {
@@ -745,12 +692,6 @@ class MainActivity : Activity() {
         }
         Util.setDownloadListener(curContext, binding.wvRoom)
         binding.wvRoom.loadUrl(Const.URL_PUBLIC + "${Const.PAGE_ROOM}?webview=and&type=$gType&roomid=$gRoomid&origin=$gOrigin&nocache=" + Util.getRnd())
-        //CoroutineScope(Dispatchers.Main).launch {
-        //    roomLoaded = false
-        //    retried = false
-        //    delay(Const.RESTFUL_TIMEOUT.toLong())
-        //    if (!roomLoaded && !retried) toggleDispRetry(true, "Room", logTitle, "RESTFUL_TIMEOUT")
-        //} //체크하려면 roomid도 비교해야 하는데, 이 부분은 사실 위 오류처리에서 먼저 처리해야 하는 것으로 보여 막아도 될 것임
     }
 
     private fun updateAllUnreads(isFromNoti: Boolean) { //private fun updateAllUnreads(init: Boolean, isFromNoti: Boolean) { //for room only
@@ -759,7 +700,6 @@ class MainActivity : Activity() {
             NotiCenter.mapRoomid[gRoomid]?.let { NotiCenter.manager!!.cancel(it) }
             NotiCenter.mapRoomid.remove(gRoomid)
             if (NotiCenter.mapRoomid.isEmpty()) NotiCenter.manager!!.cancel(Const.NOTI_ID_SUMMARY)
-            //if (!init) Util.loadUrl(binding.wvRoom, "updateAllUnreadsFromWebView", isFromNoti.toString())
             Util.loadUrl(binding.wvRoom, "updateAllUnreadsFromWebView", isFromNoti.toString())
         } catch (e: Exception) {
             logger.error("$logTitle: ${e.toString()}")
@@ -804,11 +744,6 @@ class MainActivity : Activity() {
                 }
             }
         }
-
-//        @JavascriptInterface
-//        fun doneLoad() {
-//            roomLoaded = true
-//        }
 
         @JavascriptInterface
         fun reload() {
@@ -961,11 +896,6 @@ class MainActivity : Activity() {
                 }
             }
         }
-
-//        @JavascriptInterface
-//        fun doneLoad() {
-//            roomLoaded = true
-//        }
 
         @JavascriptInterface
         fun putData(data: String) {

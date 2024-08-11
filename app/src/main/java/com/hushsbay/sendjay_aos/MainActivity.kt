@@ -629,6 +629,20 @@ class MainActivity : Activity() {
             }
         }
         binding.wvMain.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
+                val urlStr = request!!.url.toString()
+                if (urlStr.startsWith(Const.URL_HOST)) {
+                    if (!urlStr.contains(Const.PAGE_ROOM)) return false //ignore dummy page
+                    if (urlStr.startsWith("tel:")) {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(urlStr))
+                        startActivity(intent)
+                    }
+                    view!!.loadUrl(urlStr)
+                } else { //ex) https://socket.io, https://naver.com ..
+                    view!!.context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(urlStr)))
+                }
+                return true //return super.shouldOverrideUrlLoading(view, request)
+            }
             override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                 super.onReceivedError(view, request, error) //https://gist.github.com/seongchan/752db643377f823950648d0bc80599c1
                 val urlStr = request?.url?.toString() ?: "" //if (request != null) request.url.toString() else ""; //request?.url.toString() //Multiple request shown like jquery module.

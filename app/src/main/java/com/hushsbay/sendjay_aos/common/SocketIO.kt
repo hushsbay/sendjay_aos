@@ -62,24 +62,48 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                             code = Const.RESULT_ERR
                             msg = "Socket not ready yet." //원래 사용자 입장에서는 이 msg가 표시되면 안됨
                         } else if (!sock!!.connected()) {
-                            val param = Util.setParamForAutoLogin(context) //토큰을 새로 얻으려고 자동로그인 하는 것임 (액티비티 없이 서비스만 실행되는 경우도 있음)
-                            val authJson: JsonObject = HttpFuel.post(context, "/auth/login", param.toString()).await()
-                            if (HttpFuel.isNetworkUnstableMsg(authJson)) {
-                                code = Const.RESULT_ERR
-                                msg = "Unable to connect to socket server."
-                            } else if (authJson.get("code").asString != Const.RESULT_OK) {
-                                code = authJson.get("code").asString
-                                msg = authJson.get("msg").asString
-                            } else if (authJson.get("code").asString == Const.RESULT_OK) {
-                                val uInfo = UserInfo(context, authJson)
-                                refreshToken(uInfo.token) //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
-                                sock!!.connect()
-                                val result = chkConnected().await()
-                                if (result == null) {
-                                    code = Const.RESULT_ERR
-                                    msg = "Unable to connect to socket server."
-                                } else {
-                                    msg = "connect" //접속 로그를 위한 구분 코드임을 유의
+//                            val param = Util.setParamForAutoLogin(context) //토큰을 새로 얻으려고 자동로그인 하는 것임 (액티비티 없이 서비스만 실행되는 경우도 있음)
+//                            val authJson: JsonObject = HttpFuel.post(context, "/auth/login", param.toString()).await()
+//                            if (HttpFuel.isNetworkUnstableMsg(authJson)) {
+//                                code = Const.RESULT_ERR
+//                                msg = "Unable to connect to socket server."
+//                            } else if (authJson.get("code").asString != Const.RESULT_OK) {
+//                                code = authJson.get("code").asString
+//                                msg = authJson.get("msg").asString
+//                            } else if (authJson.get("code").asString == Const.RESULT_OK) {
+//                                val uInfo = UserInfo(context, authJson)
+//                                refreshToken(uInfo.token) //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
+//                                sock!!.connect()
+//                                val result = chkConnected().await()
+//                                if (result == null) {
+//                                    code = Const.RESULT_ERR
+//                                    msg = "Unable to connect to socket server."
+//                                } else {
+//                                    msg = "connect" //접속 로그를 위한 구분 코드임을 유의
+//                                }
+//                            }
+                            CoroutineScope(Dispatchers.IO).launch {
+                                Util.refreshTokenOrAutoLogin(context) { //이 파일내에서 여기만 적용하는 것은 다른 http호출은 모두 notiToRoom()뒤에 바로 연이어 호출되므로 추가적용할 필요가 없기때문임
+                                    if (HttpFuel.isNetworkUnstableMsg(it)) {
+                                        code = Const.RESULT_ERR
+                                        msg = "Unable to connect to socket server."
+                                    } else if (it.get("code").asString != Const.RESULT_OK) {
+                                        code = it.get("code").asString
+                                        msg = it.get("msg").asString
+                                    } else if (it.get("code").asString == Const.RESULT_OK) {
+                                        val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
+                                        refreshToken(token) //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
+                                        sock!!.connect()
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            val result = chkConnected().await()
+                                            if (result == null) {
+                                                code = Const.RESULT_ERR
+                                                msg = "Unable to connect to socket server."
+                                            } else {
+                                                msg = "connect" //접속 로그를 위한 구분 코드임을 유의
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }

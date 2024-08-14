@@ -37,7 +37,7 @@ class Util {
 
     companion object {
 
-        fun alert(context: Activity, msg: String, title: String?=null, onYes: () -> Unit = {}, onNo: (() -> Unit)? = null, onCancel: (() -> Unit)? = null) {
+        fun alert(context: Context, msg: String, title: String?=null, onYes: () -> Unit = {}, onNo: (() -> Unit)? = null, onCancel: (() -> Unit)? = null) {
             val builder = AlertDialog.Builder(context)
             val titleDisp = title ?: Const.TITLE
             val body = "[$titleDisp]\n" //if (titleDisp.startsWith(Const.TITLE)) "" else "[$title]\n"
@@ -86,6 +86,42 @@ class Util {
             param.put("autologin", "Y")
             param.put("kind", "app") //login.js호출시만 구분이 필요함
             return param
+        }
+
+        suspend fun refreshTokenOrAutoLogin(context: Context, callback: (retJson: JsonObject) -> Unit = {}) { //await() with Suspend function
+            //알림받을 때처럼 토큰이 만기가 된 상황에서는 다시 자동로그인하는 것이 최선일 것임 (액티비티가 없는 상황에서만 사용하기. 액티비티는 로그인화면과 연동)
+            //주기적으로 토큰 갱신하는 것은 모바일 특성상 모두 커버하기 어렵고 무조건 자동로그인하는 것보다는 더 나은 해법으로 판단됨
+            //rest(http) 호출하는 모든 곳에 적용할 필요없는데, 소켓연결시나 onResume()에서는 아예 자동로그인하므로 이 메소드가 필요없음
+            val logTitle = object{}.javaClass.enclosingMethod?.name!!
+            try {
+                val param = JSONObject()
+                param.put("userid", KeyChain.get(context, Const.KC_USERID))
+                param.put("token", KeyChain.get(context, Const.KC_TOKEN))
+                val json = HttpFuel.post(context,"/auth/refresh_token", param.toString()).await()
+                if (json.get("code").asString == Const.RESULT_OK) {
+                    KeyChain.set(context, Const.KC_TOKEN, json.get("token").asString)
+                    callback(json)
+                } else if (json.get("code").asString == Const.RESULT_TOKEN_EXPIRED) {
+                    val param = setParamForAutoLogin(context) //토큰을 새로 얻으려고 자동로그인 하는 것임 (액티비티 없이 서비스만 실행되는 경우도 있음)
+                    val authJson: JsonObject = HttpFuel.post(context, "/auth/login", param.toString()).await()
+                    if (HttpFuel.isNetworkUnstableMsg(authJson)) {
+                        showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE)
+                    } else if (authJson.get("code").asString != Const.RESULT_OK) {
+                        showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${authJson.get("msg").asString}")
+                    } else if (authJson.get("code").asString == Const.RESULT_OK) {
+                        KeyChain.set(context, Const.KC_TOKEN, authJson.get("token").asString)
+                    }
+                    callback(authJson)
+                } else if (HttpFuel.isNetworkUnstableMsg(json)) {
+                    showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE)
+                    //callback이 소용없음
+                } else {
+                    showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${json.get("msg").asString}")
+                    callback(json) //토큰 만기가 나올 가능성이 많아짐
+                }
+            } catch (ex: Exception) {
+                log(logTitle, ex.toString())
+            }
         }
 
         fun chkIfNetworkAvailable(context: Activity, connManager: ConnectivityManager, type: String): Boolean {

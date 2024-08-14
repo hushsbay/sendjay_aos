@@ -92,6 +92,7 @@ class Util {
             //알림받을 때처럼 토큰이 만기가 된 상황에서는 다시 자동로그인하는 것이 최선일 것임 (액티비티가 없는 상황에서만 사용하기. 액티비티는 로그인화면과 연동)
             //주기적으로 토큰 갱신하는 것은 모바일 특성상 모두 커버하기 어렵고 무조건 자동로그인하는 것보다는 더 나은 해법으로 판단됨
             //rest(http) 호출하는 모든 곳에 적용할 필요없는데, 소켓연결시나 onResume()에서는 아예 자동로그인하므로 이 메소드가 필요없음
+            //웹뷰로 전달시는 loadUrl(), sendToDownWhenConnDisconn()등을 통해 토큰을 넘기고 있음
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             try {
                 val param = JSONObject()

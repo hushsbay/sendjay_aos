@@ -321,7 +321,7 @@ class ChatService : Service() {
             try {
                 Util.log(logTitle, Socket.EVENT_CONNECT)
                 if (status_sock == Const.SockState.FIRST_DISCONNECTED) { //html에서 [hush.cons.sock_ev_connect] 참조 요망
-                    status_sock = Const.SockState.RECONNECTED //Be careful that Socket.EVENT_CONNECT occurred many times at a moment. (socket.io 초기버전 이야기?!)
+                    status_sock = Const.SockState.RECONNECTED //Socket.EVENT_CONNECT occurred many times at a moment. (socket.io 초기버전 이야기?!)
                     Util.sendToDownWhenConnDisconn(applicationContext, Socket.EVENT_CONNECT)
                 }
                 CoroutineScope(Dispatchers.IO).launch {

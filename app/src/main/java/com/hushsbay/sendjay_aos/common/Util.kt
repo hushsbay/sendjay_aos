@@ -189,7 +189,7 @@ class Util {
                 val json = JSONObject()
                 json.put("ev", ev)
                 val json1 = JSONObject()
-                json1.put("dummy", "reserved") //just for reserving
+                json1.put("token", KeyChain.get(context, Const.KC_TOKEN)) //예) 재연결후 웹뷰에서 http호출이 바로 필요할 때 토큰 갱신
                 json.put("data", json1)
                 RxToDown.post(RxEvent(ev, json, "parent"))
                 val roomidForService = KeyChain.get(context, Const.KC_ROOMID_FOR_CHATSERVICE) ?: ""

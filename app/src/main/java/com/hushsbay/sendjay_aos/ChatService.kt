@@ -481,9 +481,7 @@ class ChatService : Service() {
                     val data = json.getJSONObject("data")
                     val userid = data.getString("userid")
                     if (userid == uInfo.userid) { //Util.log(userid, uInfo.userid)
-                        KeyChain.set(applicationContext, Const.KC_AUTOLOGIN, "")
-                        KeyChain.set(applicationContext, Const.KC_USERID, "")
-                        KeyChain.set(applicationContext, Const.KC_TOKEN, "")
+                        Util.clearKeyChainForLogout(applicationContext)
                         stop_mobile = true
                         stopSelf()
                     }

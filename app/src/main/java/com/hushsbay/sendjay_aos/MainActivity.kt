@@ -378,9 +378,7 @@ class MainActivity : Activity() {
     }
 
     private fun logoutApp() {
-        KeyChain.set(curContext, Const.KC_AUTOLOGIN, "")
-        KeyChain.set(curContext, Const.KC_USERID, "")
-        KeyChain.set(curContext, Const.KC_TOKEN, "")
+        Util.clearKeyChainForLogout(curContext)
         stopServiceByLogout = true
         curContext.stopService(Intent(curContext, ChatService::class.java))
         curContext.finish()
@@ -503,7 +501,7 @@ class MainActivity : Activity() {
                     curContext.finish()
                     return
                 } else if (authJson.get("code").asString != Const.RESULT_OK) {
-                    KeyChain.set(curContext, Const.KC_AUTOLOGIN, "")
+                    Util.clearKeyChainForLogout(curContext)
                     Util.toast(curContext, authJson.get("msg").asString) //Util.alert(curContext, authJson.get("msg").asString, logTitle)
                     loginNeeded = true
                 } else if (authJson.get("code").asString == Const.RESULT_OK) {

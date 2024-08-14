@@ -3,6 +3,7 @@ package com.hushsbay.sendjay_aos.common
 import android.app.Activity
 import android.app.DownloadManager
 import android.content.Context
+import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.net.Uri
@@ -16,6 +17,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import com.hushsbay.sendjay_aos.ChatService
+import com.hushsbay.sendjay_aos.MainActivity
 import com.hushsbay.sendjay_aos.data.RxEvent
 import com.hushsbay.sendjay_aos.data.RxMsg
 import io.reactivex.disposables.Disposable
@@ -123,6 +126,12 @@ class Util {
             } catch (ex: Exception) {
                 log(logTitle, ex.toString())
             }
+        }
+
+        fun clearKeyChainForLogout(context: Context) {
+            KeyChain.set(context, Const.KC_AUTOLOGIN, "")
+            KeyChain.set(context, Const.KC_USERID, "")
+            KeyChain.set(context, Const.KC_TOKEN, "")
         }
 
         fun chkIfNetworkAvailable(context: Activity, connManager: ConnectivityManager, type: String): Boolean {

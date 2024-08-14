@@ -133,7 +133,7 @@ class PopupActivity : Activity() {
                 curContext.finish()
                 return
             } else if (authJson.get("code").asString != Const.RESULT_OK) {
-                KeyChain.set(curContext, Const.KC_AUTOLOGIN, "")
+                Util.clearKeyChainForLogout(curContext)
                 Util.toast(curContext, authJson.get("msg").asString) //Util.alert(curContext, authJson.get("msg").asString, logTitle)
                 curContext.finish()
             } else if (authJson.get("code").asString == Const.RESULT_OK) {

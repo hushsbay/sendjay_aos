@@ -39,7 +39,7 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
     }
 
     //예) procSocketEmit() in ChatService.kt : 서버로 전송시 소켓연결에 문제가 없으면 OK, 그게 아니면 문제해결하고 처리하는데 그래도 안되면 문제있다고 Return하는 것임
-    fun connect(context: Context, connManager: ConnectivityManager, token: String): Deferred<JsonObject> {
+    /*fun connect(context: Context, connManager: ConnectivityManager, token: String): Deferred<JsonObject> {
         return scope.async {
             try {
                 var code = Const.RESULT_OK
@@ -94,16 +94,76 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                                         val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
                                         refreshToken(token) //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
                                         sock!!.connect()
+                                        Util.log("@@@@@@", "111111111111111111")
                                         CoroutineScope(Dispatchers.IO).launch {
                                             val result = chkConnected().await()
                                             if (result == null) {
                                                 code = Const.RESULT_ERR
                                                 msg = "Unable to connect to socket server."
                                             } else {
+                                                Util.log("@@@@@@", "2222222222222222")
                                                 msg = "connect" //접속 로그를 위한 구분 코드임을 유의
                                             }
                                         }
                                     }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    code = Const.RESULT_ERR
+                    msg = Const.NETWORK_UNAVAILABLE
+                } //if (msg != "") msg += "\n${Const.WAIT_FOR_RECONNECT}"; val jsonStr = """{ code : '$code', msg : '${Const.TITLE}: $msg' }"""
+                val jsonStr = """{ code : '$code', msg : '$msg' }"""
+                Gson().fromJson(jsonStr, JsonObject::class.java)
+            } catch (e: Exception) {
+                val jsonStr = """{ code : '${Const.RESULT_ERR}', msg : '${Const.TITLE}:SocketIO:connect: ${e.message}' }"""
+                Gson().fromJson(jsonStr, JsonObject::class.java)
+            }
+        }
+    }*/
+
+    //예) procSocketEmit() in ChatService.kt : 서버로 전송시 소켓연결에 문제가 없으면 OK, 그게 아니면 문제해결하고 처리하는데 그래도 안되면 문제있다고 Return하는 것임
+    fun connect(context: Context, connManager: ConnectivityManager, token: String): Deferred<JsonObject> {
+        return scope.async {
+            try {
+                var code = Const.RESULT_OK
+                var msg = ""
+                val nwCapa = connManager.getNetworkCapabilities(connManager.activeNetwork)
+                if (nwCapa != null && nwCapa.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)) {
+                    if (ChatService.state == Const.ServiceState.LOGOUTED) {
+                        code = Const.RESULT_ERR
+                        msg = "로그아웃 상태입니다."
+                    } else if (ChatService.state == Const.ServiceState.STOPPED) {
+                        val intentNew = Intent(context, ChatService::class.java)
+                        context.startForegroundService(intentNew)
+                        val result = chkConnected().await()
+                        if (result == null) {
+                            code = Const.RESULT_ERR
+                            msg = "Service started but socket connect timeout."
+                        }
+                    } else { //Const.ServiceState.RUNNING
+                        if (sock == null) {
+                            code = Const.RESULT_ERR
+                            msg = "Socket not ready yet." //원래 사용자 입장에서는 이 msg가 표시되면 안됨
+                        } else if (!sock!!.connected()) {
+                            val json = Util.refreshTokenOrAutoLogin(context).await()
+                            if (HttpFuel.isNetworkUnstableMsg(json)) {
+                                code = Const.RESULT_ERR
+                                msg = "Unable to connect to socket server."
+                            } else if (json.get("code").asString != Const.RESULT_OK) {
+                                code = json.get("code").asString
+                                msg = json.get("msg").asString
+                            } else if (json.get("code").asString == Const.RESULT_OK) {
+                                val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
+                                refreshToken(token) //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
+                                sock!!.connect()
+                                val result = chkConnected().await()
+                                if (result == null) {
+                                    code = Const.RESULT_ERR
+                                    msg = "Unable to connect to socket server."
+                                } else {
+                                    msg = "connect" //접속 로그를 위한 구분 코드임을 유의
                                 }
                             }
                         }

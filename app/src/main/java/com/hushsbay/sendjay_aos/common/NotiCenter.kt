@@ -86,10 +86,86 @@ object NotiCenter {
         return needNoti
     }
 
+//    fun notiToRoom(context: Context, uInfo: UserInfo, roomid: String, data: org.json.JSONObject, callFromSendMsg: Boolean) {
+//        val logTitle = object{}.javaClass.enclosingMethod?.name!!
+//        CoroutineScope(Dispatchers.IO).launch {
+//            Util.refreshTokenOrAutoLogin(context) { //이 파일내에서 여기만 적용하는 것은 다른 http호출은 모두 notiToRoom()뒤에 바로 연이어 호출되므로 추가적용할 필요가 없기때문임
+//                CoroutineScope(Dispatchers.Main).launch {
+//                    try {
+//                        val msgid = data.getString("msgid")
+//                        var body = data.getString("body")
+//                        val type = data.getString("type")
+//                        val cdt = data.getString("cdt") //서버의 send_msg.js에서 현재일시를 가져옴
+//                        var webConnectedAlso: Boolean
+//                        if (callFromSendMsg) { //웹 연결 체크해 없으면 굳이 웹을 신경쓸 필요없으므로 여기서 미리 파악하는 것임
+//                            val userkeyArr = data.getJSONArray("userkeyArr")
+//                            webConnectedAlso = userkeyArr.toString().contains(Const.W_KEY + uInfo.userid + "\"") //["W__userid1","W__userid2"]
+//                        } else { //userkeyArr을 가져오기가 어려워 무조건 웹도 연결되어 있다고 보고 처리
+//                            webConnectedAlso = true
+//                        }
+//                        body = Util.getTalkBodyCustom(type, body)
+//                        val intentNoti = Intent(context, MainActivity::class.java) //val intentNoti = Intent(context, ChatService::class.java)
+//                        intentNoti.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
+//                        intentNoti.putExtra("type", "open")
+//                        intentNoti.putExtra("roomid", roomid)
+//                        intentNoti.putExtra("origin", "noti")
+//                        intentNoti.putExtra("objStr", "")
+//                        if (mapRoomid[roomid] == null) mapRoomid[roomid] = idNotiMax++
+//                        var title = if (mapRoomInfo[roomid] != null) {
+//                            mapRoomInfo[roomid]?.get("roomtitle").toString()
+//                        } else {
+//                            val param = org.json.JSONObject()
+//                            param.put("roomid", roomid)
+//                            val json = HttpFuel.post(context, "/msngr/get_roominfo", param.toString()).await()
+//                            if (json.get("code").asString == Const.RESULT_OK) {
+//                                getRoomInfo(json, roomid)["roomtitle"].toString()
+//                            } else {
+//                                ""
+//                            }
+//                        }
+//                        if (mapRoomInfo[roomid]?.get("noti").toString() == "X") return@launch
+//                        val m_cdt = mapRoomInfo[roomid]?.get("cdt") //각 메세지의 현재 시각을 체크해서 그 방의 해당 메시지보다 이전의 메시지면 굳이 노티할 이유가 없음
+//                        if (m_cdt != null && cdt <= m_cdt.toString()) return@launch
+//                        mapRoomInfo[roomid]?.put("cdt", cdt)
+//                        if (uInfo.senderoff == "Y") title = "" //sender
+//                        val realTitle = if (title == "") null else title
+//                        val realBody = if (uInfo.bodyoff == "Y") null else body
+//                        val noti = setupNoti(context, realTitle, realBody, intentNoti, mapRoomid[roomid]!!)
+//                        val notiSummary = setupNotiSummmary(context)
+//                        if (webConnectedAlso && msgid != "") { //["W__userid1","W__userid2"]
+//                            val delaySec: Long = ChatService.gapSecOnDualMode.toLong()
+//                            delay(delaySec) //Handler().postDelayed({ ... }, delaySec)
+//                            val param = org.json.JSONObject()
+//                            param.put("msgid", msgid)
+//                            param.put("roomid", roomid)
+//                            val json = HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
+//                            if (json.get("code").asString == Const.RESULT_OK) {
+//                                val list = json.getAsJsonArray("list")
+//                                if (list.size() > 0) {
+//                                    val item = list[0].asJsonObject
+//                                    if (item.get("UNREAD").asInt > 0) procNoti(context, uInfo, roomid, noti, notiSummary)
+//                                }
+//                            }
+//                        } else {
+//                            procNoti(context, uInfo, roomid, noti, notiSummary)
+//                        }
+//                    } catch (e: Exception) {
+//                        Util.alert(context, e.toString(), logTitle)
+//                    }
+//                }
+//            }
+//        }
+//    }
+
     fun notiToRoom(context: Context, uInfo: UserInfo, roomid: String, data: org.json.JSONObject, callFromSendMsg: Boolean) {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         CoroutineScope(Dispatchers.IO).launch {
-            Util.refreshTokenOrAutoLogin(context) { //이 파일내에서 여기만 적용하는 것은 다른 http호출은 모두 notiToRoom()뒤에 바로 연이어 호출되므로 추가적용할 필요가 없기때문임
+            val json = Util.refreshTokenOrAutoLogin(context).await()
+            if (HttpFuel.isNetworkUnstableMsg(json)) {
+                Util.alert(context, "Unable to connect to socket server.", logTitle)
+            } else if (json.get("code").asString != Const.RESULT_OK) {
+                Util.alert(context, json.get("code").asString + "/" + json.get("msg").asString, logTitle)
+            } else if (json.get("code").asString == Const.RESULT_OK) {
                 CoroutineScope(Dispatchers.Main).launch {
                     try {
                         val msgid = data.getString("msgid")

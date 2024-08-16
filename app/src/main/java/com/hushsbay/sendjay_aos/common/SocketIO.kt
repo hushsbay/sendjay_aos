@@ -15,8 +15,8 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
 
     //Parent Job is cancelled 라는 오류 방지 위해 SupervisorJob으로 처리
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
-    private const val DELAY = 500L
-    private const val SEC = 1500L
+    private const val DELAY = 10L //500L
+    private const val SEC = 1000L //1500L
 
     var sock: Socket? = null
     lateinit var option: IO.Options

@@ -213,7 +213,11 @@ class Util {
                         param.put("work", "conn")
                         val screen = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
                         param.put("state", screen)
-                        if (chkWifi(connManager)) param.put("kind", "wifi")
+                        if (chkWifi(connManager)) {
+                            param.put("kind", "wifi")
+                        } else {
+                            param.put("kind", "")
+                        }
                         val strDtNow = getCurDateTimeStr(true)
                         val strDtDisconnect = KeyChain.get(context, Const.KC_DT_DISCONNECT) ?: ""
                         param.put("cdt", strDtNow)

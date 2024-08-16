@@ -148,7 +148,7 @@ class Util {
                     val param = setParamForAutoLogin(context) //토큰을 새로 얻으려고 자동로그인 하는 것임 (액티비티 없이 서비스만 실행되는 경우도 있음)
                     val authJson: JsonObject = HttpFuel.post(context, "/auth/login", param.toString()).await()
                     if (HttpFuel.isNetworkUnstableMsg(authJson)) {
-                        showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE)
+                        showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE+"**")
                     } else if (authJson.get("code").asString != Const.RESULT_OK) {
                         showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${authJson.get("msg").asString}")
                     } else if (authJson.get("code").asString == Const.RESULT_OK) {
@@ -156,7 +156,7 @@ class Util {
                     }
                     authJson
                 } else if (HttpFuel.isNetworkUnstableMsg(json)) {
-                    showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE)
+                    showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE+"--")
                     json//callback이 소용없음
                 } else {
                     showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${json.get("msg").asString}")
@@ -178,7 +178,7 @@ class Util {
                 true //return true even if wifi is on and has errors.
             } else {
                 if (type == "toast") {
-                    toast(context, Const.NETWORK_UNAVAILABLE)
+                    toast(context, Const.NETWORK_UNAVAILABLE + "##")
                 } else if (type == "alert") {
                     alert(context, Const.NETWORK_UNAVAILABLE, Const.TITLE)
                 }

@@ -50,8 +50,8 @@ class ChatService : Service() {
     }
 
     private var SEC_DURING_DAEMON: Long = 3000 //try connecting every 3 second in case of disconnection
-    private var MAX_DURING_DAEMON: Long = 600000 //10분되면 주기적으로 실행 (토큰 갱신 주기 => 웹만 사용하고 여기서는 사용하지 않음)
-    private var cnt_for_daemon: Long = 0
+    //private var MAX_DURING_DAEMON: Long = 600000 //10분되면 주기적으로 실행 (토큰 갱신 주기 => 웹만 사용하고 여기서는 사용하지 않음) //지우지말고 참고로 두기
+    //private var cnt_for_daemon: Long = 0 //지우지말고 참고로 두기
     private var SEC_DURING_RESTART = 3 //try restarting after 3 seconds (just once) when service killed (see another periodic trying with SimpleWorker.kt)
 
     private lateinit var logger: Logger
@@ -354,7 +354,7 @@ class ChatService : Service() {
                                 NotiCenter.notiToRoom(applicationContext, uInfo, roomid, param,false)
                             }
                         } else if (HttpFuel.isNetworkUnstableMsg(json)) {
-                            Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE)
+                            Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE+"^^")
                         } else {
                             Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${json.get("msg").asString}") //크리티컬하지 않으므로 막아도 무방
                         }
@@ -515,6 +515,8 @@ class ChatService : Service() {
                             Util.log(logTitle, "socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )*/
                             val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
                             if (autoLogin == "Y") Util.connectSockWithCallback(applicationContext, connManager!!)
+                            //Util.log("connectSockWithCallback", "@@@@@@@@@@@@@@@@@@@")
+                            /* 지우지 말고 참조로 두기
                             if (cnt_for_daemon >= MAX_DURING_DAEMON) {
                                 cnt_for_daemon = 0
                                 CoroutineScope(Dispatchers.IO).launch {
@@ -527,7 +529,7 @@ class ChatService : Service() {
                                 }
                             } else {
                                 cnt_for_daemon += SEC_DURING_DAEMON
-                            }
+                            }*/
                         } catch (e: InterruptedException) {
                             logger.error("$logTitle: e ${e.toString()}")
                             Util.log(logTitle, "thread interrupted")

@@ -83,7 +83,7 @@ class Const {
         const val SOCK_EV_STOP_MOBILE = "stop_mobile"
         const val SOCK_EV_GET_ROOMINFO = "get_roominfo"
         /////////////////////////////////////////////////////////////////////////
-        const val RESTFUL_TIMEOUT = 5000 //same as web client
+        const val RESTFUL_TIMEOUT = 2000 //SocketIO.kt(##777)와 HttpFuel.kt 설명 참조. same as web client. 5ms로 하면 HttpFuel~ 오류 발생
         const val RESULT_OK = "0"
         const val RESULT_ERR = "-1"
         const val RESULT_ERR_HTTPFUEL = "-200"

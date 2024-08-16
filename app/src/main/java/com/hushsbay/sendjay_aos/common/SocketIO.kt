@@ -30,7 +30,7 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
         sock = IO.socket(Const.URL_SOCK, option)
     }
 
-    private fun refreshToken(token: String) {
+    private fun changeToken(token: String) {
         if (sock!!.connected()) return //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
         if (token == "") return
         var pos: Int? = option.query.indexOf("&userid=") //위 query 순서와 동일해야 함을 유의
@@ -147,6 +147,11 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                             code = Const.RESULT_ERR
                             msg = "Socket not ready yet." //원래 사용자 입장에서는 이 msg가 표시되면 안됨
                         } else if (!sock!!.connected()) {
+                            //##777 : 이 메소드는 Util.connectSockWithCallback()에서 실행되는데 connectSockWithCallback()는 ChatService.kt에서 데몬이 주기적으로 루핑중.
+                            //예를 들어, 서버 다운시에는 네트워크가 살아 있어 바로 아래 Util.refreshTokenOrAutoLogin()가 호출되면서 HttpFuel의 타임아웃까지 기다렸다가 없어지므로
+                            //타임아웃 기본이 약 15초정도라면 서버가 오랫동안 죽어 있으면 타임아웃된 호출말고 기다리고 있는 몇개의 호출이 서버 연결시 동시에 호출되는 현상이 발생함
+                            //-> Util.refreshTokenOrAutoLogin()시 refreshToken()/login.js 호출과 연결후 connectSockWithCallback()에서 http로 로깅하는 작업이 해당됨
+                            //만약 ChatService.kt에서 데몬이 3초 주기라면 HttpFuel의 타임아웃이 2초만 되어도 몇개씩 쌓이지는 않을 것임 (물론, 무한대로 쌓이지는 않지만 클라이언트가 많으면 부하가 큼)
                             val json = Util.refreshTokenOrAutoLogin(context).await()
                             if (HttpFuel.isNetworkUnstableMsg(json)) {
                                 code = Const.RESULT_ERR
@@ -156,7 +161,7 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                                 msg = json.get("msg").asString
                             } else if (json.get("code").asString == Const.RESULT_OK) {
                                 val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
-                                refreshToken(token) //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
+                                changeToken(token) //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
                                 sock!!.connect()
                                 val result = chkConnected().await()
                                 if (result == null) {
@@ -170,7 +175,7 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                     }
                 } else {
                     code = Const.RESULT_ERR
-                    msg = Const.NETWORK_UNAVAILABLE
+                    msg = Const.NETWORK_UNAVAILABLE + "@@"
                 } //if (msg != "") msg += "\n${Const.WAIT_FOR_RECONNECT}"; val jsonStr = """{ code : '$code', msg : '${Const.TITLE}: $msg' }"""
                 val jsonStr = """{ code : '$code', msg : '$msg' }"""
                 Gson().fromJson(jsonStr, JsonObject::class.java)

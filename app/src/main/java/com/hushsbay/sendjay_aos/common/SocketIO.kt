@@ -152,6 +152,7 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                             //타임아웃 기본이 약 15초정도라면 서버가 오랫동안 죽어 있으면 타임아웃된 호출말고 기다리고 있는 몇개의 호출이 서버 연결시 동시에 호출되는 현상이 발생함
                             //-> Util.refreshTokenOrAutoLogin()시 refreshToken()/login.js 호출과 연결후 connectSockWithCallback()에서 http로 로깅하는 작업이 해당됨
                             //만약 ChatService.kt에서 데몬이 3초 주기라면 HttpFuel의 타임아웃이 2초만 되어도 몇개씩 쌓이지는 않을 것임 (물론, 무한대로 쌓이지는 않지만 클라이언트가 많으면 부하가 큼)
+                            //-> 이 방법은
                             val json = Util.refreshTokenOrAutoLogin(context).await()
                             if (HttpFuel.isNetworkUnstableMsg(json)) {
                                 code = Const.RESULT_ERR

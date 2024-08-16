@@ -49,7 +49,7 @@ class ChatService : Service() {
         //DualMode는 웹/모바일 모두 소켓연결일 때 이 갭(초)만큼 모바일에서 늦게 도착체크해서 한쪽에서 이미 읽었으면 다른 한쪽에서는 알림표시하지 않게 하기
     }
 
-    private var SEC_DURING_DAEMON: Long = 3000 //try connecting every 3 second in case of disconnection
+    private var SEC_DURING_DAEMON: Long = 5000 //3000 //try connecting every 3 second in case of disconnection
     //private var MAX_DURING_DAEMON: Long = 600000 //10분되면 주기적으로 실행 (토큰 갱신 주기 => 웹만 사용하고 여기서는 사용하지 않음) //지우지말고 참고로 두기
     //private var cnt_for_daemon: Long = 0 //지우지말고 참고로 두기
     private var SEC_DURING_RESTART = 3 //try restarting after 3 seconds (just once) when service killed (see another periodic trying with SimpleWorker.kt)
@@ -514,8 +514,7 @@ class ChatService : Service() {
                             /*val screenState = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
                             Util.log(logTitle, "socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )*/
                             val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
-                            if (autoLogin == "Y") Util.connectSockWithCallback(applicationContext, connManager!!)
-                            //Util.log("connectSockWithCallback", "@@@@@@@@@@@@@@@@@@@")
+                            if (autoLogin == "Y") Util.connectSockWithCallback(applicationContext,connManager!!)
                             /* 지우지 말고 참조로 두기
                             if (cnt_for_daemon >= MAX_DURING_DAEMON) {
                                 cnt_for_daemon = 0

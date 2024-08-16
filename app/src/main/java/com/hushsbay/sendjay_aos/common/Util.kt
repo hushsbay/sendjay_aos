@@ -140,7 +140,9 @@ class Util {
                 val param = JSONObject()
                 param.put("userid", KeyChain.get(context, Const.KC_USERID))
                 param.put("token", KeyChain.get(context, Const.KC_TOKEN))
-                val json = HttpFuel.post(context,"/auth/refresh_token", param.toString()).await()
+                val xxx = getCurDateTimeStr(true)
+                log("@@@@@@", xxx)
+                val json = HttpFuel.post(context, "/auth/refresh_token", param.toString()).await()
                 if (json.get("code").asString == Const.RESULT_OK) {
                     KeyChain.set(context, Const.KC_TOKEN, json.get("token").asString)
                     json
@@ -148,18 +150,19 @@ class Util {
                     val param = setParamForAutoLogin(context) //토큰을 새로 얻으려고 자동로그인 하는 것임 (액티비티 없이 서비스만 실행되는 경우도 있음)
                     val authJson: JsonObject = HttpFuel.post(context, "/auth/login", param.toString()).await()
                     if (HttpFuel.isNetworkUnstableMsg(authJson)) {
-                        showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE+"**")
+                        showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE + "**")
                     } else if (authJson.get("code").asString != Const.RESULT_OK) {
-                        showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${authJson.get("msg").asString}")
+                        showRxMsgInApp(Const.SOCK_EV_TOAST,"$logTitle: ${authJson.get("msg").asString}")
                     } else if (authJson.get("code").asString == Const.RESULT_OK) {
                         KeyChain.set(context, Const.KC_TOKEN, authJson.get("token").asString)
                     }
                     authJson
                 } else if (HttpFuel.isNetworkUnstableMsg(json)) {
-                    showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE+"--")
+                    log("@@@@@@", xxx)
+                    showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE + "--")
                     json//callback이 소용없음
                 } else {
-                    showRxMsgInApp(Const.SOCK_EV_TOAST, "$logTitle: ${json.get("msg").asString}")
+                    showRxMsgInApp(Const.SOCK_EV_TOAST,"$logTitle: ${json.get("msg").asString}")
                     json //토큰 만기가 나올 가능성이 많아짐
                 }
             }
@@ -240,6 +243,59 @@ class Util {
                     sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
                     val jsonStr = """{ code : '${Const.RESULT_ERR}', msg : 'connectSockWithCallback\n${e.toString()}' }"""
                     callback(Gson().fromJson(jsonStr, JsonObject::class.java))
+                }
+            }
+        }
+
+        fun connectSockWithCallbackAwait(context: Context, connManager: ConnectivityManager): Deferred<JsonObject> {
+            return CoroutineScope(Dispatchers.Default).async {
+                val logTitle = object {}.javaClass.enclosingMethod?.name!!
+                //if (ChatService.isBeingSockChecked) return; ChatService.isBeingSockChecked = true; //다른 소켓통신이 여기서 막힐 수도 있으므로 사용하면 안됨
+                try {
+                    val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
+                    var json = SocketIO.connect(context, connManager, token).await()
+                    val code = json.get("code").asString
+                    if (code == Const.RESULT_OK) { //1) 미접속->접속일 경우 2) 접속된 상태가 계속되는 경우 2가지 모두 해당함
+                        //1) 경우는 ChatService.kt에서 socket.io 고유 이벤트 잡아서 처리하고
+                        //여기서는 2) 경우에 대해서만 처리. 2)는 계속 체크하는 의미로 1)과는 달리 SOCK_EV_MARK_AS_CONNECT로 처리함
+                        sendToDownWhenConnDisconn(context, Const.SOCK_EV_MARK_AS_CONNECT)
+                    } else {
+                        sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
+                        KeyChain.set(context, Const.KC_DT_DISCONNECT, getCurDateTimeStr(true))
+                    } //Util.log("@@@@@@", "3333333" + json.get("msg").asString)
+                    if (json.get("msg").asString == "connect") { //접속 로그를 위한 단순 구분 코드
+                        val param = org.json.JSONObject()
+                        param.put("device", Const.AOS)
+                        param.put("work", "conn")
+                        val screen = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
+                        param.put("state", screen)
+                        if (chkWifi(connManager)) {
+                            param.put("kind", "wifi")
+                        } else {
+                            param.put("kind", "")
+                        }
+                        val strDtNow = getCurDateTimeStr(true)
+                        val strDtDisconnect = KeyChain.get(context, Const.KC_DT_DISCONNECT) ?: ""
+                        param.put("cdt", strDtNow)
+                        param.put("udt", strDtDisconnect)
+                        if (strDtDisconnect == "") {
+                            param.put("dur", -1) //접속이 끊어진 적이 없음 (예: 최초 연결시)
+                        } else { //duration(seconds) = 현재시각 - dt
+                            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                            val date1 = dateFormat.parse(strDtDisconnect)
+                            val date2 = dateFormat.parse(strDtNow)
+                            var diff: Long = abs(date2.time - date1.time) / 1000 //초(seconds)
+                            if (diff > 31536000) diff = 31536000 //1년 넘으면 1년으로 최대치 설정
+                            param.put("dur", diff)
+                        }
+                        KeyChain.set(context, Const.KC_DT_DISCONNECT, "") //reset해야 로깅에 의미가 있음
+                        HttpFuel.post(context, "/msngr/append_log", param.toString()).await() //로깅이므로 오류가 나도 넘어가도록 함
+                    }
+                    json
+                } catch (e: Exception) {
+                    sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
+                    val jsonStr = """{ code : '${Const.RESULT_ERR}', msg : 'connectSockWithCallback\n${e.toString()}' }"""
+                    Gson().fromJson(jsonStr, JsonObject::class.java)
                 }
             }
         }

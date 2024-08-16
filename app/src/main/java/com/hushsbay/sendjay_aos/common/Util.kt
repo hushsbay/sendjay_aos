@@ -178,12 +178,17 @@ class Util {
                 true //return true even if wifi is on and has errors.
             } else {
                 if (type == "toast") {
-                    Util.toast(context, Const.NETWORK_UNAVAILABLE)
+                    toast(context, Const.NETWORK_UNAVAILABLE)
                 } else if (type == "alert") {
-                    Util.alert(context, Const.NETWORK_UNAVAILABLE, Const.TITLE)
+                    alert(context, Const.NETWORK_UNAVAILABLE, Const.TITLE)
                 }
                 false
             }
+        }
+
+        fun chkWifi(connManager: ConnectivityManager): Boolean {
+            val nwCapa = connManager.getNetworkCapabilities(connManager.activeNetwork)
+            return nwCapa != null && nwCapa.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
         }
 
         fun connectSockWithCallback(context: Context, connManager: ConnectivityManager, callback: (json: JsonObject) -> Unit = {}) {
@@ -208,6 +213,11 @@ class Util {
                         param.put("work", "conn")
                         val screen = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
                         param.put("state", screen)
+                        if (chkWifi(connManager)) {
+                            param.put("kind", "wifi")
+                        } else {
+                            param.put("kind", "data")
+                        }
                         val strDtNow = getCurDateTimeStr(true)
                         val strDtDisconnect = KeyChain.get(context, Const.KC_DT_DISCONNECT) ?: ""
                         param.put("cdt", strDtNow)

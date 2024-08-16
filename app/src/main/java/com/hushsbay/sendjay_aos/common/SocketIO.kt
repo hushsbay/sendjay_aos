@@ -153,7 +153,8 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                             //-> Util.refreshTokenOrAutoLogin()시 refreshToken()/login.js 호출과 연결후 connectSockWithCallback()에서 http로 로깅하는 작업이 해당됨
                             //만약 ChatService.kt에서 데몬이 3초 주기라면 HttpFuel의 타임아웃이 2초만 되어도 몇개씩 쌓이지는 않을 것임 (물론, 무한대로 쌓이지는 않지만 클라이언트가 많으면 부하가 큼)
                             //-> 이 방법은
-                            val json = Util.refreshTokenOrAutoLogin(context).await()
+                            Util.log("@@@@@@", "==================="+ Util.getCurDateTimeStr(true))
+                            val json = Util.refreshTokenOrAutoLogin(context).await() //현재 서버죽고 위 로깅횟수만큼 서버 살고난 후 호출됨
                             if (HttpFuel.isNetworkUnstableMsg(json)) {
                                 code = Const.RESULT_ERR
                                 msg = "Unable to connect to socket server."

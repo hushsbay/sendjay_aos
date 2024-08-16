@@ -141,7 +141,7 @@ class Util {
                 param.put("userid", KeyChain.get(context, Const.KC_USERID))
                 param.put("token", KeyChain.get(context, Const.KC_TOKEN))
                 val xxx = getCurDateTimeStr(true)
-                log("@@@@@@", xxx)
+                //log("@@@@@@", xxx)
                 val json = HttpFuel.post(context, "/auth/refresh_token", param.toString()).await()
                 if (json.get("code").asString == Const.RESULT_OK) {
                     KeyChain.set(context, Const.KC_TOKEN, json.get("token").asString)
@@ -157,8 +157,8 @@ class Util {
                         KeyChain.set(context, Const.KC_TOKEN, authJson.get("token").asString)
                     }
                     authJson
-                } else if (HttpFuel.isNetworkUnstableMsg(json)) {
-                    log("@@@@@@", xxx)
+                } else if (HttpFuel.isNetworkUnstableMsg(json)) { //아래 토스트가 뜨는 걸로 봐서 HttpFuel의 client timeout은 잘 먹힘
+                    //log("@@@@@@", xxx)
                     showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE + "--")
                     json//callback이 소용없음
                 } else {

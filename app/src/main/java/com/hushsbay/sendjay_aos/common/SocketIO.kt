@@ -154,25 +154,25 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                             //만약 ChatService.kt에서 데몬이 3초 주기라면 HttpFuel의 타임아웃이 2초만 되어도 몇개씩 쌓이지는 않을 것임 (물론, 무한대로 쌓이지는 않지만 클라이언트가 많으면 부하가 큼)
                             //-> 이 방법은
                             Util.log("@@@@@@", "==================="+ Util.getCurDateTimeStr(true))
-                            val json = Util.refreshTokenOrAutoLogin(context).await() //현재 서버죽고 위 로깅횟수만큼 서버 살고난 후 호출됨
-                            if (HttpFuel.isNetworkUnstableMsg(json)) {
-                                code = Const.RESULT_ERR
-                                msg = "Unable to connect to socket server."
-                            } else if (json.get("code").asString != Const.RESULT_OK) {
-                                code = json.get("code").asString
-                                msg = json.get("msg").asString
-                            } else if (json.get("code").asString == Const.RESULT_OK) {
-                                val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
-                                changeToken(token) //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
+//                            val json = Util.refreshTokenOrAutoLogin(context).await() //현재 서버죽고 위 로깅횟수만큼 서버 살고난 후 호출됨
+//                            if (HttpFuel.isNetworkUnstableMsg(json)) {
+//                                code = Const.RESULT_ERR
+//                                msg = "Unable to connect to socket server."
+//                            } else if (json.get("code").asString != Const.RESULT_OK) {
+//                                code = json.get("code").asString
+//                                msg = json.get("msg").asString
+//                            } else if (json.get("code").asString == Const.RESULT_OK) {
+//                                val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
+//                                changeToken(token) //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
                                 sock!!.connect()
                                 val result = chkConnected().await()
                                 if (result == null) {
                                     code = Const.RESULT_ERR
                                     msg = "Unable to connect to socket server."
                                 } else {
-                                    msg = "connect" //접속 로그를 위한 구분 코드임을 유의
+                                    msg = "connect" //접속 로그를 위한 구분 = 결국 code = Const.RESULT_OK
                                 }
-                            }
+//                            }
                         }
                     }
                 } else {

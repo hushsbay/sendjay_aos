@@ -202,6 +202,7 @@ class Util {
                     val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
                     var json = SocketIO.connect(context, connManager, token).await()
                     val code = json.get("code").asString
+                    Util.log("@@@@@@", code + "@@@@" + json.get("msg").asString)
                     if (code == Const.RESULT_OK) { //1) 미접속->접속일 경우 2) 접속된 상태가 계속되는 경우 2가지 모두 해당함
                         //1) 경우는 ChatService.kt에서 socket.io 고유 이벤트 잡아서 처리하고
                         //여기서는 2) 경우에 대해서만 처리. 2)는 계속 체크하는 의미로 1)과는 달리 SOCK_EV_MARK_AS_CONNECT로 처리함
@@ -209,8 +210,8 @@ class Util {
                     } else {
                         sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
                         KeyChain.set(context, Const.KC_DT_DISCONNECT, getCurDateTimeStr(true))
-                    } //Util.log("@@@@@@", "3333333" + json.get("msg").asString)
-                    if (json.get("msg").asString == "connect") { //접속 로그를 위한 단순 구분 코드
+                    } //아래 if는 개발중 테스트를 위한 코딩임 (얼마나 많은 재연결이 있는지 체크)
+                    if (code == Const.RESULT_OK) { //if (json.get("msg").asString == "connect") { //접속 로그를 위한 단순 구분 코드
                         val param = org.json.JSONObject()
                         param.put("device", Const.AOS)
                         param.put("work", "conn")

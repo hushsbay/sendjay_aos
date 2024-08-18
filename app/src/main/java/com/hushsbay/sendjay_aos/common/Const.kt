@@ -75,6 +75,7 @@ class Const {
         const val SOCK_EV_TOAST = "toast"
         const val SOCK_EV_COMMON = "common"
         const val SOCK_EV_CHK_ALIVE = "chk_alive"
+        const val SOCK_EV_REFRESH_TOKEN = "refresh_token"
         const val SOCK_EV_SET_ENV = "set_env"
         const val SOCK_EV_SEND_MSG = "send_msg"
         const val SOCK_EV_READ_MSG = "read_msg"

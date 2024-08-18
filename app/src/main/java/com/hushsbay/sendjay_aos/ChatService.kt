@@ -34,7 +34,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.apache.log4j.Logger
 import org.json.JSONObject
+import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.abs
 
 class ChatService : Service() {
 
@@ -319,51 +321,52 @@ class ChatService : Service() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         SocketIO.sock!!.off(Socket.EVENT_CONNECT).on(Socket.EVENT_CONNECT) {
             try {
-                Util.log(logTitle, Socket.EVENT_CONNECT, SocketIO.sock!!.io().toString())
+                Util.log(logTitle, Socket.EVENT_CONNECT)
                 if (status_sock == Const.SockState.FIRST_DISCONNECTED) { //html에서 [hush.cons.sock_ev_connect] 참조 요망
                     status_sock = Const.SockState.RECONNECTED //Socket.EVENT_CONNECT occurred many times at a moment. (socket.io 초기버전 이야기?!)
                     Util.sendToDownWhenConnDisconn(applicationContext, Socket.EVENT_CONNECT)
-                }
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        val roomidForService = KeyChain.get(applicationContext, Const.KC_ROOMID_FOR_CHATSERVICE)!!
-                        val param = org.json.JSONObject()
-                        param.put("type", "R") //모바일에서만 호출
-                        val json = HttpFuel.post(applicationContext, "/msngr/qry_unread", param.toString()).await()
-                        if (json.get("code").asString == Const.RESULT_OK) {
-                            val list = json.getAsJsonArray("list")
-                            if (list.size() == 0) return@launch
-                            for (i in 0 until list.size()) {
-                                val item = list[i].asJsonObject
-                                val roomid = item.get("ROOMID").asString
-                                val addinfo = item.get("ADDINFO").asString //for mobile only
-                                val arr = addinfo.split(Const.DELI)
-                                val msgid = arr[0]
-                                val cdt = arr[1]
-                                val type = arr[2]
-                                val body = arr[3]
-                                val body1 = "안읽은톡) " + Util.getTalkBodyCustom(type, body)
-                                val param = org.json.JSONObject()
-                                param.put("msgid", msgid)
-                                param.put("body", body1)
-                                param.put("type", type)
-                                param.put("cdt", cdt)
-                                param.put("senderid","dummy") //서버의 qry_unread.js where 조건 보면 어차피 내가 보낸 건 빼고 가져옴 (=내가 보낸 건 없음)
-                                var needNoti = NotiCenter.needNoti(applicationContext, uInfo, roomid, roomidForService, param)
-                                if (!needNoti) return@launch
-                                NotiCenter.notiToRoom(applicationContext, uInfo, roomid, param,false)
-                            }
-                        } else if (HttpFuel.isNetworkUnstableMsg(json)) {
-                            Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE+"^^")
-                        } else {
-                            Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${json.get("msg").asString}") //크리티컬하지 않으므로 막아도 무방
-                        }
-                    } catch (e: Exception) {
-                        logger.error("$logTitle: EVENT_CONNECT ${e.toString()}")
-                        e.printStackTrace()
-                        Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle:qry_unread: ${e.toString()}") //크리티컬하지 않으므로 막아도 무방
-                    }
-                }
+                } //it을 전달받을 방법을 못찾아 만기전 토큰이 보장되어야 할 http를 호출하는 루틴은 그 아래 Const.SOCK_EV_REFRESH_TOKEN 이벤트에서 처리하도록 함
+
+//                CoroutineScope(Dispatchers.IO).launch {
+//                    try {
+//                        val roomidForService = KeyChain.get(applicationContext, Const.KC_ROOMID_FOR_CHATSERVICE)!!
+//                        val param = org.json.JSONObject()
+//                        param.put("type", "R") //모바일에서만 호출
+//                        val json = HttpFuel.post(applicationContext, "/msngr/qry_unread", param.toString()).await()
+//                        if (json.get("code").asString == Const.RESULT_OK) {
+//                            val list = json.getAsJsonArray("list")
+//                            if (list.size() == 0) return@launch
+//                            for (i in 0 until list.size()) {
+//                                val item = list[i].asJsonObject
+//                                val roomid = item.get("ROOMID").asString
+//                                val addinfo = item.get("ADDINFO").asString //for mobile only
+//                                val arr = addinfo.split(Const.DELI)
+//                                val msgid = arr[0]
+//                                val cdt = arr[1]
+//                                val type = arr[2]
+//                                val body = arr[3]
+//                                val body1 = "안읽은톡) " + Util.getTalkBodyCustom(type, body)
+//                                val param = org.json.JSONObject()
+//                                param.put("msgid", msgid)
+//                                param.put("body", body1)
+//                                param.put("type", type)
+//                                param.put("cdt", cdt)
+//                                param.put("senderid","dummy") //서버의 qry_unread.js where 조건 보면 어차피 내가 보낸 건 빼고 가져옴 (=내가 보낸 건 없음)
+//                                var needNoti = NotiCenter.needNoti(applicationContext, uInfo, roomid, roomidForService, param)
+//                                if (!needNoti) return@launch
+//                                NotiCenter.notiToRoom(applicationContext, uInfo, roomid, param,false)
+//                            }
+//                        } else if (HttpFuel.isNetworkUnstableMsg(json)) {
+//                            Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE+"^^")
+//                        } else {
+//                            Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${json.get("msg").asString}") //크리티컬하지 않으므로 막아도 무방
+//                        }
+//                    } catch (e: Exception) {
+//                        logger.error("$logTitle: EVENT_CONNECT ${e.toString()}")
+//                        e.printStackTrace()
+//                        Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle:qry_unread: ${e.toString()}") //크리티컬하지 않으므로 막아도 무방
+//                    }
+//                }
             } catch (e1: Exception) {
                 logger.error("$logTitle: EVENT_CONNECT1 ${e1.toString()}")
                 Util.log(logTitle, e1.toString())
@@ -427,12 +430,78 @@ class ChatService : Service() {
                 } else if (returnTo == "all") {
                     RxToRoom.post(RxEvent(ev, json, returnTo, returnToAnother))
                 } //아래 몇가지는 모바일에서 필요한 처리이므로 구현해야 함
-                if (ev == Const.SOCK_EV_CHK_ALIVE) { //모바일에서의 토큰 갱신을 위한 목적
+                if (ev == Const.SOCK_EV_REFRESH_TOKEN) { //모바일에서의 토큰 갱신을 위한 목적 (소켓연결되는 app.js에서 바로 내려옴)
                     val data = json.getJSONObject("data")
                     val token = data.getString("token")
-                    Util.log("SOCK_EV_CHK_ALIVE", token)
+                    Util.log("SOCK_EV_REFRESH_TOKEN", token)
                     KeyChain.set(applicationContext, Const.KC_TOKEN, token)
                     uInfo = UserInfo(applicationContext)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            val roomidForService = KeyChain.get(applicationContext, Const.KC_ROOMID_FOR_CHATSERVICE)!!
+                            val param = JSONObject()
+                            param.put("type", "R") //모바일에서만 호출
+                            val json = HttpFuel.post(applicationContext, "/msngr/qry_unread", param.toString()).await()
+                            if (json.get("code").asString == Const.RESULT_OK) {
+                                val list = json.getAsJsonArray("list")
+                                if (list.size() == 0) return@launch
+                                for (i in 0 until list.size()) {
+                                    val item = list[i].asJsonObject
+                                    val roomid = item.get("ROOMID").asString
+                                    val addinfo = item.get("ADDINFO").asString //for mobile only
+                                    val arr = addinfo.split(Const.DELI)
+                                    val msgid = arr[0]
+                                    val cdt = arr[1]
+                                    val type = arr[2]
+                                    val body = arr[3]
+                                    val body1 = "안읽은톡) " + Util.getTalkBodyCustom(type, body)
+                                    val param = JSONObject()
+                                    param.put("msgid", msgid)
+                                    param.put("body", body1)
+                                    param.put("type", type)
+                                    param.put("cdt", cdt)
+                                    param.put("senderid","dummy") //서버의 qry_unread.js where 조건 보면 어차피 내가 보낸 건 빼고 가져옴 (=내가 보낸 건 없음)
+                                    var needNoti = NotiCenter.needNoti(applicationContext, uInfo, roomid, roomidForService, param)
+                                    if (!needNoti) return@launch
+                                    NotiCenter.notiToRoom(applicationContext, uInfo, roomid, param,false)
+                                } //아래는 접속 로그 (테스트용) : 얼마나 많은 재연결이 있는지 체크
+                                val param = JSONObject()
+                                param.put("device", Const.AOS)
+                                param.put("work", "conn")
+                                val screen = KeyChain.get(applicationContext, Const.KC_SCREEN_STATE) ?: ""
+                                param.put("state", screen)
+                                if (Util.chkWifi(connManager!!)) {
+                                    param.put("kind", "wifi")
+                                } else {
+                                    param.put("kind", "")
+                                }
+                                val strDtNow = Util.getCurDateTimeStr(true)
+                                val strDtDisconnect = KeyChain.get(applicationContext, Const.KC_DT_DISCONNECT) ?: ""
+                                param.put("cdt", strDtNow)
+                                param.put("udt", strDtDisconnect)
+                                if (strDtDisconnect == "") {
+                                    param.put("dur", -1) //접속이 끊어진 적이 없음 (예: 최초 연결시)
+                                } else { //duration(seconds) = 현재시각 - dt
+                                    val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                    val date1 = dateFormat.parse(strDtDisconnect)
+                                    val date2 = dateFormat.parse(strDtNow)
+                                    var diff: Long = abs(date2.time - date1.time) / 1000 //초(seconds)
+                                    if (diff > 31536000) diff = 31536000 //1년 넘으면 1년으로 최대치 설정
+                                    param.put("dur", diff)
+                                }
+                                KeyChain.set(applicationContext, Const.KC_DT_DISCONNECT, "") //reset해야 로깅에 의미가 있음
+                                HttpFuel.post(applicationContext, "/msngr/append_log", param.toString()).await() //로깅이므로 오류가 나도 넘어가도록 함
+                            } else if (HttpFuel.isNetworkUnstableMsg(json)) {
+                                Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE+"^^")
+                            } else {
+                                Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${json.get("msg").asString}") //크리티컬하지 않으므로 막아도 무방
+                            }
+                        } catch (e: Exception) {
+                            logger.error("$logTitle: EVENT_CONNECT ${e.toString()}")
+                            e.printStackTrace()
+                            Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle:qry_unread: ${e.toString()}") //크리티컬하지 않으므로 막아도 무방
+                        }
+                    }
                 } else if (ev == Const.SOCK_EV_SEND_MSG) {
                     CoroutineScope(Dispatchers.IO).launch {
                         try {

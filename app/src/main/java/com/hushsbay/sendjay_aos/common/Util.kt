@@ -214,35 +214,40 @@ class Util {
                     } else {
                         sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
                         KeyChain.set(context, Const.KC_DT_DISCONNECT, getCurDateTimeStr(true))
-                    } //아래 if는 개발중 테스트를 위한 코딩임 (얼마나 많은 재연결이 있는지 체크)
-                    if (json.get("msg").asString == "connect") { //접속 로그를 위한 단순 구분 코드
-                        val param = org.json.JSONObject()
-                        param.put("device", Const.AOS)
-                        param.put("work", "conn")
-                        val screen = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
-                        param.put("state", screen)
-                        if (chkWifi(connManager)) {
-                            param.put("kind", "wifi")
-                        } else {
-                            param.put("kind", "")
-                        }
-                        val strDtNow = getCurDateTimeStr(true)
-                        val strDtDisconnect = KeyChain.get(context, Const.KC_DT_DISCONNECT) ?: ""
-                        param.put("cdt", strDtNow)
-                        param.put("udt", strDtDisconnect)
-                        if (strDtDisconnect == "") {
-                            param.put("dur", -1) //접속이 끊어진 적이 없음 (예: 최초 연결시)
-                        } else { //duration(seconds) = 현재시각 - dt
-                            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                            val date1 = dateFormat.parse(strDtDisconnect)
-                            val date2 = dateFormat.parse(strDtNow)
-                            var diff: Long = abs(date2.time - date1.time) / 1000 //초(seconds)
-                            if (diff > 31536000) diff = 31536000 //1년 넘으면 1년으로 최대치 설정
-                            param.put("dur", diff)
-                        }
-                        KeyChain.set(context, Const.KC_DT_DISCONNECT, "") //reset해야 로깅에 의미가 있음
-                        HttpFuel.post(context, "/msngr/append_log", param.toString()).await() //로깅이므로 오류가 나도 넘어가도록 함
                     }
+                    //SocketIO.connect()에서 리턴되는 객체나 값으로 갱신된 토큰을 받는 방법을 아직 파악하지 못했으므로
+                    //소켓 연결 직후인 여기서는 만기전 토큰이 보장되어야 할 http 호출은 하지 말기로 함 (Const.SOCK_EV_REFRESH_TOKEN 이벤트에서 처리)
+
+
+                    //아래 if는 개발중 테스트를 위한 코딩임 (얼마나 많은 재연결이 있는지 체크)
+//                    if (json.get("msg").asString == "connect") { //접속 로그를 위한 단순 구분 코드
+//                        val param = org.json.JSONObject()
+//                        param.put("device", Const.AOS)
+//                        param.put("work", "conn")
+//                        val screen = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
+//                        param.put("state", screen)
+//                        if (chkWifi(connManager)) {
+//                            param.put("kind", "wifi")
+//                        } else {
+//                            param.put("kind", "")
+//                        }
+//                        val strDtNow = getCurDateTimeStr(true)
+//                        val strDtDisconnect = KeyChain.get(context, Const.KC_DT_DISCONNECT) ?: ""
+//                        param.put("cdt", strDtNow)
+//                        param.put("udt", strDtDisconnect)
+//                        if (strDtDisconnect == "") {
+//                            param.put("dur", -1) //접속이 끊어진 적이 없음 (예: 최초 연결시)
+//                        } else { //duration(seconds) = 현재시각 - dt
+//                            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+//                            val date1 = dateFormat.parse(strDtDisconnect)
+//                            val date2 = dateFormat.parse(strDtNow)
+//                            var diff: Long = abs(date2.time - date1.time) / 1000 //초(seconds)
+//                            if (diff > 31536000) diff = 31536000 //1년 넘으면 1년으로 최대치 설정
+//                            param.put("dur", diff)
+//                        }
+//                        KeyChain.set(context, Const.KC_DT_DISCONNECT, "") //reset해야 로깅에 의미가 있음
+//                        HttpFuel.post(context, "/msngr/append_log", param.toString()).await() //로깅이므로 오류가 나도 넘어가도록 함
+//                    }
                     callback(json)
                 } catch (e: Exception) {
                     sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)

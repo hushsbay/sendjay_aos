@@ -760,6 +760,13 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
+        fun refreshToken(token: String) {
+            KeyChain.set(curContext, Const.KC_TOKEN, token)
+            uInfo.token = token
+            Util.log("token@@@", token)
+        }
+
+        @JavascriptInterface
         fun reload() {
             CoroutineScope(Dispatchers.Main).launch {
                 setupWebViewMain()
@@ -909,6 +916,13 @@ class MainActivity : Activity() {
                     Util.procException(curContext, e1, logTitle)
                 }
             }
+        }
+
+        @JavascriptInterface
+        fun refreshToken(token: String) {
+            KeyChain.set(curContext, Const.KC_TOKEN, token)
+            uInfo.token = token
+            Util.log("token@@@", token)
         }
 
         @JavascriptInterface

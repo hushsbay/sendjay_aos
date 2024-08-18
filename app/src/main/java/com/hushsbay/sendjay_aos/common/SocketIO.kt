@@ -168,14 +168,14 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
 //                                msg = json.get("msg").asString
 //                            } else if (json.get("code").asString == Const.RESULT_OK) {
                                 val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
-                                changeToken(token) //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
+                                changeToken(token) //소켓이 연결된 상태에서 처리하면 안됨
                                 sock!!.connect()
                                 val result = chkConnected().await()
                                 if (result == null) {
                                     code = Const.RESULT_ERR
                                     msg = "Unable to connect to socket server (socket)"
-                                } else {
-                                    msg = "connect" //접속 로그를 위한 구분 => Const.RESULT_OK로 구분하면 안되어 별도 구분한 것임
+                                //} else {
+                                //    msg = "connect" //접속 로그를 위한 구분 => Const.RESULT_OK로 구분하면 안되어 별도 구분한 것임
                                 }
 //                            }
                         }

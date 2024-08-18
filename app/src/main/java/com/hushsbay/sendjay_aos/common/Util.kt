@@ -83,13 +83,13 @@ class Util {
             log(title, msg)
         }
 
-        fun setParamForAutoLogin(context: Context): org.json.JSONObject {
-            val param = org.json.JSONObject()
+        fun setParamForAutoLogin(context: Context): JSONObject {
+            val param = JSONObject()
             param.put("uid", KeyChain.get(context, Const.KC_USERID))
             param.put("pwd", KeyChain.get(context, Const.KC_PWD))
             param.put("autokey_app", KeyChain.get(context, Const.KC_AUTOKEY_APP))
             param.put("autologin", "Y")
-            param.put("kind", "app") //login.js호출시만 구분이 필요함
+            param.put("kind", "app") //login.js호출시만 구분이 필요함. app.js에서도 동일 사용
             return param
         }
 
@@ -131,11 +131,15 @@ class Util {
 //        }
 
         suspend fun refreshTokenOrAutoLogin(context: Context): Deferred<JsonObject> {
+            //*** 루프 돌면서 이 메소드를 쓰면 안됨 (서버재시작시 타임아웃 처리된 호출이 죽지 않고 그대로 서버로 호출되어 부하 증가됨)
+            //*** 원인은 HttpFuel 문제인 거 같은데 (코루틴 문제는 아닐..) 사실, 정확한 원인 파악이 안된 상태임
+            //*** sock.connect()시 refreshTokenOrAutoLogin() 사용하지 말고 대안으로 socket에 토큰과 비번을 실어서
+            //*** refreshTokenOrAutoLogin()과 동일한 처리를 하도록 함 (SocketIO.kt invoke() 참조)
             //알림받을 때처럼 토큰이 만기가 된 상황에서는 다시 자동로그인하는 것이 최선일 것임 (액티비티가 없는 상황에서만 사용하기. 액티비티는 로그인화면과 연동)
-            //주기적으로 토큰 갱신하는 것은 모바일 특성상 모두 커버하기 어렵고 무조건 자동로그인하는 것보다는 더 나은 해법으로 판단됨
+            //=> 주기적으로 토큰 갱신하는 것은 모바일 특성상 모두 커버하기 어렵고, 무조건 자동로그인하는 것보다는 더 나은 해법으로 판단됨
             //rest(http) 호출하는 모든 곳에 적용할 필요없는데, 소켓연결시나 onResume()에서는 아예 자동로그인하므로 이 메소드가 필요없음
-            //웹뷰로 전달시는 loadUrl(), sendToDownWhenConnDisconn()등을 통해 토큰을 넘기고 있음
-            return CoroutineScope(Dispatchers.Default).async {
+            //웹뷰로 토큰 전달시는 loadUrl(), sendToDownWhenConnDisconn()등을 통해 토큰을 넘기고 있음
+            return CoroutineScope(Dispatchers.IO).async {
                 val logTitle = object{}.javaClass.enclosingMethod?.name!!
                 val param = JSONObject()
                 param.put("userid", KeyChain.get(context, Const.KC_USERID))
@@ -211,7 +215,7 @@ class Util {
                         sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
                         KeyChain.set(context, Const.KC_DT_DISCONNECT, getCurDateTimeStr(true))
                     } //아래 if는 개발중 테스트를 위한 코딩임 (얼마나 많은 재연결이 있는지 체크)
-                    if (code == Const.RESULT_OK) { //if (json.get("msg").asString == "connect") { //접속 로그를 위한 단순 구분 코드
+                    if (json.get("msg").asString == "connect") { //접속 로그를 위한 단순 구분 코드
                         val param = org.json.JSONObject()
                         param.put("device", Const.AOS)
                         param.put("work", "conn")
@@ -248,58 +252,58 @@ class Util {
             }
         }
 
-        fun connectSockWithCallbackAwait(context: Context, connManager: ConnectivityManager): Deferred<JsonObject> {
-            return CoroutineScope(Dispatchers.Default).async {
-                val logTitle = object {}.javaClass.enclosingMethod?.name!!
-                //if (ChatService.isBeingSockChecked) return; ChatService.isBeingSockChecked = true; //다른 소켓통신이 여기서 막힐 수도 있으므로 사용하면 안됨
-                try {
-                    val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
-                    var json = SocketIO.connect(context, connManager, token).await()
-                    val code = json.get("code").asString
-                    if (code == Const.RESULT_OK) { //1) 미접속->접속일 경우 2) 접속된 상태가 계속되는 경우 2가지 모두 해당함
-                        //1) 경우는 ChatService.kt에서 socket.io 고유 이벤트 잡아서 처리하고
-                        //여기서는 2) 경우에 대해서만 처리. 2)는 계속 체크하는 의미로 1)과는 달리 SOCK_EV_MARK_AS_CONNECT로 처리함
-                        sendToDownWhenConnDisconn(context, Const.SOCK_EV_MARK_AS_CONNECT)
-                    } else {
-                        sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
-                        KeyChain.set(context, Const.KC_DT_DISCONNECT, getCurDateTimeStr(true))
-                    } //Util.log("@@@@@@", "3333333" + json.get("msg").asString)
-                    if (json.get("msg").asString == "connect") { //접속 로그를 위한 단순 구분 코드
-                        val param = org.json.JSONObject()
-                        param.put("device", Const.AOS)
-                        param.put("work", "conn")
-                        val screen = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
-                        param.put("state", screen)
-                        if (chkWifi(connManager)) {
-                            param.put("kind", "wifi")
-                        } else {
-                            param.put("kind", "")
-                        }
-                        val strDtNow = getCurDateTimeStr(true)
-                        val strDtDisconnect = KeyChain.get(context, Const.KC_DT_DISCONNECT) ?: ""
-                        param.put("cdt", strDtNow)
-                        param.put("udt", strDtDisconnect)
-                        if (strDtDisconnect == "") {
-                            param.put("dur", -1) //접속이 끊어진 적이 없음 (예: 최초 연결시)
-                        } else { //duration(seconds) = 현재시각 - dt
-                            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-                            val date1 = dateFormat.parse(strDtDisconnect)
-                            val date2 = dateFormat.parse(strDtNow)
-                            var diff: Long = abs(date2.time - date1.time) / 1000 //초(seconds)
-                            if (diff > 31536000) diff = 31536000 //1년 넘으면 1년으로 최대치 설정
-                            param.put("dur", diff)
-                        }
-                        KeyChain.set(context, Const.KC_DT_DISCONNECT, "") //reset해야 로깅에 의미가 있음
-                        HttpFuel.post(context, "/msngr/append_log", param.toString()).await() //로깅이므로 오류가 나도 넘어가도록 함
-                    }
-                    json
-                } catch (e: Exception) {
-                    sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
-                    val jsonStr = """{ code : '${Const.RESULT_ERR}', msg : 'connectSockWithCallback\n${e.toString()}' }"""
-                    Gson().fromJson(jsonStr, JsonObject::class.java)
-                }
-            }
-        }
+//        fun connectSockWithCallbackAwait(context: Context, connManager: ConnectivityManager): Deferred<JsonObject> {
+//            return CoroutineScope(Dispatchers.Default).async {
+//                val logTitle = object {}.javaClass.enclosingMethod?.name!!
+//                //if (ChatService.isBeingSockChecked) return; ChatService.isBeingSockChecked = true; //다른 소켓통신이 여기서 막힐 수도 있으므로 사용하면 안됨
+//                try {
+//                    val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
+//                    var json = SocketIO.connect(context, connManager, token).await()
+//                    val code = json.get("code").asString
+//                    if (code == Const.RESULT_OK) { //1) 미접속->접속일 경우 2) 접속된 상태가 계속되는 경우 2가지 모두 해당함
+//                        //1) 경우는 ChatService.kt에서 socket.io 고유 이벤트 잡아서 처리하고
+//                        //여기서는 2) 경우에 대해서만 처리. 2)는 계속 체크하는 의미로 1)과는 달리 SOCK_EV_MARK_AS_CONNECT로 처리함
+//                        sendToDownWhenConnDisconn(context, Const.SOCK_EV_MARK_AS_CONNECT)
+//                    } else {
+//                        sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
+//                        KeyChain.set(context, Const.KC_DT_DISCONNECT, getCurDateTimeStr(true))
+//                    } //Util.log("@@@@@@", "3333333" + json.get("msg").asString)
+//                    if (json.get("msg").asString == "connect") { //접속 로그를 위한 단순 구분 코드
+//                        val param = org.json.JSONObject()
+//                        param.put("device", Const.AOS)
+//                        param.put("work", "conn")
+//                        val screen = KeyChain.get(context, Const.KC_SCREEN_STATE) ?: ""
+//                        param.put("state", screen)
+//                        if (chkWifi(connManager)) {
+//                            param.put("kind", "wifi")
+//                        } else {
+//                            param.put("kind", "")
+//                        }
+//                        val strDtNow = getCurDateTimeStr(true)
+//                        val strDtDisconnect = KeyChain.get(context, Const.KC_DT_DISCONNECT) ?: ""
+//                        param.put("cdt", strDtNow)
+//                        param.put("udt", strDtDisconnect)
+//                        if (strDtDisconnect == "") {
+//                            param.put("dur", -1) //접속이 끊어진 적이 없음 (예: 최초 연결시)
+//                        } else { //duration(seconds) = 현재시각 - dt
+//                            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+//                            val date1 = dateFormat.parse(strDtDisconnect)
+//                            val date2 = dateFormat.parse(strDtNow)
+//                            var diff: Long = abs(date2.time - date1.time) / 1000 //초(seconds)
+//                            if (diff > 31536000) diff = 31536000 //1년 넘으면 1년으로 최대치 설정
+//                            param.put("dur", diff)
+//                        }
+//                        KeyChain.set(context, Const.KC_DT_DISCONNECT, "") //reset해야 로깅에 의미가 있음
+//                        HttpFuel.post(context, "/msngr/append_log", param.toString()).await() //로깅이므로 오류가 나도 넘어가도록 함
+//                    }
+//                    json
+//                } catch (e: Exception) {
+//                    sendToDownWhenConnDisconn(context, Socket.EVENT_DISCONNECT)
+//                    val jsonStr = """{ code : '${Const.RESULT_ERR}', msg : 'connectSockWithCallback\n${e.toString()}' }"""
+//                    Gson().fromJson(jsonStr, JsonObject::class.java)
+//                }
+//            }
+//        }
 
         fun procRxMsg(context: Activity, callback: ((type: String, msg: String) -> Unit)? = null): Disposable {
             return RxToDown.subscribe<RxMsg>().subscribe {

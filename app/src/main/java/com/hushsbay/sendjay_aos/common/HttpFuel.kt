@@ -11,7 +11,9 @@ import kotlinx.coroutines.*
 
 object HttpFuel { //single instance, gson(com.google.gson.JsonObject)
 
-    //timeout(Const.RESTFUL_TIMEOUT) 안 먹히고 timeoutRead(Const.RESTFUL_TIMEOUT)가 먹힘
+    //timeout(Const.RESTFUL_TIMEOUT) 안 먹히고 timeoutRead(Const.RESTFUL_TIMEOUT)가 먹힘 => 개발/테스트시 AWS 사용
+    //https://velog.io/@sejinkim/Timeout%EC%9D%B4-%EC%9E%91%EB%8F%99%ED%95%98%EC%A7%80-%EC%95%8A%EC%9D%80-%EC%9D%B4%EC%9C%A0
+
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob()) //Parent Job is cancelled 오류 방지 위해 SupervisorJob으로 처리
 
     fun get(context: Context, url: String, param: List<Pair<String, Any?>>?=null): Deferred<JsonObject> {
@@ -24,7 +26,8 @@ object HttpFuel { //single instance, gson(com.google.gson.JsonObject)
                 val paramAuth = arrayOf(Headers.CONTENT_TYPE to "application/json", Headers.COOKIE to cookieStr) //application/x-www-form-urlencoded (when CORS needed)
                 val noCache = listOf("noCache" to Util.getRnd().toString())
                 val paramNoCache = param?.plus(noCache) ?: noCache //if (param == null) noCache else param.plus(noCache)
-                val jsonStr = Fuel.get(url, paramNoCache).appendHeader(*paramAuth).timeoutRead(Const.RESTFUL_TIMEOUT).awaitString() //*(spread) for vararg
+                val jsonStr = Fuel.get(url, paramNoCache).appendHeader(*paramAuth)
+                    .timeout(Const.RESTFUL_TIMEOUT).timeoutRead(Const.RESTFUL_TIMEOUT).awaitString() //*(spread) for vararg
                 val json = Gson().fromJson(jsonStr, JsonObject::class.java) //val jsonStr = Gson().toJson(jsonObject)
                 json
             } catch (e: Exception) {
@@ -51,7 +54,8 @@ object HttpFuel { //single instance, gson(com.google.gson.JsonObject)
                 } else {
                     param
                 }
-                val (request, response, result) = Fuel.post(url).body(paramReal).appendHeader(*paramAuth).timeoutRead(Const.RESTFUL_TIMEOUT).awaitStringResponseResult()
+                val (request, response, result) = Fuel.post(url).body(paramReal).appendHeader(*paramAuth)
+                    .timeout(Const.RESTFUL_TIMEOUT).timeoutRead(Const.RESTFUL_TIMEOUT).awaitStringResponseResult()
                 val (retStr, error) = result //result.toString() => [Success: {"code":"0","msg":"","list":[]}] or [Failure: timeout ~으로 표시됨
                 if (error != null) throw Exception(error.toString())
                 /* 토큰이 서버에서 생성(갱신)되어 쿠키뿐만 아니라 응답본문에도 같이 내려오도록 했으므로 val json에 포함되니 이 부분은 막아도 됨 (참조용 - 지우지 말 것)

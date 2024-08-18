@@ -319,7 +319,7 @@ class ChatService : Service() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         SocketIO.sock!!.off(Socket.EVENT_CONNECT).on(Socket.EVENT_CONNECT) {
             try {
-                Util.log(logTitle, Socket.EVENT_CONNECT)
+                Util.log(logTitle, Socket.EVENT_CONNECT, SocketIO.sock.toString())
                 if (status_sock == Const.SockState.FIRST_DISCONNECTED) { //html에서 [hush.cons.sock_ev_connect] 참조 요망
                     status_sock = Const.SockState.RECONNECTED //Socket.EVENT_CONNECT occurred many times at a moment. (socket.io 초기버전 이야기?!)
                     Util.sendToDownWhenConnDisconn(applicationContext, Socket.EVENT_CONNECT)

@@ -25,7 +25,11 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
         option = IO.Options().apply {
             forceNew = false //default=false //See 'disconnect_prev_sock' in pmessage.js (on server)
             reconnection = false
-            query = "token=${uInfo.token}&userid=${uInfo.userid}&userkey=${uInfo.userkey}&winid=${winid}&userip=${userip}"
+            //query = "token=${uInfo.token}&userid=${uInfo.userid}&userkey=${uInfo.userkey}&winid=${winid}&userip=${userip}"
+            //pwd, autokey_app 추가 => 예) ChatService.kt 리스타트시 SocketIO.invoke()되는데 Util.refreshTokenOrAutoLogin()처럼
+            //토큰이 만기되면 아예 아이디/(암호와된)비번으로 로그인 처리하는 것으로 함 (모바일만 해당)
+            //아래에서 token 다음에 userid가 와야 함 (순서 주의 => 그 아래 changeToken에서 처리 : 정규식 아닌 substring으로 구현)
+            query = "token=${uInfo.token}&userid=${uInfo.userid}&pwd=${uInfo.pwd}&autokey_app=${uInfo.autokey_app}&userkey=${uInfo.userkey}&winid=${winid}&userip=${userip}"
         }
         sock = IO.socket(Const.URL_SOCK, option)
     }
@@ -152,25 +156,26 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                             //타임아웃 기본이 약 15초정도라면 서버가 오랫동안 죽어 있으면 타임아웃된 호출말고 기다리고 있는 몇개의 호출이 서버 연결시 동시에 호출되는 현상이 발생함
                             //-> Util.refreshTokenOrAutoLogin()시 refreshToken()/login.js 호출과 연결후 connectSockWithCallback()에서 http로 로깅하는 작업이 해당됨
                             //만약 ChatService.kt에서 데몬이 3초 주기라면 HttpFuel의 타임아웃이 2초만 되어도 몇개씩 쌓이지는 않을 것임 (물론, 무한대로 쌓이지는 않지만 클라이언트가 많으면 부하가 큼)
-                            //-> 이 방법은
-                            Util.log("@@@@@@", "==================="+ Util.getCurDateTimeStr(true))
+                            //그런데, 이 refreshTokenOrAutoLogin()은 현재 서버 재시작시 아래 로깅횟수만큼 호출됨 (부하 이슈) : 사용하면 안됨
+                            //-> 설명은 Util.refreshTokenOrAutoLogin() 참조하고 SocketIO.invoke()에 옵션 추가로 해결함
+                            Util.log("@@@@@@", "======="+ Util.getCurDateTimeStr(true))
 //                            val json = Util.refreshTokenOrAutoLogin(context).await() //현재 서버죽고 위 로깅횟수만큼 서버 살고난 후 호출됨
 //                            if (HttpFuel.isNetworkUnstableMsg(json)) {
 //                                code = Const.RESULT_ERR
-//                                msg = "Unable to connect to socket server."
+//                                msg = "Unable to connect to socket server (http)"
 //                            } else if (json.get("code").asString != Const.RESULT_OK) {
 //                                code = json.get("code").asString
 //                                msg = json.get("msg").asString
 //                            } else if (json.get("code").asString == Const.RESULT_OK) {
-//                                val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
-//                                changeToken(token) //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
+                                val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
+                                changeToken(token) //소켓이 연결된 상태에서 처리하면 안됨 (app.js에서도 소켓커넥션시만 토큰 체크하고 있음)
                                 sock!!.connect()
                                 val result = chkConnected().await()
                                 if (result == null) {
                                     code = Const.RESULT_ERR
-                                    msg = "Unable to connect to socket server."
+                                    msg = "Unable to connect to socket server (socket)"
                                 } else {
-                                    msg = "connect" //접속 로그를 위한 구분 = 결국 code = Const.RESULT_OK
+                                    msg = "connect" //접속 로그를 위한 구분 => Const.RESULT_OK로 구분하면 안되어 별도 구분한 것임
                                 }
 //                            }
                         }

@@ -93,7 +93,7 @@ class Const {
         const val RESULT_TOKEN_EXPIRED = "-84"
         const val CELL_REVOKED = "message cancelled"
         const val NETWORK_UNAVAILABLE = "네트워크가 연결되어 있지 않습니다."
-        const val NETWORK_UNSTABLE = "네트워크가 원할하지 않거나 서버 작업중입니다."
+        const val NETWORK_UNSTABLE = "$TITLE : 네트워크가 원할하지 않거나 서버 작업중입니다."
     }
 
 }

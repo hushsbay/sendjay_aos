@@ -154,7 +154,7 @@ class Util {
                     val param = setParamForAutoLogin(context) //토큰을 새로 얻으려고 자동로그인 하는 것임 (액티비티 없이 서비스만 실행되는 경우도 있음)
                     val authJson: JsonObject = HttpFuel.post(context, "/auth/login", param.toString()).await()
                     if (HttpFuel.isNetworkUnstableMsg(authJson)) {
-                        showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE + "**")
+                        showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE + " : refreshTokenOrAutoLogin_0")
                     } else if (authJson.get("code").asString != Const.RESULT_OK) {
                         showRxMsgInApp(Const.SOCK_EV_TOAST,"$logTitle: ${authJson.get("msg").asString}")
                     } else if (authJson.get("code").asString == Const.RESULT_OK) {
@@ -163,7 +163,7 @@ class Util {
                     authJson
                 } else if (HttpFuel.isNetworkUnstableMsg(json)) { //아래 토스트가 뜨는 걸로 봐서 HttpFuel의 client timeout은 잘 먹힘
                     //log("@@@@@@", xxx)
-                    showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE + "--")
+                    showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE + " : refreshTokenOrAutoLogin_1")
                     json//callback이 소용없음
                 } else {
                     showRxMsgInApp(Const.SOCK_EV_TOAST,"$logTitle: ${json.get("msg").asString}")

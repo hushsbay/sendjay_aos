@@ -492,7 +492,7 @@ class ChatService : Service() {
                                 KeyChain.set(applicationContext, Const.KC_DT_DISCONNECT, "") //reset해야 로깅에 의미가 있음
                                 HttpFuel.post(applicationContext, "/msngr/append_log", param.toString()).await() //로깅이므로 오류가 나도 넘어가도록 함
                             } else if (HttpFuel.isNetworkUnstableMsg(json)) {
-                                Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE+"^^")
+                                Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE + " : " + Const.SOCK_EV_REFRESH_TOKEN)
                             } else {
                                 Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${json.get("msg").asString}") //크리티컬하지 않으므로 막아도 무방
                             }

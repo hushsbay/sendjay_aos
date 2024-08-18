@@ -319,7 +319,7 @@ class ChatService : Service() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         SocketIO.sock!!.off(Socket.EVENT_CONNECT).on(Socket.EVENT_CONNECT) {
             try {
-                Util.log(logTitle, Socket.EVENT_CONNECT, SocketIO.sock.toString())
+                Util.log(logTitle, Socket.EVENT_CONNECT, SocketIO.sock!!.io().toString())
                 if (status_sock == Const.SockState.FIRST_DISCONNECTED) { //html에서 [hush.cons.sock_ev_connect] 참조 요망
                     status_sock = Const.SockState.RECONNECTED //Socket.EVENT_CONNECT occurred many times at a moment. (socket.io 초기버전 이야기?!)
                     Util.sendToDownWhenConnDisconn(applicationContext, Socket.EVENT_CONNECT)
@@ -417,7 +417,7 @@ class ChatService : Service() {
                 val ev = gson.get("ev").asString
                 val returnTo = gson.get("returnTo").asString
                 val returnToAnother = gson.get("returnToAnother")?.asString
-                if (ev != "chk_alive" && ev != "chk_typing") Util.log("$logTitle", jsonStr, it[0].javaClass.kotlin.qualifiedName!!)
+                if (ev != Const.SOCK_EV_CHK_ALIVE && ev != Const.SOCK_EV_CHK_TYPING) Util.log("$logTitle", jsonStr, it[0].javaClass.kotlin.qualifiedName!!)
                 //아래 returnToAnother는 org.json.JSONObject로 가져오면 try catch 필요하게 되어 번거로움 (gson으로 가져옴)
                 //json.get("data")가 아닌 넘어온 객체 전체인 json임을 유의. json으로 넘기지 않고 gson.toString()에서 변환한 json시 처리가 더 불편함
                 RxToDown.post(RxEvent(ev, json, returnTo, returnToAnother))
@@ -427,7 +427,13 @@ class ChatService : Service() {
                 } else if (returnTo == "all") {
                     RxToRoom.post(RxEvent(ev, json, returnTo, returnToAnother))
                 } //아래 몇가지는 모바일에서 필요한 처리이므로 구현해야 함
-                if (ev == Const.SOCK_EV_SEND_MSG) {
+                if (ev == Const.SOCK_EV_CHK_ALIVE) { //모바일에서의 토큰 갱신을 위한 목적
+                    val data = json.getJSONObject("data")
+                    val token = data.getString("token")
+                    Util.log("SOCK_EV_CHK_ALIVE", token)
+                    KeyChain.set(applicationContext, Const.KC_TOKEN, token)
+                    uInfo = UserInfo(applicationContext)
+                } else if (ev == Const.SOCK_EV_SEND_MSG) {
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
                             val data = json.getJSONObject("data")

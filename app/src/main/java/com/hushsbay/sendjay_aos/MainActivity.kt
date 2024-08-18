@@ -354,6 +354,7 @@ class MainActivity : Activity() {
                             Util.alert(curContext, Const.NETWORK_UNSTABLE, logTitle)
                         } else if (json.get("code").asString != Const.RESULT_OK) {
                             Util.alert(curContext, json.get("msg").asString, logTitle)
+                            Util.clearKeyChainForLogout(curContext)
                         } else {
                             KeyChain.set(curContext, Const.KC_WINID, winid)
                             KeyChain.set(curContext, Const.KC_USERIP, json.get("userip").asString)
@@ -371,6 +372,7 @@ class MainActivity : Activity() {
                     } catch (e: Exception) {
                         logger.error("$logTitle: ${e.toString()}")
                         Util.procException(curContext, e, logTitle)
+                        Util.clearKeyChainForLogout(curContext)
                     }
                 }
             }

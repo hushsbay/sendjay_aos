@@ -324,7 +324,7 @@ class ChatService : Service() {
                 Util.log(logTitle, Socket.EVENT_CONNECT)
                 if (status_sock == Const.SockState.FIRST_DISCONNECTED) { //html에서 [hush.cons.sock_ev_connect] 참조 요망
                     status_sock = Const.SockState.RECONNECTED //Socket.EVENT_CONNECT occurred many times at a moment. (socket.io 초기버전 이야기?!)
-                    Util.sendToDownWhenConnDisconn(applicationContext, Socket.EVENT_CONNECT)
+                    //Util.sendToDownWhenConnDisconn(applicationContext, Socket.EVENT_CONNECT)
                 } //it을 전달받을 방법을 못찾아 만기전 토큰이 보장되어야 할 http를 호출하는 루틴은 그 아래 Const.SOCK_EV_REFRESH_TOKEN 이벤트에서 처리하도록 함
 
 //                CoroutineScope(Dispatchers.IO).launch {

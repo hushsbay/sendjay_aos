@@ -42,24 +42,22 @@ class Const {
         const val NOTI_CNT_END = 1100
         const val NOTI_ID_SUMMARY = NOTI_CNT_END + 1
         const val NOTI_ID_CHK_UNREAD = NOTI_ID_SUMMARY + 1
-        ///////// 아래에서 대문자는 DB(mysql)에서 내려오는 경우에만 json.get(~)과 KeyChain에서 바로 편리하게 쓰려고 사용하는 것이며 그 외는 소문자임
-        const val KC_USERID = "USER_ID" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
-        const val KC_PWD = "PWD" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
-        const val KC_USERNM = "USER_NM" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
-        const val KC_ORGCD = "ORG_CD" //used for KeyChain, UserInfo and login.js / 서버에서도 이름이 동일해야 함
-        const val KC_ORGNM = "ORG_NM" // ""
-        const val KC_TOPORGCD = "TOP_ORG_CD" // ""
-        const val KC_TOPORGNM = "TOP_ORG_NM" // ""
+        //아래에서 대문자는 DB(mysql)에서 내려오는 경우에만 json.get(~)과 KeyChain에서 바로 편리하게 쓰려고 사용하는 것이며 그 외는 소문자임
+        const val KC_USERID = "USER_ID"
+        const val KC_PWD = "PWD"
+        const val KC_USERNM = "USER_NM"
+        const val KC_ORGCD = "ORG_CD"
+        const val KC_ORGNM = "ORG_NM"
+        const val KC_TOPORGCD = "TOP_ORG_CD"
+        const val KC_TOPORGNM = "TOP_ORG_NM"
         const val KC_NOTI_OFF = "NOTI_OFF"
-        //const val KC_SOUND_OFF = "SOUND_OFF" //NotiCenter.kt ##55 참조 (코딩 제거하지는 말고 참고로 둘 것)
-        //const val KC_VIB_OFF = "VIB_OFF" //NotiCenter.kt ##55 참조 (코딩 제거하지는 말고 참고로 둘 것)
-        //const val KC_POPUP_OFF = "POPUP_OFF"
         const val KC_BODY_OFF = "BODY_OFF"
         const val KC_SENDER_OFF = "SENDER_OFF"
         const val KC_TM_FR = "TM_FR"
         const val KC_TM_TO = "TM_TO"
         const val KC_AUTOKEY_APP = "AUTOKEY_APP"
-        const val KC_TOKEN = "token" //소문자
+        //아래 소문자는 DB에서 내려오는 것이 아님
+        const val KC_TOKEN = "token"
         const val KC_USERKEY = "userkey"
         const val KC_AUTOLOGIN = "autologin"
         const val KC_SCREEN_STATE = "screen_state"

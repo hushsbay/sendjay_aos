@@ -52,8 +52,6 @@ class ChatService : Service() {
     }
 
     private var SEC_DURING_DAEMON: Long = 3000 //try connecting every 3 second in case of disconnection
-    //private var MAX_DURING_DAEMON: Long = 600000 //10분되면 주기적으로 실행 (토큰 갱신 주기 => 웹만 사용하고 여기서는 사용하지 않음) //지우지말고 참고로 두기
-    //private var cnt_for_daemon: Long = 0 //지우지말고 참고로 두기
     private var SEC_DURING_RESTART = 3 //try restarting after 3 seconds (just once) when service killed (see another periodic trying with SimpleWorker.kt)
 
     private lateinit var logger: Logger
@@ -91,7 +89,7 @@ class ChatService : Service() {
                     intent?.let {
                         if (it.action == Intent.ACTION_SCREEN_ON) {
                             KeyChain.set(applicationContext, Const.KC_SCREEN_STATE, "on")
-                            Util.connectSockWithCallback(applicationContext, connManager!!) //SocketIO.connect()
+                            Util.connectSockWithCallback(applicationContext, connManager!!)
                         } else if (it.action == Intent.ACTION_SCREEN_OFF) {
                             KeyChain.set(applicationContext, Const.KC_SCREEN_STATE, "off")
                         }
@@ -107,7 +105,7 @@ class ChatService : Service() {
             NotiCenter(applicationContext, packageName) //NotiCenter.invoke() //see MainActivity.kt also
             val winid = KeyChain.get(applicationContext, Const.KC_WINID)
             val userip = KeyChain.get(applicationContext, Const.KC_USERIP)
-            SocketIO(uInfo, winid!!, userip!!) //kotlin invoke method : SocketIO.invoke()
+            SocketIO(uInfo, winid!!, userip!!) //SocketIO.invoke()
             startForegroundWithNotification()
             initDeamon()
         } catch (e: Exception) {
@@ -142,8 +140,7 @@ class ChatService : Service() {
 
     private fun startForegroundWithNotification() {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
-        try {
-            Util.log("startForegroundWithNotification")
+        try { //Util.log("startForegroundWithNotification")
             shouldThreadStop = false
             manager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             channel = NotificationChannel(Const.NOTICHANID_FOREGROUND, Const.NOTICHANID_FOREGROUND, NotificationManager.IMPORTANCE_LOW)
@@ -166,7 +163,7 @@ class ChatService : Service() {
             val pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE)
             builder.setContentIntent(pendingIntent)
             val notification = builder.build()
-            //서비스 호출 이후 대략 5초안에 startForeground() 호출하지 않으면 오류 발생. id should not be zero
+            //안드로이드 서비스 호출 이후 대략 5초안에 startForeground() 호출하지 않으면 오류 발생. id should not be zero
             //3번째 인자는 AndroidManifest.xml의 user-permission과 service태그내 type 설정이 없으면 오류 발생
             startForeground(Const.NOTI_ID_FOREGROUND_SERVICE, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
             //Timer().schedule(mainTask(), 10000) //or postDelayed
@@ -227,7 +224,7 @@ class ChatService : Service() {
             disposable?.dispose()
             if (SocketIO.sock != null && SocketIO.sock!!.connected()) {
                 SocketIO.sock!!.disconnect()
-                KeyChain.set(applicationContext, Const.KC_DT_DISCONNECT, Util.getCurDateTimeStr(true)) //Util.connectSockWithCallback() 참조
+                KeyChain.set(applicationContext, Const.KC_DT_DISCONNECT, Util.getCurDateTimeStr(true)) //로깅(테스트) 목적
             }
             if (MainActivity.stopServiceByLogout || stop_mobile) {
                 serviceIntent = null
@@ -259,7 +256,7 @@ class ChatService : Service() {
                 val param = org.json.JSONObject()
                 param.put("roomid", roomid)
                 RxToUp.post(RxEvent(Const.SOCK_EV_GET_ROOMINFO, param)) //, returnTo, returnToAnother))
-                Util.log(logTitle + ": " + Const.SOCK_EV_GET_ROOMINFO, "old==" + roomid)
+                //Util.log(logTitle + ": " + Const.SOCK_EV_GET_ROOMINFO, "old==" + roomid)
             } catch (e: Exception) {
                 logger.error("$logTitle: ${e.toString()}")
                 Util.log(logTitle, e.toString())
@@ -281,7 +278,7 @@ class ChatService : Service() {
                 json.putOpt("data", it.data)
                 json.put("returnTo", it.returnTo ?: "parent")
                 json.put("returnToAnother", it.returnToAnother)
-                if (evt == "chk_alive" || evt == "chk_typing" || evt == "chk_roomfocus") {
+                if (evt == Const.SOCK_EV_CHK_ALIVE || evt == Const.SOCK_EV_CHK_TYPING || evt == Const.SOCK_EV_CHK_ROOMFOCUS) {
                     //타이머로 돌아가는 이벤트들 로그 막음 (단순히 로그캣에서 보는데 복잡하기 때문임)
                 } else {
                     Util.log("$logTitle", it.toString())
@@ -322,51 +319,10 @@ class ChatService : Service() {
         SocketIO.sock!!.off(Socket.EVENT_CONNECT).on(Socket.EVENT_CONNECT) {
             try {
                 Util.log(logTitle, Socket.EVENT_CONNECT)
-                if (status_sock == Const.SockState.FIRST_DISCONNECTED) { //html에서 [hush.cons.sock_ev_connect] 참조 요망
+                if (status_sock == Const.SockState.FIRST_DISCONNECTED) {
                     status_sock = Const.SockState.RECONNECTED //Socket.EVENT_CONNECT occurred many times at a moment. (socket.io 초기버전 이야기?!)
                     //Util.sendToDownWhenConnDisconn(applicationContext, Socket.EVENT_CONNECT)
-                } //it을 전달받을 방법을 못찾아 만기전 토큰이 보장되어야 할 http를 호출하는 루틴은 그 아래 Const.SOCK_EV_REFRESH_TOKEN 이벤트에서 처리하도록 함
-
-//                CoroutineScope(Dispatchers.IO).launch {
-//                    try {
-//                        val roomidForService = KeyChain.get(applicationContext, Const.KC_ROOMID_FOR_CHATSERVICE)!!
-//                        val param = org.json.JSONObject()
-//                        param.put("type", "R") //모바일에서만 호출
-//                        val json = HttpFuel.post(applicationContext, "/msngr/qry_unread", param.toString()).await()
-//                        if (json.get("code").asString == Const.RESULT_OK) {
-//                            val list = json.getAsJsonArray("list")
-//                            if (list.size() == 0) return@launch
-//                            for (i in 0 until list.size()) {
-//                                val item = list[i].asJsonObject
-//                                val roomid = item.get("ROOMID").asString
-//                                val addinfo = item.get("ADDINFO").asString //for mobile only
-//                                val arr = addinfo.split(Const.DELI)
-//                                val msgid = arr[0]
-//                                val cdt = arr[1]
-//                                val type = arr[2]
-//                                val body = arr[3]
-//                                val body1 = "안읽은톡) " + Util.getTalkBodyCustom(type, body)
-//                                val param = org.json.JSONObject()
-//                                param.put("msgid", msgid)
-//                                param.put("body", body1)
-//                                param.put("type", type)
-//                                param.put("cdt", cdt)
-//                                param.put("senderid","dummy") //서버의 qry_unread.js where 조건 보면 어차피 내가 보낸 건 빼고 가져옴 (=내가 보낸 건 없음)
-//                                var needNoti = NotiCenter.needNoti(applicationContext, uInfo, roomid, roomidForService, param)
-//                                if (!needNoti) return@launch
-//                                NotiCenter.notiToRoom(applicationContext, uInfo, roomid, param,false)
-//                            }
-//                        } else if (HttpFuel.isNetworkUnstableMsg(json)) {
-//                            Util.showRxMsgInApp(Const.SOCK_EV_TOAST, Const.NETWORK_UNSTABLE+"^^")
-//                        } else {
-//                            Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle: ${json.get("msg").asString}") //크리티컬하지 않으므로 막아도 무방
-//                        }
-//                    } catch (e: Exception) {
-//                        logger.error("$logTitle: EVENT_CONNECT ${e.toString()}")
-//                        e.printStackTrace()
-//                        Util.showRxMsgInApp(Const.SOCK_EV_ALERT, "$logTitle:qry_unread: ${e.toString()}") //크리티컬하지 않으므로 막아도 무방
-//                    }
-//                }
+                } //it을 전달받을 방법을 못찾아 만기전 토큰이 보장되어야 할 http를 호출하는 루틴은 여기 말고 그 아래 Const.SOCK_EV_REFRESH_TOKEN 이벤트에서 처리하도록 함
             } catch (e1: Exception) {
                 logger.error("$logTitle: EVENT_CONNECT1 ${e1.toString()}")
                 Util.log(logTitle, e1.toString())
@@ -413,7 +369,7 @@ class ChatService : Service() {
                 e.printStackTrace()
             }
         }.off(Const.SOCK_EV_COMMON).on(Const.SOCK_EV_COMMON) { it ->
-            try { //대부분의 소켓 이벤트는 여기로 옴
+            try { //대부분의 소켓 이벤트는 여기로 옴 (공통모듈화)
                 val json = it[0] as JSONObject
                 val jsonStr = it[0].toString() //it.get(0).toString()
                 val gson = Gson().fromJson(jsonStr, JsonObject::class.java)
@@ -433,7 +389,6 @@ class ChatService : Service() {
                 if (ev == Const.SOCK_EV_REFRESH_TOKEN) { //모바일에서의 토큰 갱신을 위한 목적 (소켓연결되는 app.js에서 바로 내려옴)
                     val data = json.getJSONObject("data")
                     val token = data.getString("token")
-                    Util.log("REFRESH_TOKEN", token)
                     KeyChain.set(applicationContext, Const.KC_TOKEN, token)
                     uInfo = UserInfo(applicationContext)
                     CoroutineScope(Dispatchers.IO).launch {
@@ -590,20 +545,6 @@ class ChatService : Service() {
                             Util.log(logTitle, "socket_connected : ${SocketIO.sock!!.connected()} / screen : ${screenState}" )*/
                             val autoLogin = KeyChain.get(applicationContext, Const.KC_AUTOLOGIN) ?: ""
                             if (autoLogin == "Y") Util.connectSockWithCallback(applicationContext,connManager!!)
-                            /* 지우지 말고 참조로 두기
-                            if (cnt_for_daemon >= MAX_DURING_DAEMON) {
-                                cnt_for_daemon = 0
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    try {
-                                        //val json = HttpFuel.post(applicationContext,"/auth/refresh_token", param.toString()).await()
-                                        //여기서 rest 호출시 대기모드나 수면모드에서 호출이 block되므로 의미없게 됨. 나중에 cnt_for_daemon값으로 쓸 일이 있을지 몰라 그냥 두기로 함
-                                    } catch (e: Exception) {
-                                        //Util.log("refresh_token", e.toString())
-                                    }
-                                }
-                            } else {
-                                cnt_for_daemon += SEC_DURING_DAEMON
-                            }*/
                         } catch (e: InterruptedException) {
                             logger.error("$logTitle: e ${e.toString()}")
                             Util.log(logTitle, "thread interrupted")

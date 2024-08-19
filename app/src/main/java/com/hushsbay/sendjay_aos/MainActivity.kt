@@ -85,7 +85,6 @@ class MainActivity : Activity() {
     private var gOrigin = "" //for wvRoom
     private var gObjStr = "" //for wvRoom
     private var roomidForChatService = "" //for wvRoom
-    //private var msgidCopied = "" //$$66 참조
 
     //권한 허용 : https://velog.io/@alsgus92/Android-Runtime-%EA%B6%8C%ED%95%9CPermission-%EC%9A%94%EC%B2%AD-Flow-%EB%B0%8F-Tutorial
     //런타임권한(protectionlevel = "dangerous")에 관한 것이며 일반권한이나 서명권한이 아닌 경우이며 사용자에게 권한부여 요청을 필요로 함
@@ -145,9 +144,7 @@ class MainActivity : Activity() {
                 startActivity(appDetail)
             }
             if (!packageManager.canRequestPackageInstalls()) {
-                //Util.alert(curContext, "이 앱은 플레이스토어에서 다운로드받지 않는 인하우스앱입니다. 출처를 알 수 없는 앱(${Const.TITLE}) 사용을 허용해 주시기 바랍니다.", Const.TITLE, {
                 startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
-                //})
             }
             binding = ActivityMainBinding.inflate(layoutInflater)
             setContentView(binding.root) //setContentView(R.layout.activity_main)
@@ -573,8 +570,7 @@ class MainActivity : Activity() {
                         while (true) {
                             delay(RETRY_DELAY)
                             try {
-                                val token = KeyChain.get(curContext, Const.KC_TOKEN) ?: ""
-                                var json = SocketIO.connect(curContext, connManager, token).await()
+                                var json = SocketIO.connect(curContext, connManager).await()
                                 if (json.get("code").asString == Const.RESULT_OK) {
                                     binding.btnRetry.performClick() //if (btnRetry.visibility == View.VISIBLE) btnRetry.performClick()
                                     break
@@ -606,17 +602,10 @@ class MainActivity : Activity() {
     }
 
     private fun setupWebViewMain() {
-        val logTitle = object{}.javaClass.enclosingMethod?.name!!
         Util.setupWebView(binding.wvMain) //Util.log("###", wvMain.settings.userAgentString)
         binding.wvMain.addJavascriptInterface(WebInterfaceMain(), "AndroidMain") //Util.log("@@@@@@@@@@", wvMain.settings.cacheMode.toString())
         toggleDispRetry(false, "Main")
-        binding.wvMain.webChromeClient = object : WebChromeClient() {
-//            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
-//                consoleMessage?.apply {
-//                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvMain")
-//                }
-//                return true
-//            }
+        binding.wvMain.webChromeClient = object : WebChromeClient() { //onConsoleMessage는 사용하지 않음 (alert가 뜨는데 모두 예상해서 커버하기 쉽지 않음
             override fun onShowFileChooser(webView: WebView, filePathCallback: ValueCallback<Array<Uri?>>, fileChooserParams: FileChooserParams): Boolean {
                 filePathCallbackMain = filePathCallback
                 val intent = fileChooserParams.createIntent()
@@ -659,18 +648,11 @@ class MainActivity : Activity() {
     }
 
     private fun setupWebViewRoom(refresh: Boolean) {
-        val logTitle = object{}.javaClass.enclosingMethod?.name!!
         Util.setupWebView(binding.wvRoom)
         binding.wvRoom.addJavascriptInterface(WebInterfaceRoom(), "AndroidRoom")
         toggleDispRetry(false, "Room") //Util.log(refresh.toString()+"==="+gRoomid+"==="+roomidForChatService)
         if (!refresh && gRoomid != "" && gRoomid == roomidForChatService) return
-        binding.wvRoom.webChromeClient = object : WebChromeClient() {
-//            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
-//                consoleMessage?.apply {
-//                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvRoom")
-//                }
-//                return true
-//            }
+        binding.wvRoom.webChromeClient = object : WebChromeClient() { //onConsoleMessage는 사용하지 않음 (alert가 뜨는데 모두 예상해서 커버하기 쉽지 않음
             override fun onShowFileChooser(webView: WebView, filePathCallback: ValueCallback<Array<Uri?>>, fileChooserParams: FileChooserParams): Boolean {
                 filePathCallbackRoom = filePathCallback
                 val intent = fileChooserParams.createIntent()
@@ -763,7 +745,6 @@ class MainActivity : Activity() {
         fun refreshToken(token: String) {
             KeyChain.set(curContext, Const.KC_TOKEN, token)
             uInfo.token = token
-            Util.log("token@@@", token)
         }
 
         @JavascriptInterface
@@ -826,7 +807,7 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
-        fun showLog(num: Int) { //logger.info("test")로 테스트 가능
+        fun showLog(num: Int) { //개발자 테스트용. logger.info("test")로 테스트 가능
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             CoroutineScope(Dispatchers.Main).launch {
                 try { //File(path).walkTopDown().forEach { Util.log("=====", it.toString()) }
@@ -855,7 +836,7 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
-        fun deleteLog() {
+        fun deleteLog() { //개발자 테스트용
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             CoroutineScope(Dispatchers.Main).launch {
                 try {
@@ -885,13 +866,6 @@ class MainActivity : Activity() {
             val logTitle = object{}.javaClass.enclosingMethod?.name!!
             CoroutineScope(Dispatchers.Main).launch {
                 try {
-                    /* $$66 참조
-                    if (gObjStr == "") {
-                        gObjStr = """{ 'msgidCopied' : '${msgidCopied}' }"""
-                    } else {
-                        gObjStr = gObjStr.replace("}", "")
-                        gObjStr += """, 'msgidCopied' : '${msgidCopied}' }"""
-                    }*/
                     val obj = Util.getStrObjFromUserInfo(uInfo)
                     Util.loadUrl(binding.wvRoom, "startFromWebView", obj, gObjStr)
                     disposableRoom?.dispose()
@@ -917,13 +891,6 @@ class MainActivity : Activity() {
                 }
             }
         }
-
-//        @JavascriptInterface
-//        fun refreshToken(token: String) {
-//            KeyChain.set(curContext, Const.KC_TOKEN, token)
-//            uInfo.token = token
-//            Util.log("token---", token)
-//        }
 
         @JavascriptInterface
         fun putData(data: String) {

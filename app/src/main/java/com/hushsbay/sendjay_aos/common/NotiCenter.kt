@@ -21,6 +21,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 object NotiCenter {
 
@@ -43,7 +44,7 @@ object NotiCenter {
             channel!!.setSound(uri, audioAttributes) //이 설정도 설치제거후 다시 실행한 경우에만 제대로 적용되었음
             channel!!.vibrationPattern = longArrayOf(0, 900, 0, 0) //이 설정도 설치제거후 다시 실행한 경우에만 제대로 적용되었음
             //1. 한번 설정된 Importance는 사용자에 의한 설정변경없이는 불가능하다고 안드로이드 개발자 사이트에 나옴
-            //   https://stackoverflow.com/questions/60820163/android-notification-importance-cannot-be-changed
+            //   => https://stackoverflow.com/questions/60820163/android-notification-importance-cannot-be-changed
             //2. 아래(setupNoti)에서 1) 진동모드에서도 무진동처리 2) 소리모드에서 무음처리 하는 코딩 필요한데 코딩에서 방법 못찾음
             //##55 위 1.2.항목 때문에, 안드로이드 에니티브 설정을 인텐트로 불러 사용자로 하여금 옵션 설정하는 것으로 구현함 (여기에 팝업설정도 있음)
         }
@@ -58,7 +59,7 @@ object NotiCenter {
         }
     }
 
-    suspend fun needNoti(context: Context, uInfo: UserInfo, returnTo: String?=null, roomidForService: String?=null, data: org.json.JSONObject?=null) : Boolean {
+    suspend fun needNoti(context: Context, uInfo: UserInfo, returnTo: String?=null, roomidForService: String?=null, data: JSONObject?=null) : Boolean {
         var needNoti = true
         if (KeyChain.get(context, Const.KC_NOTI_OFF) == "Y") {
             needNoti = false //전체 알림 Off면 노티가 필요없음
@@ -86,78 +87,7 @@ object NotiCenter {
         return needNoti
     }
 
-//    fun notiToRoom(context: Context, uInfo: UserInfo, roomid: String, data: org.json.JSONObject, callFromSendMsg: Boolean) {
-//        val logTitle = object{}.javaClass.enclosingMethod?.name!!
-//        CoroutineScope(Dispatchers.IO).launch {
-//            Util.refreshTokenOrAutoLogin(context) { //이 파일내에서 여기만 적용하는 것은 다른 http호출은 모두 notiToRoom()뒤에 바로 연이어 호출되므로 추가적용할 필요가 없기때문임
-//                CoroutineScope(Dispatchers.Main).launch {
-//                    try {
-//                        val msgid = data.getString("msgid")
-//                        var body = data.getString("body")
-//                        val type = data.getString("type")
-//                        val cdt = data.getString("cdt") //서버의 send_msg.js에서 현재일시를 가져옴
-//                        var webConnectedAlso: Boolean
-//                        if (callFromSendMsg) { //웹 연결 체크해 없으면 굳이 웹을 신경쓸 필요없으므로 여기서 미리 파악하는 것임
-//                            val userkeyArr = data.getJSONArray("userkeyArr")
-//                            webConnectedAlso = userkeyArr.toString().contains(Const.W_KEY + uInfo.userid + "\"") //["W__userid1","W__userid2"]
-//                        } else { //userkeyArr을 가져오기가 어려워 무조건 웹도 연결되어 있다고 보고 처리
-//                            webConnectedAlso = true
-//                        }
-//                        body = Util.getTalkBodyCustom(type, body)
-//                        val intentNoti = Intent(context, MainActivity::class.java) //val intentNoti = Intent(context, ChatService::class.java)
-//                        intentNoti.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-//                        intentNoti.putExtra("type", "open")
-//                        intentNoti.putExtra("roomid", roomid)
-//                        intentNoti.putExtra("origin", "noti")
-//                        intentNoti.putExtra("objStr", "")
-//                        if (mapRoomid[roomid] == null) mapRoomid[roomid] = idNotiMax++
-//                        var title = if (mapRoomInfo[roomid] != null) {
-//                            mapRoomInfo[roomid]?.get("roomtitle").toString()
-//                        } else {
-//                            val param = org.json.JSONObject()
-//                            param.put("roomid", roomid)
-//                            val json = HttpFuel.post(context, "/msngr/get_roominfo", param.toString()).await()
-//                            if (json.get("code").asString == Const.RESULT_OK) {
-//                                getRoomInfo(json, roomid)["roomtitle"].toString()
-//                            } else {
-//                                ""
-//                            }
-//                        }
-//                        if (mapRoomInfo[roomid]?.get("noti").toString() == "X") return@launch
-//                        val m_cdt = mapRoomInfo[roomid]?.get("cdt") //각 메세지의 현재 시각을 체크해서 그 방의 해당 메시지보다 이전의 메시지면 굳이 노티할 이유가 없음
-//                        if (m_cdt != null && cdt <= m_cdt.toString()) return@launch
-//                        mapRoomInfo[roomid]?.put("cdt", cdt)
-//                        if (uInfo.senderoff == "Y") title = "" //sender
-//                        val realTitle = if (title == "") null else title
-//                        val realBody = if (uInfo.bodyoff == "Y") null else body
-//                        val noti = setupNoti(context, realTitle, realBody, intentNoti, mapRoomid[roomid]!!)
-//                        val notiSummary = setupNotiSummmary(context)
-//                        if (webConnectedAlso && msgid != "") { //["W__userid1","W__userid2"]
-//                            val delaySec: Long = ChatService.gapSecOnDualMode.toLong()
-//                            delay(delaySec) //Handler().postDelayed({ ... }, delaySec)
-//                            val param = org.json.JSONObject()
-//                            param.put("msgid", msgid)
-//                            param.put("roomid", roomid)
-//                            val json = HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
-//                            if (json.get("code").asString == Const.RESULT_OK) {
-//                                val list = json.getAsJsonArray("list")
-//                                if (list.size() > 0) {
-//                                    val item = list[0].asJsonObject
-//                                    if (item.get("UNREAD").asInt > 0) procNoti(context, uInfo, roomid, noti, notiSummary)
-//                                }
-//                            }
-//                        } else {
-//                            procNoti(context, uInfo, roomid, noti, notiSummary)
-//                        }
-//                    } catch (e: Exception) {
-//                        Util.alert(context, e.toString(), logTitle)
-//                    }
-//                }
-//            }
-//        }
-//    }
-
-    fun notiToRoom(context: Context, uInfo: UserInfo, roomid: String, data: org.json.JSONObject, callFromSendMsg: Boolean) {
+    fun notiToRoom(context: Context, uInfo: UserInfo, roomid: String, data: JSONObject, callFromSendMsg: Boolean) {
         val logTitle = object{}.javaClass.enclosingMethod?.name!!
         CoroutineScope(Dispatchers.IO).launch {
             val json = Util.refreshTokenOrAutoLogin(context).await()
@@ -190,7 +120,7 @@ object NotiCenter {
                         var title = if (mapRoomInfo[roomid] != null) {
                             mapRoomInfo[roomid]?.get("roomtitle").toString()
                         } else {
-                            val param = org.json.JSONObject()
+                            val param = JSONObject()
                             param.put("roomid", roomid)
                             val json = HttpFuel.post(context, "/msngr/get_roominfo", param.toString()).await()
                             if (json.get("code").asString == Const.RESULT_OK) {
@@ -211,7 +141,7 @@ object NotiCenter {
                         if (webConnectedAlso && msgid != "") { //["W__userid1","W__userid2"]
                             val delaySec: Long = ChatService.gapSecOnDualMode.toLong()
                             delay(delaySec) //Handler().postDelayed({ ... }, delaySec)
-                            val param = org.json.JSONObject()
+                            val param = JSONObject()
                             param.put("msgid", msgid)
                             param.put("roomid", roomid)
                             val json = HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
@@ -328,7 +258,7 @@ object NotiCenter {
             //알림을 보고 난 후에는 다음에 재연결될 때는 기존 알림을 또 보는 것이 성가시게 될 것이므로 (아니면 사용자가 일일이 방마다 읽음 처리해야 하므로..)
             //LASTCHKDT 필드값을 업데이트해서 그 이후에 온 안읽은 톡만 알림을 표시하는 것이 합리적일 것으로 보임
             try {
-                val param = org.json.JSONObject()
+                val param = JSONObject()
                 param.put("type", "U")
                 HttpFuel.post(context, "/msngr/qry_unread", param.toString()).await()
             } catch (e: Exception) {

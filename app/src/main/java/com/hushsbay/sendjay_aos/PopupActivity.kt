@@ -167,13 +167,7 @@ class PopupActivity : Activity() {
         binding.wvPopup.settings.builtInZoomControls = true
         binding.wvPopup.addJavascriptInterface(WebInterfacePopup(), "AndroidPopup")
         if (urlStr == null) return
-        binding.wvPopup.webChromeClient = object: WebChromeClient() {
-//            override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean { //return super.onConsoleMessage(consoleMessage)
-//                consoleMessage?.apply {
-//                    Util.procConsoleMsg(curContext, message() + "\n" + sourceId(), "wvPopup")
-//                }
-//                return true
-//            }
+        binding.wvPopup.webChromeClient = object: WebChromeClient() { //onConsoleMessage는 사용하지 않음 (alert가 뜨는데 모두 예상해서 커버하기 쉽지 않음
             //Belows are settings for fullscreen video in webview.
             //android:configChanges="keyboardHidden|orientation|screenSize" needed in AndroidManifest.xml
             //https://kutar37.tistory.com/entry/Android-webview%EC%97%90%EC%84%9C-HTML-video-%EC%A0%84%EC%B2%B4%ED%99%94%EB%A9%B4-%EC%9E%AC%EC%83%9D

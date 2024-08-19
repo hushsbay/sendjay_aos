@@ -433,7 +433,7 @@ class ChatService : Service() {
                 if (ev == Const.SOCK_EV_REFRESH_TOKEN) { //모바일에서의 토큰 갱신을 위한 목적 (소켓연결되는 app.js에서 바로 내려옴)
                     val data = json.getJSONObject("data")
                     val token = data.getString("token")
-                    Util.log("SOCK_EV_REFRESH_TOKEN", token)
+                    Util.log("REFRESH_TOKEN", token)
                     KeyChain.set(applicationContext, Const.KC_TOKEN, token)
                     uInfo = UserInfo(applicationContext)
                     CoroutineScope(Dispatchers.IO).launch {
@@ -444,26 +444,26 @@ class ChatService : Service() {
                             val json = HttpFuel.post(applicationContext, "/msngr/qry_unread", param.toString()).await()
                             if (json.get("code").asString == Const.RESULT_OK) {
                                 val list = json.getAsJsonArray("list")
-                                if (list.size() == 0) return@launch
-                                for (i in 0 until list.size()) {
-                                    val item = list[i].asJsonObject
-                                    val roomid = item.get("ROOMID").asString
-                                    val addinfo = item.get("ADDINFO").asString //for mobile only
-                                    val arr = addinfo.split(Const.DELI)
-                                    val msgid = arr[0]
-                                    val cdt = arr[1]
-                                    val type = arr[2]
-                                    val body = arr[3]
-                                    val body1 = "안읽은톡) " + Util.getTalkBodyCustom(type, body)
-                                    val param = JSONObject()
-                                    param.put("msgid", msgid)
-                                    param.put("body", body1)
-                                    param.put("type", type)
-                                    param.put("cdt", cdt)
-                                    param.put("senderid","dummy") //서버의 qry_unread.js where 조건 보면 어차피 내가 보낸 건 빼고 가져옴 (=내가 보낸 건 없음)
-                                    var needNoti = NotiCenter.needNoti(applicationContext, uInfo, roomid, roomidForService, param)
-                                    if (!needNoti) return@launch
-                                    NotiCenter.notiToRoom(applicationContext, uInfo, roomid, param,false)
+                                if (list.size() > 0) {
+                                    for (i in 0 until list.size()) {
+                                        val item = list[i].asJsonObject
+                                        val roomid = item.get("ROOMID").asString
+                                        val addinfo = item.get("ADDINFO").asString //for mobile only
+                                        val arr = addinfo.split(Const.DELI)
+                                        val msgid = arr[0]
+                                        val cdt = arr[1]
+                                        val type = arr[2]
+                                        val body = arr[3]
+                                        val body1 = "안읽은톡) " + Util.getTalkBodyCustom(type, body)
+                                        val param = JSONObject()
+                                        param.put("msgid", msgid)
+                                        param.put("body", body1)
+                                        param.put("type", type)
+                                        param.put("cdt", cdt)
+                                        param.put("senderid","dummy") //서버의 qry_unread.js where 조건 보면 어차피 내가 보낸 건 빼고 가져옴 (=내가 보낸 건 없음)
+                                        var needNoti = NotiCenter.needNoti(applicationContext, uInfo, roomid, roomidForService, param)
+                                        if (needNoti) NotiCenter.notiToRoom(applicationContext, uInfo, roomid, param,false)
+                                    }
                                 } //아래는 접속 로그 (테스트용) : 얼마나 많은 재연결이 있는지 체크
                                 val param = JSONObject()
                                 param.put("device", Const.AOS)

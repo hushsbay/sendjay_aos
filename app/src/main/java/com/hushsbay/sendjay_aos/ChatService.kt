@@ -253,7 +253,7 @@ class ChatService : Service() {
             try {
                 val data = json.getJSONObject("data")
                 val roomid = data.getString("roomid")
-                val param = org.json.JSONObject()
+                val param = JSONObject()
                 param.put("roomid", roomid)
                 RxToUp.post(RxEvent(Const.SOCK_EV_GET_ROOMINFO, param)) //, returnTo, returnToAnother))
                 //Util.log(logTitle + ": " + Const.SOCK_EV_GET_ROOMINFO, "old==" + roomid)

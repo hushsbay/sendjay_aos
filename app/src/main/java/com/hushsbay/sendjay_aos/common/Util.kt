@@ -186,7 +186,7 @@ class Util {
             return RxToDown.subscribe<RxMsg>().subscribe {
                 CoroutineScope(Dispatchers.Main).launch { //Do not remove this line since Dispatchers.Main covers Dispatchers.IO which already called.
                     try {
-                        val param = it.data as org.json.JSONObject
+                        val param = it.data as JSONObject
                         val msg = param.getString("msg")
                         when (it.type) {
                             Const.SOCK_EV_ALERT -> {

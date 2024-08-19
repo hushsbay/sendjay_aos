@@ -342,7 +342,7 @@ class MainActivity : Activity() {
                 CoroutineScope(Dispatchers.Main).launch {
                     try {
                         val winid = Util.getRnd().toString() + "_" + Util.getCurDateTimeStr()
-                        val param = org.json.JSONObject()
+                        val param = JSONObject()
                         param.put("type", "set_new")
                         param.put("userkey", uInfo.userkey)
                         param.put("winid", winid)
@@ -525,7 +525,7 @@ class MainActivity : Activity() {
                         try {
                             val inUserid = mDialogView.findViewById<EditText>(R.id.userid)
                             val inPwd = mDialogView.findViewById<EditText>(R.id.pwd)
-                            val param = org.json.JSONObject()
+                            val param = JSONObject()
                             param.put("uid", inUserid.text.toString().trim())
                             param.put("pwd", inPwd.text.toString().trim())
                             val autokey_app = Util.getRnd().toString()

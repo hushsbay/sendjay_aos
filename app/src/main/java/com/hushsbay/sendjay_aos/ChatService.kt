@@ -344,17 +344,15 @@ class ChatService : Service() {
         }.off(Const.SOCK_EV_ALERT).on(Const.SOCK_EV_ALERT) {
             try {
                 if (it[0] is String) { //check type (java.lang.String cannot be cast to org.json.JSONObject)
-                    Util.log("$$$$", it[0].toString())
                     Util.log(logTitle + ": " + Const.SOCK_EV_ALERT, it[0].toString() + ": " + it[1].toString())
-                } else {
+                } else { //app.js에서 소켓연결후 비번이 다르다거나 등의 인증오류 만나면 여기로 잘 전달됨
                     val jsonObj = it[0] as JSONObject
                     Util.log(logTitle, jsonObj.toString())
-                    RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, jsonObj))
-                    val _code = jsonObj.getString("code")
-                    Util.log("$$$$", _code)
-                    if (_code.startsWith(Const.RESULT_AUTH_ERR_PREFIX) || _code == Const.RESULT_CONNECT_ERR) {
-                        Toast.makeText(applicationContext, Const.TITLE + ": " + jsonObj.getString("code"), Toast.LENGTH_LONG).show()
-                        Util.clearKeyChainForLogout(applicationContext)
+                    RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, jsonObj)) //액티비티가 떠 있으면 alert가 표시되나 스택 밑에 있거나 아예 없으면 표시되지 않음
+                    if (jsonObj.getString("code").startsWith(Const.RESULT_AUTH_ERR_PREFIX)) {
+                        //Toast.makeText(applicationContext, Const.TITLE + ": " + jsonObj.getString("code"), Toast.LENGTH_LONG).show()
+                        //Toast 오류 발생 => java.lang.NullPointerException: Can't toast on a thread that has not called Looper.prepare()
+                        Util.clearKeyChainForLogout(applicationContext) //연결시 인증 문제가 발생하면 알릴 방법을 못찾고 일단 자동로그인이라도 해제함
                     }
                 }
             } catch (e: Exception) {
@@ -368,7 +366,11 @@ class ChatService : Service() {
                     Util.log(logTitle + ": " + Const.SOCK_EV_TOAST, it[0].toString() + ": " + it[1].toString())
                 } else {
                     val jsonObj = it[0] as JSONObject
+                    Util.log(logTitle, jsonObj.toString())
                     RxToDown.post(RxMsg(Const.SOCK_EV_TOAST, jsonObj))
+                    if (jsonObj.getString("code").startsWith(Const.RESULT_AUTH_ERR_PREFIX)) {
+                        Util.clearKeyChainForLogout(applicationContext) //위 ALERT 주석 참조
+                    }
                 }
             } catch (e: Exception) {
                 logger.error("$logTitle: SOCK_EV_TOAST ${e.toString()}")

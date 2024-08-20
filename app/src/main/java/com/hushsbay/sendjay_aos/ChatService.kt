@@ -344,11 +344,18 @@ class ChatService : Service() {
         }.off(Const.SOCK_EV_ALERT).on(Const.SOCK_EV_ALERT) {
             try {
                 if (it[0] is String) { //check type (java.lang.String cannot be cast to org.json.JSONObject)
+                    Util.log("$$$$", it[0].toString())
                     Util.log(logTitle + ": " + Const.SOCK_EV_ALERT, it[0].toString() + ": " + it[1].toString())
                 } else {
                     val jsonObj = it[0] as JSONObject
                     Util.log(logTitle, jsonObj.toString())
                     RxToDown.post(RxMsg(Const.SOCK_EV_ALERT, jsonObj))
+                    val _code = jsonObj.getString("code")
+                    Util.log("$$$$", _code)
+                    if (_code.startsWith(Const.RESULT_AUTH_ERR_PREFIX) || _code == Const.RESULT_CONNECT_ERR) {
+                        Toast.makeText(applicationContext, Const.TITLE + ": " + jsonObj.getString("code"), Toast.LENGTH_LONG).show()
+                        Util.clearKeyChainForLogout(applicationContext)
+                    }
                 }
             } catch (e: Exception) {
                 logger.error("$logTitle: SOCK_EV_ALERT ${e.toString()}")

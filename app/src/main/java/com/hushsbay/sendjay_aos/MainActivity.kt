@@ -857,6 +857,14 @@ class MainActivity : Activity() {
             }
         }
 
+        @JavascriptInterface
+        fun appInfo() {
+            CoroutineScope(Dispatchers.Main).launch {
+                val pInfo = packageManager.getPackageInfo(packageName, 0) //pInfo.versionName
+                Util.alert(curContext, pInfo.versionName + "\nby hushsbay@gmail.com", Const.TITLE)
+            }
+        }
+
     }
 
     inner class WebInterfaceRoom {

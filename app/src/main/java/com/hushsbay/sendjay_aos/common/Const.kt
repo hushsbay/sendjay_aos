@@ -30,7 +30,7 @@ class Const {
         const val PAGE_DUMMY = "/dummy.html"
         ////////////////////////////////////////////////
         const val PROVIDER_AUTHORITY = "com.hushsbay.sendjay_aos.common.KeyChainProvider" //same as ContentProvider class name and <provider ~ android:authorities in AndroidManifest.xml
-        const val DELI = "##"
+        const val DELI = "~~" //##은 쓰지 말기 (location param 가져올 때 # 포함시 북마크?로 인지되므로 오류 발생)
         const val SUBDELI = "$$"
         const val DELI_KEY = "__"
         const val W_KEY = "W$DELI_KEY"

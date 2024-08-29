@@ -90,15 +90,15 @@ class MainActivity : Activity() {
     //런타임권한(protectionlevel = "dangerous")에 관한 것이며 일반권한이나 서명권한이 아닌 경우이며 사용자에게 권한부여 요청을 필요로 함
     //AndroidManifest.xml에 있는 uses-permission은 일반적인 것과 위험한 권한으로 나뉘는데 위험한 권한은 아래와 같이 checkPermission()이 필요함
     //그런데, 구글링하면 어던 것이 위험한 권한인지 구분은 되나 실제로는 녹녹치 않으므로 모든 권한을 요청해 버리면 수월함 (아래 권한은 Manifest에 있는 모든 권한을 요청하는 것임
-    //막상 해보니, POST_NOTIFICATIONS만 빼고 모두 막아도 무방함 (권한##0)
-    //SYSTEM_ALERT_WINDOW와 SCHEDULE_EXACT_ALARM : 여기서 해결되지 않아 onCreate()에서 권한#1/권한#2로 구현해 허용받음
+    //막상 해보니, POST_NOTIFICATIONS만 빼고 모두 막아도 무방함 (권한#1)
+    //SYSTEM_ALERT_WINDOW와 SCHEDULE_EXACT_ALARM : 여기서 해결되지 않아 onCreate()에서 권한#2/권한#3로 구현해 허용받음
     private val REQUEST_PERMISSION = 100
     private var permissions = listOf(
         //android.Manifest.permission.INTERNET, android.Manifest.permission.FOREGROUND_SERVICE,
         //android.Manifest.permission.FOREGROUND_SERVICE_DATA_SYNC, android.Manifest.permission.ACCESS_NETWORK_STATE,
         //android.Manifest.permission.RECEIVE_BOOT_COMPLETED, android.Manifest.permission.VIBRATE,
         //android.Manifest.permission.SYSTEM_ALERT_WINDOW, android.Manifest.permission.SCHEDULE_EXACT_ALARM
-        android.Manifest.permission.POST_NOTIFICATIONS //권한##0
+        android.Manifest.permission.POST_NOTIFICATIONS //##1
     )
 
     private fun checkPermission(permissionList: List<String>) {
@@ -129,22 +129,26 @@ class MainActivity : Activity() {
         super.onCreate(savedInstanceState)
         try {
             curContext = this@MainActivity
-            checkPermission(permissions)
-            //권한#1 SYSTEM_ALERT_WINDOW : https://greensky0026.tistory.com/222#google_vignette 백그라운드서비스와도 관련됨
-            if (!Settings.canDrawOverlays(this)) { //!hasPermission으로 보면 됨
-                val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
-                startActivity(intent)
-            }
-            //권한#2 SCHEDULE_EXACT_ALARM
-            val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-            if (!alarmManager.canScheduleExactAlarms()) { //!hasPermission으로 보면 됨
-                val appDetail = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName"))
-                appDetail.addCategory(Intent.CATEGORY_DEFAULT)
-                appDetail.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                startActivity(appDetail)
-            }
             if (!packageManager.canRequestPackageInstalls()) {
-                startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
+                Util.alert(curContext, "\n4개의 권한을 허용후 앱을 새로 실행하시면 됩니다.\n\n허용하지 않고 사용시 (사용자가 각각 허용하는 것이 더 어려우므로) 그냥 앱 삭제후 재설치하시기 바랍니다.", "앱 권한허용 시작", {
+                    checkPermission(permissions) //#1
+                    //#2 : SYSTEM_ALERT_WINDOW : https://greensky0026.tistory.com/222#google_vignette 백그라운드서비스와도 관련됨
+                    if (!Settings.canDrawOverlays(this)) { //!hasPermission으로 보면 됨
+                        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+                        startActivity(intent)
+                    }
+                    //#3 : SCHEDULE_EXACT_ALARM
+                    val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+                    if (!alarmManager.canScheduleExactAlarms()) { //!hasPermission으로 보면 됨
+                        val appDetail = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM, Uri.parse("package:$packageName"))
+                        appDetail.addCategory(Intent.CATEGORY_DEFAULT)
+                        appDetail.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        startActivity(appDetail)
+                    }
+                    //#4 : 출처를 알 수 없는 앱 허용 : OS차원에서 보안설정이 되어 있으면 아예 선택이 막혀 있을 것임
+                    startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:$packageName")))
+                })
+                return
             }
             binding = ActivityMainBinding.inflate(layoutInflater)
             setContentView(binding.root) //setContentView(R.layout.activity_main)

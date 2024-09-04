@@ -26,7 +26,7 @@ class Const {
         const val URL_JAY = "${DIR_PUBLIC}/" //means public page load
         ////////////////////////////////////////////////
         const val PAGE_MAIN = "/main.html"
-        const val PAGE_ROOM = "/chat_oldclock.html"
+        const val PAGE_ROOM = "/chat.html"
         const val PAGE_DUMMY = "/dummy.html"
         ////////////////////////////////////////////////
         const val PROVIDER_AUTHORITY = "com.hushsbay.sendjay_aos.common.KeyChainProvider" //same as ContentProvider class name and <provider ~ android:authorities in AndroidManifest.xml

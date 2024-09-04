@@ -69,9 +69,9 @@ object SocketIO { //https://socketio.github.io/socket.io-client-java/initializat
                             //-> Util.refreshTokenOrAutoLogin()시 refreshToken()/login.js 호출과 연결후 connectSockWithCallback()에서 http로 로깅하는 작업이 해당됨
                             //만약 ChatService.kt에서 데몬이 3초 주기라면 HttpFuel의 타임아웃이 2초만 되어도 몇개씩 쌓이지는 않을 것임 (물론, 무한대로 쌓이지는 않지만 클라이언트가 많으면 부하가 큼)
                             //그런데, 이 refreshTokenOrAutoLogin()은 현재 서버 재시작시 아래 로깅횟수만큼 호출됨 (부하 이슈) : 사용하면 안됨
-                            //-> 설명은 Util.refreshTokenOrAutoLogin() 참조하고 SocketIO.invoke()에 옵션 추가로 해결함
-                            //Util.log("@@@@@@", "======="+ Util.getCurDateTimeStr(true))
+                            //-> 설명은 Util.refreshTokenOrAutoLogin() 참조하고 SocketIO.invoke()에 옵션 추가로 해결함 //Util.log("@@@@@@", "======="+ Util.getCurDateTimeStr(true))
                             //val json = Util.refreshTokenOrAutoLogin(context).await() //현재 서버죽고 위 로깅횟수만큼 서버 살고난 후 호출됨
+                            //그런데, 결론적으로 데몬에서 http(rest) 호출하지 않으므로 2초,5초 등 고민하지 말고 적절한 타임아웃 시간 잡으면 됨
                             val token = KeyChain.get(context, Const.KC_TOKEN) ?: ""
                             changeToken(token) //소켓이 연결된 상태에서 처리하면 안됨
                             sock!!.connect()

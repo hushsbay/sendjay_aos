@@ -195,6 +195,7 @@ class MainActivity : Activity() {
             }
             val contentReceiver = ContentReceiver { uri -> //load image using provided URI
                 Util.log("@@@@", "#####")
+                Util.loadUrl(binding.wvRoom, "getImageUri", uri.toString())
             }
             ViewCompat.setOnReceiveContentListener(binding.inEmoji, arrayOf("image/*", "video/*"), contentReceiver)
             disposableMsg?.dispose()

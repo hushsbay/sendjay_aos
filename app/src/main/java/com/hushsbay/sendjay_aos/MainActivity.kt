@@ -19,8 +19,10 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.ViewCompat
 import com.google.gson.JsonObject
 import com.hushsbay.sendjay_aos.common.Const
+import com.hushsbay.sendjay_aos.common.ContentReceiver
 import com.hushsbay.sendjay_aos.common.HttpFuel
 import com.hushsbay.sendjay_aos.common.KeyChain
 import com.hushsbay.sendjay_aos.common.KeyboardVisibilityChecker
@@ -191,6 +193,10 @@ class MainActivity : Activity() {
                     }
                 }
             }
+            val contentReceiver = ContentReceiver { uri -> //load image using provided URI
+                Util.log("@@@@", "#####")
+            }
+            ViewCompat.setOnReceiveContentListener(binding.inEmoji, arrayOf("image/*", "video/*"), contentReceiver)
             disposableMsg?.dispose()
             disposableMsg = Util.procRxMsg(curContext)
             start()
@@ -950,6 +956,15 @@ class MainActivity : Activity() {
         fun closeRoom() {
             CoroutineScope(Dispatchers.Main).launch {
                 if (roomidForChatService != "") procCloseRoom()
+            }
+        }
+
+        @JavascriptInterface
+        fun setFocusToEmojiField() {
+            CoroutineScope(Dispatchers.Main).launch {
+                binding.inEmoji.requestFocus()
+                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(binding.inEmoji, InputMethodManager.SHOW_IMPLICIT)
             }
         }
 

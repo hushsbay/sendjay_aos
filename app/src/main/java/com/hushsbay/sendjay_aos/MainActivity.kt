@@ -195,31 +195,23 @@ class MainActivity : Activity() {
                     }
                 }
             }
-            //fun alert(context: Context, msg: String, title: String?=null, onYes: () -> Unit = {}, onNo: (() -> Unit)? = null,
-            //val contentReceiver = ContentReceiver { uri -> //load image using provided URI
-            val contentReceiver = ContentReceiver { uri -> //, fileName, mimeType ->
-                //uri.toString()은 아래와 같음
+            val contentReceiver = ContentReceiver { uri -> //uri.toString()은 아래와 같음
                 //content://com.samsung.android.honeyboard.provider/root/storage/emulated/0/Android/data/com.samsung.android.honeyboard/cache/temp_content/com.samsung.android.icecone.gif/1725659557543.gif
                 //위 uri의 기기내 임시 저장위치 => \Android\data\com.samsung.android.honeyboard\cache\temp_content\com.samsung.android.icecone.gif
-
-
+                //그러나, 아래 callback에서 (gif 선택시) 아래 토스트가 표시되면서 중단됨
+                //sendjay에 이미지를 추가할 때 삼성 키보드나 클립보드를 사용할 수 없어요. -> 그러나, 이건 디버깅모드에서만 표시되는 것이었음
+                //런타임에서는 자바스크립트로 넘기는 loadUrl 메소드에서 byteArrayString이 안 넘어가는 것으로 추정됨 (loadUrlJson도 안됨. 너무 길거나 특수문자 포함?!)
+                //아래 evaluateJavascript로 넘기니 잘 넘어감
                 val fileName = Util.getFileNameFromUriByContentResolver(contentResolver, uri)
                 val mimeType = contentResolver.getType(uri)
-
                 val encoder: Base64.Encoder = Base64.getEncoder()
                 val bufferedInputStream = contentResolver.openInputStream(uri)?.buffered()
                 bufferedInputStream.use {
                     val byteArrayString = encoder.encodeToString(it?.readBytes())
-                    val param = JSONObject()
-                    param.put("byteArrayString", byteArrayString)
-                    param.put("fileName", fileName)
-                    param.put("mimeType", mimeType)
-                    Util.loadUrlJson(binding.wvRoom, "getImageUri", param)
+                    binding.wvRoom.evaluateJavascript("getImageUri('$byteArrayString', '$fileName', '$mimeType')", null)
                 }
-
-
             }
-            ViewCompat.setOnReceiveContentListener(binding.inEmoji, arrayOf("image/*", "video/*"), contentReceiver)
+            ViewCompat.setOnReceiveContentListener(binding.inEmoji, arrayOf("image/*"), contentReceiver) //arrayOf("image/*", "video/*")
             disposableMsg?.dispose()
             disposableMsg = Util.procRxMsg(curContext)
             start()

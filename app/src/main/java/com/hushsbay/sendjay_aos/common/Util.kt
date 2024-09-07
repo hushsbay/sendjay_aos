@@ -2,6 +2,7 @@ package com.hushsbay.sendjay_aos.common
 
 import android.app.Activity
 import android.app.DownloadManager
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -9,6 +10,7 @@ import android.net.NetworkCapabilities
 import android.net.Uri
 import android.net.UrlQuerySanitizer
 import android.os.Environment
+import android.provider.OpenableColumns
 import android.util.Log
 import android.webkit.CookieManager
 import android.webkit.WebSettings
@@ -355,6 +357,13 @@ class Util {
             }
         }
 
+        private fun sortFileList(files: Array<File>): Array<File> {
+            Arrays.sort(files) { object1, object2 ->
+                object1.lastModified().toString().compareTo(object2.lastModified().toString())
+            }
+            return files
+        }
+
         fun getFiles(dir: File): ArrayList<String>? {
             var fileArray = dir.listFiles() // { pathname -> pathname.name.endsWith(".zip") }
             fileArray = fileArray?.let { sortFileList(it) }
@@ -368,11 +377,13 @@ class Util {
             return fileArrayList
         }
 
-        private fun sortFileList(files: Array<File>): Array<File> {
-            Arrays.sort(files) { object1, object2 ->
-                object1.lastModified().toString().compareTo(object2.lastModified().toString())
+        fun getFileNameFromUriByContentResolver(contentResolver: ContentResolver, uri: Uri): String? {
+            val cursor = contentResolver.query(uri, null, null, null, null, null)
+            return cursor?.use {
+                val nameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                it.moveToFirst()
+                cursor.getString(nameIndex)
             }
-            return files
         }
 
     }

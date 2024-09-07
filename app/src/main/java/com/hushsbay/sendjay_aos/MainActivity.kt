@@ -19,6 +19,7 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
+import androidx.core.graphics.drawable.toIcon
 import androidx.core.view.ViewCompat
 import com.google.gson.JsonObject
 import com.hushsbay.sendjay_aos.common.Const
@@ -43,6 +44,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
+import java.util.Base64
 
 //socket.io는 json(org.json.JSONObect) 사용. Fuel은 gson(com.google.gson.JsonObject) 사용
 //onCreate -> onStart -> onResume -> onPause -> onStop -> onDestroy
@@ -193,9 +195,29 @@ class MainActivity : Activity() {
                     }
                 }
             }
-            val contentReceiver = ContentReceiver { uri -> //load image using provided URI
-                Util.log("@@@@", "#####")
-                Util.loadUrl(binding.wvRoom, "getImageUri", uri.toString())
+            //fun alert(context: Context, msg: String, title: String?=null, onYes: () -> Unit = {}, onNo: (() -> Unit)? = null,
+            //val contentReceiver = ContentReceiver { uri -> //load image using provided URI
+            val contentReceiver = ContentReceiver { uri -> //, fileName, mimeType ->
+                //uri.toString()은 아래와 같음
+                //content://com.samsung.android.honeyboard.provider/root/storage/emulated/0/Android/data/com.samsung.android.honeyboard/cache/temp_content/com.samsung.android.icecone.gif/1725659557543.gif
+                //위 uri의 기기내 임시 저장위치 => \Android\data\com.samsung.android.honeyboard\cache\temp_content\com.samsung.android.icecone.gif
+
+
+                val fileName = Util.getFileNameFromUriByContentResolver(contentResolver, uri)
+                val mimeType = contentResolver.getType(uri)
+
+                val encoder: Base64.Encoder = Base64.getEncoder()
+                val bufferedInputStream = contentResolver.openInputStream(uri)?.buffered()
+                bufferedInputStream.use {
+                    val byteArrayString = encoder.encodeToString(it?.readBytes())
+                    val param = JSONObject()
+                    param.put("byteArrayString", byteArrayString)
+                    param.put("fileName", fileName)
+                    param.put("mimeType", mimeType)
+                    Util.loadUrlJson(binding.wvRoom, "getImageUri", param)
+                }
+
+
             }
             ViewCompat.setOnReceiveContentListener(binding.inEmoji, arrayOf("image/*", "video/*"), contentReceiver)
             disposableMsg?.dispose()

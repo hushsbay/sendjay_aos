@@ -68,7 +68,7 @@
         android:visibility="gone"
         />
 
-    <!-- 사용자 육안에 안보이게 하기 위해 wvMain의 오른쪽에 위치함 -->
+    <!-- 사용자 육안에 안보이게 하기 위해 wvMain의 오른쪽에 위치함. disableGifKeyboard=false는 크게 의미없음 -->
     <EditText
         android:id="@+id/inGifAnim"
         android:layout_width="wrap_content"
@@ -78,6 +78,7 @@
         app:layout_constraintTop_toBottomOf="@+id/wvMain"
         android:gravity="center"
         android:layout_marginTop="10dp"
+        android:privateImeOptions="disableGifKeyboard=false"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

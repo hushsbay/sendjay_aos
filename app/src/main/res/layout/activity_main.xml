@@ -68,16 +68,16 @@
         android:visibility="gone"
         />
 
+    <!-- 사용자 육안에 안보이게 하기 위해 wvMain의 오른쪽에 위치함 -->
     <EditText
-        android:id="@+id/inEmoji"
+        android:id="@+id/inGifAnim"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnRetry"
+        app:layout_constraintRight_toRightOf="@+id/wvMain"
+        app:layout_constraintTop_toBottomOf="@+id/wvMain"
         android:gravity="center"
         android:layout_marginTop="10dp"
-        android:textColor="@color/jayDarkBlue"
         />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

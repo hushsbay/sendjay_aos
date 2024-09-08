@@ -13,6 +13,8 @@ import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputConnection
 import android.view.inputmethod.InputMethodManager
 import android.webkit.*
 import android.widget.Button
@@ -21,6 +23,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import androidx.core.graphics.drawable.toIcon
 import androidx.core.view.ViewCompat
+import androidx.core.view.inputmethod.EditorInfoCompat
+import androidx.core.view.inputmethod.InputConnectionCompat
 import com.google.gson.JsonObject
 import com.hushsbay.sendjay_aos.common.Const
 import com.hushsbay.sendjay_aos.common.ContentReceiver
@@ -211,7 +215,7 @@ class MainActivity : Activity() {
                     binding.wvRoom.evaluateJavascript("getImageUri('$byteArrayString', '$fileName', '$mimeType')", null)
                 }
             }
-            ViewCompat.setOnReceiveContentListener(binding.inEmoji, arrayOf("image/*"), contentReceiver) //arrayOf("image/*", "video/*")
+            ViewCompat.setOnReceiveContentListener(binding.inGifAnim, arrayOf("image/*"), contentReceiver) //arrayOf("image/*", "video/*")
             disposableMsg?.dispose()
             disposableMsg = Util.procRxMsg(curContext)
             start()
@@ -975,11 +979,11 @@ class MainActivity : Activity() {
         }
 
         @JavascriptInterface
-        fun setFocusToEmojiField() {
+        fun setFocusToGifAnimField() {
             CoroutineScope(Dispatchers.Main).launch {
-                binding.inEmoji.requestFocus()
+                binding.inGifAnim.requestFocus()
                 val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showSoftInput(binding.inEmoji, InputMethodManager.SHOW_IMPLICIT)
+                imm.showSoftInput(binding.inGifAnim, InputMethodManager.SHOW_IMPLICIT)
             }
         }
 

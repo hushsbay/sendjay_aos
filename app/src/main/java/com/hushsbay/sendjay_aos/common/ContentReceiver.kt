@@ -7,7 +7,7 @@ import androidx.core.view.OnReceiveContentListener
 
 //https://talkjs.com/resources/support-for-rich-content-in-the-webview/
 
-class ContentReceiver(private val contentReceived: (uri: Uri) -> Unit) : OnReceiveContentListener {
+class ContentReceiver(private val contentReceived: (view: View, uri: Uri) -> Unit) : OnReceiveContentListener {
 
 //    override fun onReceiveContent(view: View, contentInfo: ContentInfoCompat): ContentInfoCompat? {
 //        val split = contentInfo.partition { item: ClipData.Item -> item.uri != null }
@@ -24,7 +24,7 @@ class ContentReceiver(private val contentReceived: (uri: Uri) -> Unit) : OnRecei
         val clip = uriContent.clip
         if (clip.itemCount > 0) {
             val uri = clip.getItemAt(0).uri
-            contentReceived(uri)
+            contentReceived(view, uri) //view 추가 $$88
         }
         return remaining
     }

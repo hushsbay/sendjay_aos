@@ -13,7 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <WebView
+    <com.hushsbay.sendjay_aos.common.MyWebView
         android:id="@+id/wvRoom"
         android:visibility="gone"
         android:layout_width="match_parent"
@@ -68,7 +68,7 @@
         android:visibility="gone"
         />
 
-    <!-- 사용자 육안에 안보이게 하기 위해 wvMain의 오른쪽에 위치함. disableGifKeyboard=false는 크게 의미없음 -->
+    <!-- 사용자 육안에 안보이게 하기 위해 wvMain의 오른쪽에 위치함. disableGifKeyboard=false는 크게 의미없음 => MyWebview class로 대체해 더 편리하게 사용 $$88
     <EditText
         android:id="@+id/inGifAnim"
         android:layout_width="wrap_content"
@@ -79,6 +79,6 @@
         android:gravity="center"
         android:layout_marginTop="10dp"
         android:privateImeOptions="disableGifKeyboard=false"
-        />
+        /> -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -32,6 +32,7 @@ import com.hushsbay.sendjay_aos.common.HttpFuel
 import com.hushsbay.sendjay_aos.common.KeyChain
 import com.hushsbay.sendjay_aos.common.KeyboardVisibilityChecker
 import com.hushsbay.sendjay_aos.common.LogHelper
+import com.hushsbay.sendjay_aos.common.MyWebView
 import com.hushsbay.sendjay_aos.common.NotiCenter
 import com.hushsbay.sendjay_aos.common.RxToDown
 import com.hushsbay.sendjay_aos.common.RxToRoom
@@ -199,7 +200,7 @@ class MainActivity : Activity() {
                     }
                 }
             }
-            val contentReceiver = ContentReceiver { uri -> //uri.toString()은 아래와 같음
+            val contentReceiver = ContentReceiver { view, uri -> //uri.toString()은 아래와 같음
                 //content://com.samsung.android.honeyboard.provider/root/storage/emulated/0/Android/data/com.samsung.android.honeyboard/cache/temp_content/com.samsung.android.icecone.gif/1725659557543.gif
                 //위 uri의 기기내 임시 저장위치 => \Android\data\com.samsung.android.honeyboard\cache\temp_content\com.samsung.android.icecone.gif
                 //그러나, 아래 callback에서 (gif 선택시) 아래 토스트가 표시되면서 중단됨
@@ -212,10 +213,14 @@ class MainActivity : Activity() {
                 val bufferedInputStream = contentResolver.openInputStream(uri)?.buffered()
                 bufferedInputStream.use {
                     val byteArrayString = encoder.encodeToString(it?.readBytes())
-                    binding.wvRoom.evaluateJavascript("getImageUri('$byteArrayString', '$fileName', '$mimeType')", null)
+                    //binding.wvRoom.evaluateJavascript("getImageUri('$byteArrayString', '$fileName', '$mimeType')", null)
+                    val myWebView = view as MyWebView //바로 위에서는 오류 발생. 대신 MyWebview class로 대체 $$88
+                    myWebView.post {
+                        myWebView.evaluateJavascript("getImageUri('$byteArrayString', '$fileName', '$mimeType')", null)
+                    }
                 }
-            }
-            ViewCompat.setOnReceiveContentListener(binding.inGifAnim, arrayOf("image/*"), contentReceiver) //arrayOf("image/*", "video/*")
+            } //ViewCompat.setOnReceiveContentListener(binding.inGifAnim, arrayOf("image/*"), contentReceiver) //arrayOf("image/*") => MyWebview.kt에서도 동일하게 설정하기로 함
+            ViewCompat.setOnReceiveContentListener(binding.wvRoom, arrayOf("image/*"), contentReceiver) //바로 위 대신에 MyWebview class로 대체해 더 편리하게 사용 $$88
             disposableMsg?.dispose()
             disposableMsg = Util.procRxMsg(curContext)
             start()
@@ -978,14 +983,14 @@ class MainActivity : Activity() {
             }
         }
 
-        @JavascriptInterface
-        fun setFocusToGifAnimField() {
-            CoroutineScope(Dispatchers.Main).launch {
-                binding.inGifAnim.requestFocus()
-                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showSoftInput(binding.inGifAnim, InputMethodManager.SHOW_IMPLICIT)
-            }
-        }
+//        @JavascriptInterface //MyWebview class로 대체해 더 편리하게 사용 $$88
+//        fun setFocusToGifAnimField() {
+//            CoroutineScope(Dispatchers.Main).launch {
+//                binding.inGifAnim.requestFocus()
+//                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+//                imm.showSoftInput(binding.inGifAnim, InputMethodManager.SHOW_IMPLICIT)
+//            }
+//        }
 
     }
 

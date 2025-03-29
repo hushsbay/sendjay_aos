@@ -156,7 +156,8 @@ object NotiCenter {
                             procNoti(context, uInfo, roomid, noti, notiSummary)
                         }
                     } catch (e: Exception) {
-                        Util.alert(context, e.toString(), logTitle)
+                        //Util.alert(context, e.toString(), logTitle) //You need to use a Theme.AppCompat theme (or descendant) with this activity
+                        Util.toast(context, logTitle + ": " + e.toString())
                     }
                 }
             }

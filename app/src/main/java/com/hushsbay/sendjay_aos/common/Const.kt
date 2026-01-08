@@ -17,11 +17,11 @@ class Const {
         const val VERSIONCHK_APP = "${APP_NAME}_${AOS}"
         const val VERSIONCHK_ETC = "etc"
         ////////////////////////////////////////////////for distinguishing dev and ops (through KeyChain when app starts)
-        const val URL_HOST = "https://hushsbay.com"
+        const val URL_HOST = "https://albahero.com"
         const val DIR_PUBLIC = "/app/msngr"
         ////////////////////////////////////////////////
-        const val URL_SERVER = "$URL_HOST:444" //444(https) -> 81(http) on AWS
-        const val URL_SOCK = "$URL_HOST:3051/jay" //3051(https) -> 3051(http) on AWS
+        const val URL_SERVER = "$URL_HOST:547" //const val URL_SERVER = "$URL_HOST:444" //444(https) -> 81(http) on AWS
+        const val URL_SOCK = "wss://albahero.com:547/jay" //3051(https) -> 3051(http) on AWS
         const val URL_PUBLIC = URL_SERVER + DIR_PUBLIC
         const val URL_JAY = "${DIR_PUBLIC}/" //means public page load
         ////////////////////////////////////////////////
